@@ -3,11 +3,8 @@ import App from '../App.jsx';
 import AdminLayout from '../Layout/AdminLayout.jsx';
 import AdminHome from '../views/admin/AdminHome.jsx';
 import Home from '../views/front/Home.jsx';
-// import Login from '../views/Login.jsx';
-import Login from '../views/account/Login.jsx';
-import Signup from '../views/account/Signup.jsx';
-import AccountLayout from '../Layout/AccountLayout.jsx';
-import AccountIndex from '../views/account/index.jsx';
+import Login from '../views/Login.jsx';
+import Signup from '../views/Signup.jsx';
 import NotFound from '../views/NotFound.jsx';
 
 const routes = [
@@ -34,24 +31,6 @@ const routes = [
       //   path: 'orders',
       //   path: 'coupons',
       //   path: 'products',
-    ],
-  },
-  {
-    path: '/account',
-    element: <AccountLayout />,
-    children: [
-      {
-        index: true,
-        element: <AccountIndex />,
-      },
-      {
-        path: 'login',
-        element: <Login />,
-      },
-      {
-        path: 'signup ',
-        element: <Signup />,
-      },
     ],
   },
   {

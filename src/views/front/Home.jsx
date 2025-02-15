@@ -1,6 +1,26 @@
+import { useSelector } from 'react-redux';
+import { countData } from '../../slice/testSlice';
+import { useDispatch } from 'react-redux';
+import { addCount } from '../../slice/testSlice';
+
+function CounterReducer() {
+  const count = useSelector(countData);
+  return <div>RTK: {count}</div>;
+}
+
+function CounterBtn() {
+  const dispatch = useDispatch();
+  const addCountByClick = () => {
+    dispatch(addCount());
+  };
+  return <button onClick={() => addCountByClick()}>RTK:點我加一</button>;
+}
+
 export default function Home() {
   return (
     <>
+      <CounterReducer />
+      <CounterBtn />
       <h1> 這是首頁</h1>
       <button type="button" className="btn btn-primary">
         Primary
@@ -33,7 +53,7 @@ export default function Home() {
       <hr />
       <button
         type="button"
-        className="btn btn-primary"
+        className="btn btn-primary mt-1.5"
         data-bs-toggle="modal"
         data-bs-target="#exampleModal"
       >
