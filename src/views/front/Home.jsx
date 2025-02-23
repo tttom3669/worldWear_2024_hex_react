@@ -1,3 +1,5 @@
+const { VITE_BASE_URL: BASE_URL } = import.meta.env;
+
 export default function Home() {
   return (
     <>
@@ -6,7 +8,7 @@ export default function Home() {
           <div
             className="w-100 h-50 w-md-50 h-md-100 bg-center bg-no-repeat bg-cover text-white d-flex justify-content-center align-items-end pb-10 pb-lg-20"
             style={{
-              backgroundImage: `url('/images/home/index-banner-l.png')`,
+              backgroundImage: `url('${BASE_URL}images/home/index-banner-l.png')`,
             }}
           >
             <div className="d-flex flex-column text-center position-relative z-1">
