@@ -1,6 +1,34 @@
-import useImgUrl from "../../hooks/useImgUrl";
+import useImgUrl from '../../hooks/useImgUrl';
+import { useEffect, useRef } from 'react';
+import { useSelector } from 'react-redux';
+import { productCategories as productCategoriesData } from '../../slice/productsSlice';
+
+// Import Swiper React components
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination } from 'swiper/modules';
+import { Tab } from 'bootstrap';
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 export default function Home() {
+  const productCategories = useSelector(productCategoriesData);
+  const getImgUrl = useImgUrl();
+  const tabRef = useRef(null);
+  const swiperRefs = useRef({});
+
+  useEffect(() => {
+    new Tab(tabRef.current);
+  }, []);
+
+  const handleNextSlide = (gender) => {
+    swiperRefs.current[gender].slideNext();
+  };
+  const handlePrevSlide = (gender) => {
+    swiperRefs.current[gender].slidePrev();
+  };
+
   return (
     <>
       <main className="site-index">
@@ -8,7 +36,7 @@ export default function Home() {
           <div
             className="w-100 h-50 w-md-50 h-md-100 bg-center bg-no-repeat bg-cover text-white d-flex justify-content-center align-items-end pb-10 pb-lg-20"
             style={{
-              backgroundImage: `url(${useImgUrl(
+              backgroundImage: `url(${getImgUrl(
                 '/images/home/index-banner-l.png'
               )})`,
             }}
@@ -23,7 +51,7 @@ export default function Home() {
           <div
             className="w-100 h-50 w-md-50 h-md-100 bg-center bg-no-repeat bg-cover text-white d-flex justify-content-center align-items-end pb-10 pb-lg-20"
             style={{
-              backgroundImage: `url(${useImgUrl(
+              backgroundImage: `url(${getImgUrl(
                 '/images/home/index-banner-r.png'
               )})`,
             }}
@@ -54,10 +82,7 @@ export default function Home() {
 
         <section className="section__slogan py-10 py-md-20" data-aos="fade-up">
           <div className="container">
-            <div
-              className="d-flex justify-content-between align-items-xl-start
-           flex-column  flex-xl-row"
-            >
+            <div className="d-flex justify-content-between align-items-xl-start flex-column flex-xl-row">
               <div className="position-relative">
                 <div className="position-relative z-1">
                   <div className="bg-primary-50 mb-3 w-24px h-24px">&nbsp;</div>
@@ -75,12 +100,12 @@ export default function Home() {
               <div className="section__slogan-img">
                 <img
                   className="section__slogan-img--1"
-                  src="/assets/images/section-slogan-1.png"
+                  src={getImgUrl('/images/home/section-slogan-1.png')}
                   alt="Style&Confidante"
                 />
                 <img
                   className="section__slogan-img--2"
-                  src="/assets/images/section-slogan-2.png"
+                  src={getImgUrl('/images/home/section-slogan-2.png')}
                   alt="Style&Confidante"
                 />
               </div>
@@ -98,44 +123,133 @@ export default function Home() {
                 className="nav nav-tabs section__productCategories-nav"
                 id="nav-tab"
                 role="tablist"
+                ref={tabRef}
               >
-                <button
-                  className="nav-link active"
-                  id="nav-home-tab"
-                  data-bs-toggle="tab"
-                  data-bs-target="#nav-home"
-                  type="button"
-                  role="tab"
-                  aria-controls="nav-home"
-                  aria-selected="true"
-                >
-                  Women
-                </button>
-                <button
-                  className="nav-link"
-                  id="nav-profile-tab"
-                  data-bs-toggle="tab"
-                  data-bs-target="#nav-profile"
-                  type="button"
-                  role="tab"
-                  aria-controls="nav-profile"
-                  aria-selected="false"
-                >
-                  Men
-                </button>
+                {productCategories.map((gender) => (
+                  <button
+                    className={`nav-link ${
+                      gender.slug === 'women' ? 'active' : ''
+                    }`}
+                    id={`nav-${gender.slug}-tab`}
+                    data-bs-toggle="tab"
+                    data-bs-target={`#nav-${gender.slug}`}
+                    type="button"
+                    role="tab"
+                    aria-controls={`nav-${gender.slug}`}
+                    aria-selected="true"
+                    key={gender.slug}
+                  >
+                    {gender.title}
+                  </button>
+                ))}
               </div>
             </nav>
           </div>
           <div className="container-sm">
             <div className="tab-content" id="nav-tabContent">
-              <div
+              {productCategories.map((gender) => (
+                <div
+                  className={`tab-pane fade show ${
+                    gender.slug === 'women' ? 'active' : ''
+                  }`}
+                  id={`nav-${gender.slug}`}
+                  role="tabpanel"
+                  aria-labelledby={`nav-${gender.slug}-tab`}
+                  tabIndex="0"
+                  key={gender.slug}
+                >
+                  <div className="swiper-container swiper__productCategories-container">
+                    <Swiper
+                      className="swiper__productCategories text-white"
+                      modules={[Pagination]}
+                      slidesPerView={1.375}
+                      spaceBetween={24}
+                      breakpoints={{
+                        576: {
+                          slidesPerGroup: 2,
+                          slidesPerView: 2,
+                        },
+                        768: {
+                          slidesPerGroup: 3,
+                          slidesPerView: 3,
+                        },
+                        992: {
+                          slidesPerGroup: 4,
+                          slidesPerView: 4,
+                        },
+                      }}
+                      pagination={{ clickable: true }}
+                      onSwiper={(swiper) => {
+                        swiperRefs.current[gender.slug] = swiper;
+                        console.log(swiperRefs);
+                      }}
+                    >
+                      {gender.categories.map((category) => (
+                        <SwiperSlide key={category.slug}>
+                          <div
+                            className="swiper__productCategories-item swiper__productCategories-item--dark "
+                            style={{
+                              backgroundImage: `url(${getImgUrl(
+                                category.imageUrl
+                              )})`,
+                            }}
+                          >
+                            <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
+                              <a href="#" className="text-reset stretched-link">
+                                <h2 className="fs-sm fs-md-h6 fw-bold">
+                                  {category.title}
+                                </h2>
+                              </a>
+                              <h3
+                                className={`${
+                                  category.slug !== 'accessories'
+                                    ? 'fs-dh2 fs-md-dh1'
+                                    : 'fs-h2 fs-md-h1'
+                                } fst-italic fw-normal font-dm-serif`}
+                              >
+                                {category.slug}
+                              </h3>
+                            </div>
+                          </div>
+                        </SwiperSlide>
+                      ))}
+                    </Swiper>
+                    <div
+                      className="swiper-button-prev"
+                      onClick={() => handlePrevSlide(gender.slug)}
+                    >
+                      <svg
+                        style={{ pointerEvents: 'none' }}
+                        width="18"
+                        height="32"
+                      >
+                        <use href={getImgUrl('/icons/prev.svg#prev')}></use>
+                      </svg>
+                    </div>
+                    <div
+                      className="swiper-button-next"
+                      onClick={() => handleNextSlide(gender.slug)}
+                    >
+                      <svg
+                        style={{ pointerEvents: 'none' }}
+                        width="18"
+                        height="32"
+                      >
+                        <use href={getImgUrl('/icons/next.svg#next')}></use>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* <div
                 className="tab-pane fade show active"
                 id="nav-home"
                 role="tabpanel"
                 aria-labelledby="nav-home-tab"
                 tabIndex="0"
-              >
-                <div className="swiper-container swiper__productCategories-container">
+              > */}
+              {/* <div className="swiper-container swiper__productCategories-container">
                   <div className="swiper swiper__productCategories text-white">
                     <div className="swiper-wrapper">
                       <div className="swiper-slide">
@@ -260,16 +374,16 @@ export default function Home() {
                       <use href="/assets/images/next.svg#next"></use>
                     </svg>
                   </div>
-                </div>
-              </div>
+                </div> */}
+              {/* </div>
               <div
                 className="tab-pane fade"
                 id="nav-profile"
                 role="tabpanel"
                 aria-labelledby="nav-profile-tab"
                 tabIndex="0"
-              >
-                <div className="swiper-container swiper__productCategories-container">
+              > */}
+              {/* <div className="swiper-container swiper__productCategories-container">
                   <div className="swiper swiper__productCategories text-white">
                     <div className="swiper-wrapper">
                       <div className="swiper-slide">
@@ -356,8 +470,8 @@ export default function Home() {
                       <use href="/assets/images/next.svg#next"></use>
                     </svg>
                   </div>
-                </div>
-              </div>
+                </div> */}
+              {/* </div> */}
             </div>
           </div>
         </section>
