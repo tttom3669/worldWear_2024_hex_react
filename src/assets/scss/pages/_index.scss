@@ -1,0 +1,296 @@
+$header-height: 88px;
+$header-aside-height: 45px;
+$header-height-mobile: 72px;
+$header-aside-height-mobile: 29px;
+
+
+.site-index {
+  &__banner {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    height: calc(100dvh - $header-aside-height-mobile);
+    @include media-breakpoint-up(lg) {
+      height: calc(100dvh - $header-aside-height);
+    }
+    & > * {
+      position: relative;
+      &::before {
+        position: absolute;
+        content: '';
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 0;
+        background-image: linear-gradient(
+          180deg,
+          rgba(0, 0, 0, 0.4) 0%,
+          rgba(0, 0, 0, 0) 100%
+        );
+      }
+    }
+  }
+}
+
+.section {
+  &__slogan {
+    &-text {
+      position: absolute;
+      left: 0;
+      top: calc(100% - 24px);
+      z-index: 0;
+      display: flex;
+      flex-direction: column;
+      @include media-breakpoint-up(md) {
+        top: calc(100% - 32px);
+      }
+      & > * {
+        font-family: DM Serif Display;
+
+        font-size: clamp(40px, 5vw, 90px);
+        font-style: italic;
+        line-height: 1.2;
+        letter-spacing: 0.08em;
+        color: transparent;
+        -webkit-text-stroke: 1px $nature-90;
+        text-stroke: 1px $nature-90;
+      }
+    }
+    &-img {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      max-width: 100%;
+      padding-top: 144px;
+      padding-bottom: 40px;
+      @include media-breakpoint-up(md) {
+        padding-top: 150px;
+        justify-content: flex-end;
+        padding-bottom: 0;
+      }
+      @include media-breakpoint-up(xl) {
+        padding-top: 0;
+      }
+      &--1 {
+        width: 79.77%;
+        max-width: 100%;
+        z-index: 0;
+        position: relative;
+
+        @include media-breakpoint-up(md) {
+          width: initial;
+          transform: translateX(43px);
+        }
+      }
+      &--2 {
+        max-width: 100%;
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        width: 128px;
+        height: 140px;
+        z-index: 1;
+        @include media-breakpoint-up(sm) {
+          width: initial;
+          height: initial;
+        }
+        @include media-breakpoint-up(md) {
+          position: static;
+          margin-top: 170px;
+        }
+      }
+    }
+  }
+  &__activity {
+    position: relative;
+    &::after {
+      position: absolute;
+      z-index: 0;
+      content: '';
+      display: block;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: url('/assets/images/activity-bg.png');
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      opacity: 0.5;
+    }
+  }
+
+  &__productCategories {
+    &-nav.nav-tabs {
+      @include media-breakpoint-down(sm) {
+        display: flex;
+        width: 100%;
+      }
+      &,
+      .nav-link {
+        background-color: transparent;
+        border: none;
+      }
+      .nav-link {
+        position: relative;
+        margin: 0;
+        padding: 8px 24px;
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 24px;
+        letter-spacing: 0.02em;
+        color: $nature-50;
+        @include media-breakpoint-down(sm) {
+          flex: 1 1 50%;
+        }
+        &::before,
+        &::after {
+          position: absolute;
+          content: '';
+          left: 0;
+          bottom: 0;
+          transform-origin: right;
+        }
+        &::before {
+          height: 1px;
+          width: 100%;
+          background-color: $nature-80;
+        }
+        &::after {
+          height: 2px;
+          width: 0%;
+          left: unset;
+          right: 0;
+          background-color: transparent;
+          transition: width 0.3s, background-color 0.5s;
+        }
+      }
+      .nav-link.active {
+        color: $nature-10;
+        &::after {
+          width: 100%;
+          left: 0;
+          right: unset;
+          background-color: $black;
+        }
+      }
+    }
+    .container-sm {
+      @include media-breakpoint-down(sm) {
+        padding-right: 0;
+      }
+    }
+  }
+
+  &__features {
+    &-card {
+      position: relative;
+      @include media-breakpoint-up(lg) {
+        height: 320px;
+      }
+    }
+    .features-card__content {
+      @include media-breakpoint-up(lg) {
+        position: absolute;
+        width: 273px;
+        height: 320px;
+        padding: 28px;
+      }
+    }
+    &-img {
+      object-fit: cover;
+      width: 123px;
+      @include media-breakpoint-up(lg) {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        width: 224px;
+        height: 210px;
+      }
+    }
+    .features-card__title {
+      @include media-breakpoint-up(lg) {
+        display: inline-block;
+        transform: rotate(90deg) translate(40px, 50px);
+      }
+    }
+  }
+}
+
+.swiper__productCategories {
+  &-item {
+    position: relative;
+    aspect-ratio: 257/360;
+    background-size: cover;
+    background-position: center;
+    @include media-breakpoint-up(md) {
+      aspect-ratio: 306/420;
+    }
+    & > * {
+      position: relative;
+      z-index: 2;
+    }
+    &::after {
+      position: absolute;
+      content: '';
+      display: block;
+      z-index: 0;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      transition: all 0.3s;
+    }
+
+    &--dark,
+    &--shadow {
+      &::before {
+        position: absolute;
+        content: '';
+        display: block;
+        z-index: 1;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      }
+    }
+    &--dark {
+      &::before {
+        background: rgba(0, 0, 0, 0.2);
+      }
+    }
+    &--shadow {
+      &::before {
+        background: linear-gradient(
+          180deg,
+          rgba(0, 0, 0, 0) 0%,
+          rgba(0, 0, 0, 0.6) 100%
+        );
+      }
+    }
+    &:hover {
+      &::after {
+        background: rgba(0, 0, 0, 0.4);
+      }
+    }
+  }
+}
+
+.swiper__popularProducts {
+  .swiper-slide {
+    img {
+      aspect-ratio: 257/248;
+      @include media-breakpoint-up(md) {
+        aspect-ratio: 416/ 400;
+      }
+    }
+  }
+  &-container {
+    .swiper-button-prev,
+    .swiper-button-next {
+      top: 32.7%;
+    }
+  }
+}
