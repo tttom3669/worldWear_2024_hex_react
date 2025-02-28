@@ -943,6 +943,7 @@ $utilities: map-merge(
         property: letter-spacing,
         class: tracking,
         values: (
+          none: 0,
           sm: 0.02em,
           md: 0.04em,
         ),
