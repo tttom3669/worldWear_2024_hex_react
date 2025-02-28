@@ -5,7 +5,7 @@ import { productCategories as productCategoriesData } from '../../slice/products
 
 // Import Swiper React components
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination } from 'swiper/modules';
+import { Pagination } from 'swiper/modules';
 import { Tab } from 'bootstrap';
 // Import Swiper styles
 import 'swiper/css';
@@ -563,7 +563,7 @@ export default function Home() {
                 </div>
                 <img
                   className="section__features-img"
-                  src="/assets/images/features-img-1.png"
+                  src={getImgUrl('/images/home/features-img-1.png')}
                   alt=""
                 />
               </div>
@@ -583,7 +583,7 @@ export default function Home() {
                 </div>
                 <img
                   className="section__features-img"
-                  src="/assets/images/features-img-2.png"
+                  src={getImgUrl('/images/home/features-img-2.png')}
                   alt=""
                 />
               </div>
@@ -603,7 +603,7 @@ export default function Home() {
                 </div>
                 <img
                   className="section__features-img"
-                  src="/assets/images/features-img-3.png"
+                  src={getImgUrl('/images/home/features-img-3.png')}
                   alt=""
                 />
               </div>
@@ -624,7 +624,7 @@ export default function Home() {
                     <div className="rounded-circle overflow-hidden w-24px h-24px w-md-40px h-md-40px">
                       <img
                         className="img-fluid object-fit-cover w-100 h-100 d-block"
-                        src="/assets/images/comment-1.png"
+                        src={getImgUrl('/images/home/comment-1.png')}
                         alt="comment-1"
                       />
                     </div>
@@ -641,7 +641,7 @@ export default function Home() {
                     <div className="rounded-circle overflow-hidden w-24px h-24px w-md-40px h-md-40px">
                       <img
                         className="img-fluid object-fit-cover w-100 h-100 d-block"
-                        src="/assets/images/comment-2.png"
+                        src={getImgUrl('/images/home/comment-2.png')}
                         alt="comment-2"
                       />
                     </div>
@@ -658,7 +658,7 @@ export default function Home() {
                     <div className="rounded-circle overflow-hidden w-24px h-24px w-md-40px h-md-40px">
                       <img
                         className="img-fluid object-fit-cover w-100 h-100 d-block"
-                        src="/assets/images/comment-3.png"
+                        src={getImgUrl('/images/home/comment-3.png')}
                         alt="comment-3"
                       />
                     </div>
@@ -675,7 +675,7 @@ export default function Home() {
                     <div className="rounded-circle overflow-hidden w-24px h-24px w-md-40px h-md-40px">
                       <img
                         className="img-fluid object-fit-cover w-100 h-100 d-block"
-                        src="/assets/images/comment-4.png"
+                        src={getImgUrl('/images/home/comment-4.png')}
                         alt="comment-4"
                       />
                     </div>
