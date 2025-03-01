@@ -4,7 +4,7 @@ function App() {
   return (
     <>
       <Outlet />
-      <FrontFooter></FrontFooter>
+      <FrontFooter />
     </>
   );
 }
