@@ -1,4 +1,3 @@
-import useImgUrl from '../../hooks/useImgUrl';
 import { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { productCategories as productCategoriesData } from '../../slice/productsSlice';
@@ -11,6 +10,9 @@ import { Tab } from 'bootstrap';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+
+import useImgUrl from '../../hooks/useImgUrl';
+import FrontHeader from '../../components/front/FrontHeader';
 
 export default function Home() {
   const productCategories = useSelector(productCategoriesData);
@@ -31,6 +33,7 @@ export default function Home() {
 
   return (
     <>
+      <FrontHeader defaultType={'dark'} />
       <main className="site-index">
         <div className="site-index__banner">
           <div
@@ -80,7 +83,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="section__slogan py-10 py-md-20" data-aos="fade-up">
+        <section className="section__slogan py-10 overflow-hidden py-md-20" data-aos="fade-up">
           <div className="container">
             <div className="d-flex justify-content-between align-items-xl-start flex-column flex-xl-row">
               <div className="position-relative">
@@ -181,7 +184,6 @@ export default function Home() {
                       pagination={{ clickable: true }}
                       onSwiper={(swiper) => {
                         swiperRefs.current[gender.slug] = swiper;
-                        console.log(swiperRefs);
                       }}
                     >
                       {gender.categories.map((category) => (
@@ -207,7 +209,8 @@ export default function Home() {
                                     : 'fs-h2 fs-md-h1'
                                 } fst-italic fw-normal font-dm-serif`}
                               >
-                                {category.slug}
+                                {category.slug[0].toUpperCase() +
+                                  category.slug.slice(1)}
                               </h3>
                             </div>
                           </div>
@@ -241,237 +244,6 @@ export default function Home() {
                   </div>
                 </div>
               ))}
-
-              {/* <div
-                className="tab-pane fade show active"
-                id="nav-home"
-                role="tabpanel"
-                aria-labelledby="nav-home-tab"
-                tabIndex="0"
-              > */}
-              {/* <div className="swiper-container swiper__productCategories-container">
-                  <div className="swiper swiper__productCategories text-white">
-                    <div className="swiper-wrapper">
-                      <div className="swiper-slide">
-                        <div
-                          className="swiper__productCategories-item swiper__productCategories-item--dark "
-                          style={{
-                            backgroundImage: `{url(
-                              '/assets/images/category-top.png'
-                            )}`,
-                          }}
-                        >
-                          <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                            <a href="#" className="text-reset stretched-link">
-                              <h2 className="fs-sm fs-md-h6 fw-bold">上衣</h2>
-                            </a>
-                            <h3 className="fs-dh2 fs-md-dh1 fst-italic fw-normal font-dm-serif">
-                              Top
-                            </h3>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="swiper-slide">
-                        <div
-                          className="swiper__productCategories-item"
-                          style={{
-                            backgroundImage: `url('/assets/images/category-jacket.png')`,
-                          }}
-                        >
-                          <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                            <a href="#" className="text-reset stretched-link">
-                              <h2 className="fs-sm fs-md-h6 fw-bold">外套</h2>
-                            </a>
-                            <h3 className="fs-dh2 fs-md-dh1 fst-italic fw-normal font-dm-serif">
-                              Jacket
-                            </h3>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="swiper-slide">
-                        <div
-                          className="swiper__productCategories-item swiper__productCategories-item--shadow"
-                          style={{
-                            backgroundImage: `url('/assets/images/category-dress.png')`,
-                          }}
-                        >
-                          <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                            <a href="#" className="text-reset stretched-link">
-                              <h2 className="fs-sm fs-md-h6 fw-bold">洋裝</h2>
-                            </a>
-                            <h3 className="fs-dh2 fs-md-dh1 fst-italic fw-normal font-dm-serif">
-                              Dress
-                            </h3>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="swiper-slide">
-                        <div
-                          className="swiper__productCategories-item"
-                          style={{
-                            backgroundImage: `url('/assets/images/category-pants.png')`,
-                          }}
-                        >
-                          <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                            <a href="#" className="text-reset stretched-link">
-                              <h2 className="fs-sm fs-md-h6 fw-bold">褲子</h2>
-                            </a>
-                            <h3 className="fs-dh2 fs-md-dh1 fst-italic fw-normal font-dm-serif">
-                              Pants
-                            </h3>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="swiper-slide">
-                        <div
-                          className="swiper__productCategories-item swiper__productCategories-item--dark"
-                          style={{
-                            backgroundImage: `url(
-                              '/assets/images/category-skirt.png'
-                            )`,
-                          }}
-                        >
-                          <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                            <a href="#" className="text-reset stretched-link">
-                              <h2 className="fs-sm fs-md-h6 fw-bold">裙子</h2>
-                            </a>
-                            <h3 className="fs-dh2 fs-md-dh1  fst-italic fw-normal font-dm-serif">
-                              Skirts
-                            </h3>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="swiper-slide">
-                        <div
-                          className="swiper__productCategories-item swiper__productCategories-item--dark"
-                          style={{
-                            backgroundImage: `url('/assets/images/category-accessories.png')`,
-                          }}
-                        >
-                          <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                            <a href="#" className="text-reset stretched-link">
-                              <h2 className="fs-sm fs-md-h6 fw-bold">
-                                服飾配件
-                              </h2>
-                            </a>
-                            <h3 className="fs-h2 fs-md-h1 fst-italic fw-normal font-dm-serif">
-                              Accessories
-                            </h3>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="swiper-pagination"></div>
-                  </div>
-                  <div className="swiper-button-prev">
-                    <svg width="18" height="32">
-                      <use href="/assets/images/prev.svg#prev"></use>
-                    </svg>
-                  </div>
-                  <div className="swiper-button-next">
-                    <svg width="18" height="32">
-                      <use href="/assets/images/next.svg#next"></use>
-                    </svg>
-                  </div>
-                </div> */}
-              {/* </div>
-              <div
-                className="tab-pane fade"
-                id="nav-profile"
-                role="tabpanel"
-                aria-labelledby="nav-profile-tab"
-                tabIndex="0"
-              > */}
-              {/* <div className="swiper-container swiper__productCategories-container">
-                  <div className="swiper swiper__productCategories text-white">
-                    <div className="swiper-wrapper">
-                      <div className="swiper-slide">
-                        <div
-                          className="swiper__productCategories-item swiper__productCategories-item--dark "
-                          style={{
-                            backgroundImage: `url('/assets/images/category-top-m.png')`,
-                          }}
-                        >
-                          <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                            <a href="#" className="text-reset stretched-link">
-                              <h2 className="fs-sm fs-md-h6 fw-bold">上衣</h2>
-                            </a>
-                            <h3 className="fs-dh2 fs-md-dh1 fst-italic fw-normal font-dm-serif">
-                              Top
-                            </h3>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="swiper-slide">
-                        <div
-                          className="swiper__productCategories-item"
-                          style={{
-                            backgroundImage: `url('/assets/images/category-jacket-m.png')`,
-                          }}
-                        >
-                          <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                            <a href="#" className="text-reset stretched-link">
-                              <h2 className="fs-sm fs-md-h6 fw-bold">外套</h2>
-                            </a>
-                            <h3 className="fs-dh2 fs-md-dh1 fst-italic fw-normal font-dm-serif">
-                              Jacket
-                            </h3>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="swiper-slide">
-                        <div
-                          className="swiper__productCategories-item swiper__productCategories-item--dark"
-                          style={{
-                            backgroundImage: `url('/assets/images/category-pants-m.png')`,
-                          }}
-                        >
-                          <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                            <a href="#" className="text-reset stretched-link">
-                              <h2 className="fs-sm fs-md-h6 fw-bold">褲子</h2>
-                            </a>
-                            <h3 className="fs-dh2 fs-md-dh1 fst-italic fw-normal font-dm-serif">
-                              Pants
-                            </h3>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="swiper-slide">
-                        <div
-                          className="swiper__productCategories-item swiper__productCategories-item--dark"
-                          style={{
-                            backgroundImage: `url('/assets/images/category-accessories-m.png')`,
-                          }}
-                        >
-                          <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                            <a href="#" className="text-reset stretched-link">
-                              <h2 className="fs-sm fs-md-h6 fw-bold">
-                                服飾配件
-                              </h2>
-                            </a>
-                            <h3 className="fs-h2 fs-md-h1 fst-italic fw-normal font-dm-serif">
-                              Accessories
-                            </h3>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="swiper-pagination"></div>
-                  </div>
-                  <div className="swiper-button-prev">
-                    <svg width="18" height="32">
-                      <use href="/assets/images/prev.svg#prev"></use>
-                    </svg>
-                  </div>
-                  <div className="swiper-button-next">
-                    <svg width="18" height="32">
-                      <use href="/assets/images/next.svg#next"></use>
-                    </svg>
-                  </div>
-                </div> */}
-              {/* </div> */}
             </div>
           </div>
         </section>
