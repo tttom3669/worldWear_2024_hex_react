@@ -1,17 +1,57 @@
 import { Link } from 'react-router-dom';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
 
 import useImgUrl from '../../hooks/useImgUrl';
+import { useRef } from 'react';
 
 export default function FrontFooter() {
   const getImgUrl = useImgUrl();
+  const topBtnRef = useRef(null);
+  gsap.registerPlugin(ScrollTrigger);
+  gsap.registerPlugin(useGSAP);
+
+  useGSAP(() => {
+    const main = document.querySelector('main');
+    gsap.timeline({
+      scrollTrigger: {
+        trigger: main,
+        start: '80% 70%',
+        // markers: true,
+        onEnter: () => {
+          // 向下滾動到達時移除 class
+          topBtnRef.current.classList.remove('opacity-0');
+          topBtnRef.current.classList.remove('pe-none');
+        },
+        onLeaveBack: () => {
+          // 向上滾動回來時添加 class
+          topBtnRef.current.classList.add('opacity-0');
+          topBtnRef.current.classList.add('pe-none');
+        },
+      },
+    });
+  });
   return (
-    <footer className="bg-black py-3">
-      <a className="topBtn pe-none opacity-0" href="#">
-        <img src="/assets/images/topBtn.png" alt="top" />
-      </a>
+    <footer className="bg-black py-6 py-md-3">
+      <Link
+        className="c-topBtn opacity-0 pe-none"
+        to="#"
+        ref={topBtnRef}
+        onClick={() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+      >
+        <div className="c-topBtn__icon">
+          <svg className="pe-none" width="14" height="14">
+            <use href={getImgUrl('/icons/top-arrow.svg#top-arrow')} />
+          </svg>
+        </div>
+        TOP
+      </Link>
       <div className="container">
-        <div className="d-flex align-items-center justify-content-between flex-column gap-10 flex-xl-row gap-xl-0">
-          <div className="d-flex align-items-center flex-column gap-6 gap-lg-12 flex-lg-row">
+        <div className="d-flex align-items-start align-items-md-center justify-content-between flex-column gap-3 flex-xl-row gap-xl-0">
+          <div className="d-flex align-items-md-center flex-column gap-3 gap-lg-12 flex-lg-row">
             <Link to="/">
               <img
                 className="footer__logo"
@@ -19,8 +59,8 @@ export default function FrontFooter() {
                 alt="logo"
               />
             </Link>
-            <div className="d-flex align-items-center flex-column gap-6 flex-lg-row gap-lg-0">
-              <ul className="d-flex flex-column align-items-center gap-2 text-white flex-sm-row">
+            <div className="d-flex align-items-start align-items-md-center flex-column gap-2 flex-lg-row gap-lg-0">
+              <ul className="d-flex align-items-center gap-2 text-white">
                 <li>
                   <Link className="footer__link" to="/">
                     代購流程
@@ -42,7 +82,7 @@ export default function FrontFooter() {
                   </Link>
                 </li>
               </ul>
-              <ul className="d-flex align-items-center px-2 py-3 gap-6">
+              <ul className="d-flex align-items-center px-md-2 py-md-3 gap-6">
                 <li>
                   <Link to="/" className="footer__social">
                     <svg width="16" height="16">

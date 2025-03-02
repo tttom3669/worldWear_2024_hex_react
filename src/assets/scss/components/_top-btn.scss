@@ -1,0 +1,43 @@
+.c-topBtn {
+  position: fixed;
+  right: 12px;
+  bottom: 61.6vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: $white;
+  background-color: $secondary-60;
+  border-radius: 50%;
+  aspect-ratio: 1/1;
+  width: 64px;
+  height: auto;
+
+  padding-top: 11px;
+  font-family: DM Serif Display;
+  font-style: italic;
+  font-size: 16px;
+
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  text-align: center;
+  transition: background-color 0.3s, opacity 0.3s;
+  z-index: 1000;
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+  @include media-breakpoint-up(md) {
+    right: 10.2vw;
+    bottom: 12.81vw;
+    padding-top: 20px;
+    font-size: 24px;
+    width: 92px;
+  }
+  &__icon {
+    display: flex;
+    width: 24px;
+    height: 24px;
+    justify-content: center;
+    align-items: center;
+  }
+  &:hover {
+    background-color: $secondary-50;
+  }
+}
