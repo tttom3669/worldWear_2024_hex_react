@@ -866,7 +866,9 @@ $btn-link-focus-shadow-rgb: to-rgb(
 ) !default;
 
 // Allows for customizing button radius independently from global border radius
-$btn-border-radius: var(--#{$prefix}border-radius) !default;
+// $btn-border-radius: var(--#{$prefix}border-radius) !default;
+// cus*
+$btn-border-radius: 0;
 $btn-border-radius-sm: var(--#{$prefix}border-radius-sm) !default;
 $btn-border-radius-lg: var(--#{$prefix}border-radius-lg) !default;
 

@@ -1,0 +1,108 @@
+.cart {
+  &__thead {
+    display: none;
+    background-color: $nature-90;
+    text-align: center;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    font-weight: 700;
+    @include media-breakpoint-up(lg) {
+      display: flex;
+    }
+    & > * {
+      flex: 1 1 auto;
+    }
+    & > :first-child {
+      flex: 0 0 59.315%;
+    }
+  }
+  &__tbody > * {
+    display: flex;
+    flex-wrap: wrap;
+    border-bottom: 1px solid $nature-90;
+    @include media-breakpoint-up(lg) {
+      flex-wrap: nowrap;
+    }
+    & > * {
+      order: 3;
+      flex: 0 0 100%;
+      @include media-breakpoint-up(lg) {
+        flex: 0 0 13.56%;
+      }
+    }
+  }
+  &__product {
+    &-img {
+      order: 0;
+      max-width: 100%;
+      width: 132px;
+      height: auto;
+      object-fit: cover;
+      aspect-ratio: 132/100;
+      flex: 0 0 auto;
+    }
+    &-content {
+      order: 2;
+      flex: 0 0 100%;
+      @include media-breakpoint-up(lg) {
+        order: unset;
+        flex: 1 1 46.768%;
+      }
+    }
+    &-price {
+      display: flex;
+      flex-direction: column;
+      order: 1;
+      @include media-breakpoint-up(lg) {
+        justify-content: center;
+        align-items: center;
+        order: 3;
+      }
+    }
+    &-total {
+      justify-content: flex-end;
+    }
+    &-num,
+    &-total {
+      display: flex;
+      align-items: center;
+      flex: 0 0 50%;
+      @include media-breakpoint-up(lg) {
+        justify-content: center;
+        flex: 1 1 13.56%;
+      }
+    }
+  }
+  &__discount {
+    display: flex;
+    width: 100%;
+    @include media-breakpoint-up(md) {
+      width: auto;
+    }
+    &-input {
+      width: 100%;
+      max-width: 100%;
+      flex: 1 1 auto;
+      font-size: 14px;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      @include media-breakpoint-up(md) {
+        max-width: 234px;
+        width: 234px;
+      }
+    }
+    &-btn {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 80px;
+      flex: 0 0 auto;
+      font-weight: 700;
+      white-space: nowrap;
+      padding: 8px;
+      @include media-breakpoint-up(md) {
+        width: 85px;
+      }
+    }
+  }
+}

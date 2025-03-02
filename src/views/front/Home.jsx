@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { productCategories as productCategoriesData } from '../../slice/productsSlice';
+import axios from 'axios';
 
 // Import Swiper React components
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -13,22 +13,33 @@ import 'swiper/css/pagination';
 
 import useImgUrl from '../../hooks/useImgUrl';
 import FrontHeader from '../../components/front/FrontHeader';
+import { productCategories as productCategoriesData } from '../../slice/productsSlice';
+import { Link } from 'react-router-dom';
+const { VITE_API_PATH: API_PATH } = import.meta.env;
 
 export default function Home() {
   const productCategories = useSelector(productCategoriesData);
   const getImgUrl = useImgUrl();
+  const [popularProducts, setPopularProducts] = useState([]);
   const tabRef = useRef(null);
   const swiperRefs = useRef({});
 
   useEffect(() => {
     new Tab(tabRef.current);
+    getPopularProducts();
   }, []);
 
-  const handleNextSlide = (gender) => {
-    swiperRefs.current[gender].slideNext();
+  const handleNextSlide = (swiperSlug) => {
+    swiperRefs.current[swiperSlug].slideNext();
   };
-  const handlePrevSlide = (gender) => {
-    swiperRefs.current[gender].slidePrev();
+  const handlePrevSlide = (swiperSlug) => {
+    swiperRefs.current[swiperSlug].slidePrev();
+  };
+
+  const getPopularProducts = async () => {
+    const res = await axios.get(`${API_PATH}/products`);
+    const filterProducts = res.data.filter((product) => product.is_hot);
+    setPopularProducts(filterProducts);
   };
 
   return (
@@ -83,7 +94,10 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="section__slogan py-10 overflow-hidden py-md-20" data-aos="fade-up">
+        <section
+          className="section__slogan py-10 overflow-hidden py-md-20"
+          data-aos="fade-up"
+        >
           <div className="container">
             <div className="d-flex justify-content-between align-items-xl-start flex-column flex-xl-row">
               <div className="position-relative">
@@ -197,11 +211,14 @@ export default function Home() {
                             }}
                           >
                             <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                              <a href="#" className="text-reset stretched-link">
+                              <Link
+                                to={`/products/${category.slug}`}
+                                className="text-reset stretched-link"
+                              >
                                 <h2 className="fs-sm fs-md-h6 fw-bold">
                                   {category.title}
                                 </h2>
-                              </a>
+                              </Link>
                               <h3
                                 className={`${
                                   category.slug !== 'accessories'
@@ -221,11 +238,7 @@ export default function Home() {
                       className="swiper-button-prev"
                       onClick={() => handlePrevSlide(gender.slug)}
                     >
-                      <svg
-                        style={{ pointerEvents: 'none' }}
-                        width="18"
-                        height="32"
-                      >
+                      <svg className="pe-none" width="18" height="32">
                         <use href={getImgUrl('/icons/prev.svg#prev')}></use>
                       </svg>
                     </div>
@@ -233,11 +246,7 @@ export default function Home() {
                       className="swiper-button-next"
                       onClick={() => handleNextSlide(gender.slug)}
                     >
-                      <svg
-                        style={{ pointerEvents: 'none' }}
-                        width="18"
-                        height="32"
-                      >
+                      <svg className="pe-none" width="18" height="32">
                         <use href={getImgUrl('/icons/next.svg#next')}></use>
                       </svg>
                     </div>
@@ -255,58 +264,60 @@ export default function Home() {
           <div className="container-sm">
             <h2 className="fs-h5 fs-md-h2 fw-bold mb-6">熱門商品</h2>
             <div className="swiper-container swiper__popularProducts-container">
-              <div className="swiper swiper__popularProducts">
-                <div className="swiper-wrapper">
-                  <div className="swiper-slide position-relative">
+              <Swiper
+                className="swiper__popularProducts"
+                modules={[Pagination]}
+                slidesPerView={1.375}
+                spaceBetween={24}
+                breakpoints={{
+                  576: {
+                    slidesPerGroup: 2,
+                    slidesPerView: 2,
+                  },
+                  768: {
+                    slidesPerGroup: 3,
+                    slidesPerView: 3,
+                  },
+                }}
+                pagination={{ clickable: true }}
+                onSwiper={(swiper) => {
+                  swiperRefs.current['popularProducts'] = swiper;
+                }}
+              >
+                {' '}
+                {popularProducts.map((product) => (
+                  <SwiperSlide className="position-relative" key={product.id}>
                     <img
                       className="w-100 img-fluid object-fit-cover mb-3"
-                      src="/assets/images/popular-product-1.png"
-                      alt="popular-product-1"
+                      src={product.imageUrl}
+                      alt={product.title}
                     />
-                    <a href="#" className="stretched-link link-black">
+                    <Link
+                      to={`/product/${product.id}`}
+                      className="stretched-link link-black"
+                    >
                       <h3 className="d-flex flex-column gap-0 gap-md-1 tracking-sm fs-sm fs-md-base lh-base fw-normal">
-                        <span> HOKA Speedgoat 5 Mid</span>
-                        <span>GORE-TEX 男鞋 藍色/琥珀色</span>
+                        <span>{product.title}</span>
+                        <span>{product.categoryItems}</span>
                       </h3>
-                    </a>
-                  </div>
-                  <div className="swiper-slide position-relative">
-                    <img
-                      className="w-100 img-fluid object-fit-cover  mb-3"
-                      src="/assets/images/popular-product-2.png"
-                      alt="popular-product-3"
-                    />
-                    <a href="#" className="stretched-link link-black">
-                      <h3 className="d-flex flex-column gap-0 gap-md-1 tracking-sm fs-sm fs-md-base lh-base fw-normal">
-                        <span> 韓國連線 七月新品 EU27</span>
-                        <span>帆布皮帶側開叉牛仔長裙</span>
-                      </h3>
-                    </a>
-                  </div>
-                  <div className="swiper-slide position-relative">
-                    <img
-                      className="w-100 img-fluid object-fit-cover mb-3"
-                      src="/assets/images/popular-product-3.png"
-                      alt="popular-product-3"
-                    />
-                    <a href="#" className="stretched-link link-black">
-                      <h3 className="d-flex flex-column gap-0 gap-md-1 tracking-sm fs-sm fs-md-base lh-base fw-normal">
-                        <span>TABBY26號新縫單肩手袋</span>
-                        <span>B4/黑色（CP150）</span>
-                      </h3>
-                    </a>
-                  </div>
-                </div>
-                <div className="swiper-pagination"></div>
-              </div>
-              <div className="swiper-button-prev">
-                <svg width="18" height="32">
-                  <use href="/assets/images/prev.svg#prev"></use>
+                    </Link>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+              <div
+                className="swiper-button-prev"
+                onClick={() => handlePrevSlide('popularProducts')}
+              >
+                <svg className="pe-none" width="18" height="32">
+                  <use href={getImgUrl('/icons/prev.svg#prev')}></use>
                 </svg>
               </div>
-              <div className="swiper-button-next">
-                <svg width="18" height="32">
-                  <use href="/assets/images/next.svg#next"></use>
+              <div
+                className="swiper-button-next"
+                onClick={() => handleNextSlide('popularProducts')}
+              >
+                <svg className="pe-none" width="18" height="32">
+                  <use href={getImgUrl('/icons/next.svg#next')}></use>
                 </svg>
               </div>
             </div>
