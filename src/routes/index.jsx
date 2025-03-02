@@ -6,6 +6,7 @@ import Home from '../views/front/Home.jsx';
 import Login from '../views/Login.jsx';
 import Signup from '../views/Signup.jsx';
 import NotFound from '../views/NotFound.jsx';
+import Cart from '../views/front/Cart.jsx';
 
 const routes = [
   {
@@ -15,6 +16,10 @@ const routes = [
       {
         index: true,
         element: <Home />,
+      },
+      {
+        path: 'cart',
+        element: <Cart />,
       },
     ],
   },

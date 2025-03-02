@@ -660,6 +660,8 @@ $utilities: map-merge(
       values: lowercase uppercase capitalize,
     ),
     'white-space': (
+      responsive: true,
+      // cus*
       property: white-space,
       class: text,
       values: (

@@ -10,7 +10,7 @@ $header-aside-height-mobile: 29px;
   left: 0;
   right: 0;
   z-index: 1100;
-  transition: background-color ease 0.2s, top linear 0.1s;
+  transition: background-color ease 0.2s, top linear 0.2s;
   @include media-breakpoint-up(lg) {
     top: $header-aside-height;
   }
@@ -20,10 +20,10 @@ $header-aside-height-mobile: 29px;
     top: 0;
   }
 
-  & + main:not(.site-index) {
-    padding-top: calc($header-height-mobile + $header-aside-height-mobile);
+  & ~ main:not(.site-index) {
+    padding-top: $header-height-mobile;
     @include media-breakpoint-up(lg) {
-      padding-top: calc($header-height + $header-aside-height);
+      padding-top: $header-height;
     }
   }
   .navbar {

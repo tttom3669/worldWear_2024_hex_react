@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 
 // 登入功能等 登入註冊做完，才來實作
+// 搜尋功能。 等產品頁面，才來實作
 // <%= (mode==='login' ) ? 'header--login' : 'header--logout' %>  <%= (type==='light' ) ? 'header--light' : 'header--dark' %>
 
 function FrontHeader({ defaultType }) {
@@ -43,6 +44,9 @@ function FrontHeader({ defaultType }) {
     });
   });
 
+  const isDesktop = () => {
+    return window.innerWidth > 992;
+  };
   function mainMenuHandler(e) {
     e.preventDefault();
     const name = e.target.name || e.target.parentElement.name;
@@ -58,7 +62,7 @@ function FrontHeader({ defaultType }) {
         與世界共舞，與時尚同步 - WorldWear
       </aside>
       <header
-        className={`header header--logout
+        className={`header header--login
         ${
           isHeaderScroll
             ? 'header--scroll'
@@ -74,13 +78,13 @@ function FrontHeader({ defaultType }) {
           <div className="container">
             <div className="d-flex justify-content-lg-between align-items-center w-100">
               <div className="d-flex align-items-center gap-lg-12 flex-fill">
-                <a className="text-reset me-auto m-lg-0" href="./index.html">
+                <Link className="text-reset me-auto m-lg-0" to="/">
                   <h1 className="d-flex">
                     <svg className="l-logo" width="120" height="72">
                       <use href={getImgUrl('/icons/Logo.svg#logo')}></use>
                     </svg>
                   </h1>
-                </a>
+                </Link>
                 <ul className="navbar-nav l-menu">
                   {productCategories.map((gender) => (
                     <li className="nav-item dropdown" key={gender.slug}>
@@ -125,7 +129,7 @@ function FrontHeader({ defaultType }) {
                     name="search"
                     onClick={(e) => mainMenuHandler(e)}
                     className={`header__searchIcon border-0 bg-transparent justify-content-center align-items-center p-3 p-lg-0  ${
-                      menuData.type === 'search' && menuData.isOpen
+                      menuData.type === 'search' && menuData.isOpen && isDesktop()
                         ? 'd-none'
                         : 'd-flex'
                     }`}
@@ -141,7 +145,7 @@ function FrontHeader({ defaultType }) {
                       <li className="d-flex justify-content-center align-items-center">
                         <Link
                           className="position-relative d-flex text-reset"
-                          to={`/carts`}
+                          to='/cart'
                         >
                           <svg width="16" height="16">
                             <use href={getImgUrl('/icons/cart.svg#cart')}></use>
@@ -195,7 +199,7 @@ function FrontHeader({ defaultType }) {
                   </ul>
                   <ul className="navbar-nav l-menu d-lg-none header--login__item">
                     <li>
-                      <Link className="nav-link l-menu__link" to="/carts">
+                      <Link className="nav-link l-menu__link" to="/cart">
                         購物車
                       </Link>
                     </li>

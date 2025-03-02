@@ -211,11 +211,14 @@ export default function Home() {
                             }}
                           >
                             <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                              <a href="#" className="text-reset stretched-link">
+                              <Link
+                                to={`/products/${category.slug}`}
+                                className="text-reset stretched-link"
+                              >
                                 <h2 className="fs-sm fs-md-h6 fw-bold">
                                   {category.title}
                                 </h2>
-                              </a>
+                              </Link>
                               <h3
                                 className={`${
                                   category.slug !== 'accessories'
