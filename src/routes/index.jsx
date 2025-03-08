@@ -7,6 +7,7 @@ import Login from '../views/Login.jsx';
 import Signup from '../views/Signup.jsx';
 import NotFound from '../views/NotFound.jsx';
 import Cart from '../views/front/Cart.jsx';
+import ProductsList from '../views/front/ProductsList.jsx'
 
 const routes = [
   {
@@ -16,6 +17,14 @@ const routes = [
       {
         index: true,
         element: <Home />,
+      },
+      {
+        path: "products",
+        element: <ProductsList />,
+      },
+      {
+        path: "products/:category",
+        element: <ProductsList />,
       },
       {
         path: 'cart',

@@ -1,0 +1,1257 @@
+// 變數定義
+$nature-99: rgba(255, 251, 255, 1);
+$favorite-size: 32px;
+$favorite-size-mobile: 40px;
+$border-color: rgba(241, 240, 240, 1);
+$hover-bg-color: rgba(211, 211, 211, 0.6);
+$like-bg-color: #f14e3a;
+$favorite-bg-mobile: white;
+$brand-orange: #ffb962;
+$brand-orange-dark: #c88119;
+
+// 移除舊的變數，只保留需要的狀態變數
+$status-default-bg: rgba(255, 185, 98, 0.8);
+$status-preorder-bg: rgba(241, 78, 58, 0.7); // 預購標籤（紅色系）
+$status-instock-bg: rgba(255, 185, 98, 0.8);  // 現貨標籤（黃色系）
+$status-restock-bg: rgba(87, 86, 86, 0.6);  //rgba(147, 144, 143, 0.7);  // 補貨中標籤（灰色系）
+
+$text-color: #000;
+$light-gray: #adaaaa;
+$black: #000000;
+$white: #ffffff;
+$accordion-active-bg: #FFDDB9; // 保留但不使用
+
+//============= 產品列表相關樣式 =============//
+// 產品卡片基本樣式
+.productList-card {
+  border: none;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.15s ease;
+  background-color: $nature-99;
+
+  &.hovered {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  }
+
+  .card-body {
+    height: 80px;
+    padding: 12px;
+  }
+
+  .card-title,
+  .card-text h5 {
+    font-weight: 400;
+    color: black;
+  }
+}
+
+// 圖片容器樣式
+.img-wrapper {
+  width: 100%;
+  height: 320px; // 固定高度
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &.mask img {
+    opacity: 0.4;
+    transition: opacity 0.3s;
+  }
+}
+
+// 產品標籤樣式 - 調整為適應所有狀態文字
+.productList-category-tag {
+  font-weight: 500;
+  border-radius: 4px;
+  width: auto; // 更改為自動寬度以適應文字
+  min-width: 48px; // 設置最小寬度
+  max-width: 64px; // 設置最大寬度限制
+  white-space: nowrap; // 防止文字換行
+  display: flex; // 使用 flex 布局讓文字居中
+  justify-content: center; // 水平居中
+  align-items: center; // 垂直居中
+  // padding: 2px 6px; // 在水平方向提供足夠的內邊距
+}
+
+// 狀態標籤樣式 
+.status {
+  &-default {
+    background-color: $status-default-bg;
+  }
+  
+  &-preorder {
+    background-color: $status-preorder-bg;
+  }
+  
+  &-instock {
+    background-color: $status-instock-bg;
+  }
+  
+  &-restock {
+    background-color: $status-restock-bg;
+  }
+}
+
+@media (max-width: 576px) {
+  .card-body {
+    height: 80px;
+    padding: 4px;
+  }
+  .img-wrapper {
+    height: 168px;
+  }
+  // 在小螢幕上保持一致的標籤尺寸
+  .productList-category-tag {
+    width: 36px;
+    // height: 29px;
+    font-size: 0.65rem; // 在小螢幕上略微縮小字體
+  }
+}
+
+// 卡片疊加層樣式
+.card-img-overlay {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 75%;
+  width: 100%;
+}
+
+// 價格樣式
+.listPrice {
+  color: #adaaaa;
+  text-decoration: line-through;
+}
+
+.discountPrice {
+  color: red;
+}
+
+//============= 收藏按鈕樣式 =============//
+// Common styles for both favorite buttons
+.favorite, .favorite-button {
+  width: $favorite-size;
+  height: $favorite-size;
+  position: relative;
+  padding: 0;
+  border: 1px solid $border-color;
+  transition: border-color 0.3s, background-color 0.3s;
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 50%; // Make both buttons circular
+
+  &:hover {
+    background-color: $hover-bg-color;
+    border-color: $hover-bg-color;
+    color: #93908f;
+  }
+
+  &.isLike {
+    background-color: $like-bg-color;
+    border-color: $like-bg-color;
+  }
+}
+
+// Container for positioning the mobile favorite button
+.img-wrapper-container {
+  position: relative;
+  width: 100%;
+}
+
+// Mobile-specific styles
+.mobile-favorite-container {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  z-index: 30;
+  display: none;
+}
+
+@media (max-width: 576px) {
+  .favorite {
+    display: none;
+  }
+  
+  .mobile-favorite-container {
+    display: block;
+  }
+
+  .favorite-button {
+    width: $favorite-size-mobile;
+    height: $favorite-size-mobile;
+    background-color: $favorite-bg-mobile;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .favorite-button:hover {
+    background-color: $hover-bg-color;
+  }
+
+  .favorite-button.isLike {
+    background-color: $like-bg-color;
+  }
+}
+
+// Heart icon styles
+.favorite.isLike .heartIcon,
+.favorite-button.isLike .heartIcon-button {
+  fill: white;
+}
+
+//============= 篩選選單相關樣式 =============//
+/* 篩選選單容器樣式 */
+.filterMenu-wrap {
+  background-color: white;
+  padding: 0.5rem 0;
+}
+
+/* 排序選單樣式 */
+.sortList {
+  button {
+    width: 148px;
+    background-color: white;
+    color: $text-color;
+  }
+
+  .dropdown-menu {
+    border-radius: 0;
+    min-width: 148px;
+  }
+
+  .dropdown-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &::after {
+      margin-left: auto;
+    }
+
+    &:hover {
+      background-color: white;
+      color: $text-color;
+    }
+
+    &:focus,
+    &:active {
+      background-color: white;
+      color: $text-color;
+    }
+  }
+
+  .dropdown-menu-product {
+    .dropdown-item {
+      &:hover,
+      &:focus {
+        background-color: #f1f0f0;
+        color: $text-color;
+      }
+    }
+  }
+
+  // 按鈕狀態樣式
+  .btn-check:checked + .btn,
+  :not(.btn-check) + .btn:active,
+  .btn:first-child:active,
+  .btn.active,
+  .btn.show {
+    color: $text-color;
+    background-color: #fff;
+    border-color: $text-color;
+  }
+}
+
+/* 篩選按鈕樣式 */
+.selectButton {
+  width: 139px;
+  height: 56px;
+  color: $text-color;
+  background-color: $brand-orange;
+  border: none;
+  display: flex;
+  align-items: center;
+
+  h6 {
+    text-align: left;
+    margin-bottom: 0;
+    font-weight: 500;
+    padding-left: 1rem;
+  }
+
+  &:hover {
+    color: $text-color;
+    background-color: $brand-orange-dark;
+  }
+}
+
+/* 按鈕樣式修改 */
+.btn-outline-primary {
+  --bs-btn-color: #000;
+  --bs-btn-border-color: #000;
+  --bs-btn-hover-color: $white;
+  --bs-btn-hover-bg: $black;
+  --bs-btn-hover-border-color: $black;
+  --bs-btn-active-color: $white;
+  --bs-btn-active-bg: $black;
+  --bs-btn-active-border-color: $black;
+  
+  &.selected {
+    background-color: $black;
+    color: $white;
+    border-color: $black;
+    font-weight: 500;
+    
+    &:hover, &:focus, &:active {
+      background-color: $black;
+      color: $white;
+      border-color: $black;
+    }
+  }
+}
+
+/* 類別選單樣式 */
+.category {
+  &-button {
+    font-weight: 600;
+    border: none;
+    background-color: transparent;
+    padding: 0.75rem 0;
+    font-size: 20px; // 類別標題文字大小
+    border-bottom: 1px solid #e0e0e0; // 使用淺灰色底線
+    transition: border-color 0.3s;
+    margin-bottom: 0; // 確保按鈕下方沒有額外間距
+
+    &:focus {
+      box-shadow: none;
+    }
+    
+    // 展開時添加頂端線，但移除背景色
+    &:not(.collapsed) {
+      border-top: 1px solid #e0e0e0; // 展開時顯示淺灰色頂端線
+      padding-top: 0.75rem; // 確保間距一致
+      margin-top: 0.75rem; // 添加一些頂部間距
+      background-color: transparent; // 移除背景色
+    }
+  }
+
+  &-subItem {
+    padding: 0.5rem 0 0 0; // 移除底部內邊距
+    background-color: white;
+    
+    .btn-outline-primary {
+      font-size: 16px; // 手風琴選單選項文字大小
+      margin-bottom: 0.5rem; // 為按鈕添加底部間距
+    }
+  }
+}
+
+/* 無資料類別的樣式 */
+.category-unavailable {
+  opacity: 0.7;
+  
+  .category-button {
+    color: #6c757d;
+  }
+  
+  .badge {
+    font-size: 0.7em;
+    padding: 0.25em 0.5em;
+  }
+}
+
+/* 篩選數量徽章樣式 */
+.filter-badge {
+  display: inline-flex;
+  align-items: center;
+  
+  .badge {
+    font-size: 0.75rem;
+    padding: 0.35em 0.65em;
+  }
+}
+
+/* 確認按鈕樣式 */
+.checkItem {
+  width: 100%;
+  height: 56px;
+  background-color: $brand-orange;
+  border: none;
+  border-radius: 4px;
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &:hover {
+    background-color: $brand-orange-dark;
+  }
+
+  h6 {
+    margin-bottom: 0;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Offcanvas樣式 */
+.offcanvas-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1050;
+  display: none;
+  background-color: white;
+  
+  &.show {
+    display: block;
+  }
+}
+
+.offcanvas {
+  &-fullscreen {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1060;
+    background-color: white;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    
+    &.show {
+      transform: translateX(0);
+    }
+  }
+  
+  &-header {
+    border-bottom: 1px solid $border-color;
+    padding-left: 16px;
+    padding-right: 16px;
+    min-height: 60px;
+    
+    .offcanvas-title {
+      display: flex;
+      align-items: center;
+      margin-top: 1rem;
+      
+      .badge {
+        margin-left: 0.5rem;
+      }
+    }
+  }
+  
+  &-body {
+    padding-top: 1rem;
+    padding-bottom: 0; /* 減少內容底部的內邊距 */
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  &Close {
+    border: none;
+    color: $text-color;
+    
+    &:hover {
+      background-color: #f1f0f0;
+    }
+  }
+  
+  &-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1055;
+    opacity: 0;
+    display: block;
+    pointer-events: none;
+    transition: opacity 0.15s linear;
+    
+    &.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+  
+  &-cancel-btn {
+    width: 65px;
+    height: 40px;
+    color: #000;
+    font-weight: normal;
+    font-size: 14px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background-color: #fff;
+    
+    &:hover {
+      background-color: #f8f8f8;
+    }
+  }
+}
+
+/* Navbar類別樣式 */
+.navCategory {
+  background-color: white;
+  
+  .navbar-brand {
+    h6 {
+      font-weight: 500;
+      font-size: 20px; // 類別標題文字大小
+    }
+  }
+
+  .accordion-item {
+    border: none;
+    background-color: white;
+    margin-bottom: 0; // 移除底部間距
+    
+    // 第一個項目不需要頂部邊距和頂端線
+    &:first-of-type .category-button:not(.collapsed) {
+      margin-top: 0;
+      border-top: none;
+    }
+  }
+
+  // 為 accordion-button 移除選取時的背景色
+  .accordion-button {
+    font-size: 16px; // 手風琴按鈕文字大小
+    background-color: white;
+
+    &:not(.collapsed) {
+      background-color: transparent; // 移除選取時背景色
+    }
+  }
+  
+  // 移除展開內容的底部間距
+  .accordion-collapse {
+    background-color: white;
+    
+    &.show {
+      margin-bottom: 0; // 移除原有的底部間距
+    }
+  }
+  
+  .accordion-body {
+    background-color: white;
+  }
+}
+
+/* 額外添加的樣式，使手風琴更緊湊 */
+.accordion {
+  background-color: white;
+}
+
+.accordion-body {
+  padding: 0.5rem 0 0 0; /* 減少內邊距 */
+}
+
+/* 使 accordion 子組件靠得更緊 */
+.accordion-collapse {
+  transition: none !important; /* 移除轉換動畫，讓展開/折疊更迅速 */
+}
+
+/* 調整垂直間距 */
+.accordion .accordion-item + .accordion-item .accordion-header {
+  margin-top: 0; /* 移除連續項目之間的間距 */
+}
+
+/* 全局移除Bootstrap的默認間距 */
+.accordion .accordion-item .accordion-header .accordion-button {
+  padding-bottom: 0.5rem; /* 減少底部內邊距 */
+}
+
+/* 確保展開的內容與下一個頭部之間沒有間距 */
+.accordion-item .accordion-collapse.show + .accordion-item {
+  margin-top: 0;
+}
+
+/* 移除 accordion-button 選取時的背景色 */
+.accordion-button:not(.collapsed) {
+  background-color: transparent !important; // 使用 !important 強制覆蓋
+  color: $text-color; // 保持文字顏色
+  box-shadow: none; // 移除 Bootstrap 的默認陰影
+}
+
+/* 全域覆蓋所有 accordion 背景色 */
+.accordion-button:not(.collapsed),
+.accordion-item .accordion-button:not(.collapsed),
+.accordion-collapse,
+.accordion-body,
+.category-button:not(.collapsed),
+.offcanvas .accordion-button:not(.collapsed),
+.filterMenu-wrap .accordion-button:not(.collapsed) {
+  background-color: transparent !important; // 使用 !important 強制覆蓋
+}
+
+/* 移除 accordion-button focus 狀態的樣式 */
+.accordion-button:focus {
+  box-shadow: none;
+  border-color: rgba(0, 0, 0, 0.125);
+}
+
+/* 確保 offcanvas 中的 accordion 也不受影響 */
+.offcanvas-body .filterMenu-wrap .accordion-button:not(.collapsed),
+.offcanvas-body .category-button:not(.collapsed) {
+  background-color: transparent !important;
+}
+
+/* 清除篩選按鈕 */
+.btn-link {
+  text-decoration: none;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* 工具類 */
+.d-none {
+  display: none;
+}
+
+.btn-outline-danger {
+  --bs-btn-color: #93908f;
+  --bs-btn-bg: white;
+  --bs-btn-border-color: #93908f;
+}
+
+
+
+
+
+
+
+
+
+// // 變數定義
+// $nature-99: rgba(255, 251, 255, 1);
+// $favorite-size: 32px;
+// $favorite-size-mobile: 40px;
+// $border-color: rgba(241, 240, 240, 1);
+// $hover-bg-color: rgba(211, 211, 211, 0.6);
+// $like-bg-color: #f14e3a;
+// $favorite-bg-mobile: white;
+// $brand-orange: #ffb962;
+// $brand-orange-dark: #c88119;
+
+// // 移除舊的變數，只保留需要的狀態變數
+// $status-default-bg: rgba(255, 185, 98, 0.8);
+// $status-preorder-bg: rgba(65, 105, 225, 0.8); // 預購標籤（藍色系）
+// $status-instock-bg: rgba(46, 139, 87, 0.8);   // 現貨標籤（綠色系）
+// $status-restock-bg: rgba(255, 165, 0, 0.8);   // 補貨中標籤（橙色系）
+
+// $text-color: #000;
+// $light-gray: #adaaaa;
+// $black: #000000;
+// $white: #ffffff;
+// $accordion-active-bg: #FFDDB9; // 定義手風琴選取時的背景色
+
+// //============= 產品列表相關樣式 =============//
+// // 產品卡片基本樣式
+// .productList-card {
+//   border: none;
+//   overflow: hidden;
+//   transition: transform 0.3s ease, box-shadow 0.15s ease;
+//   background-color: $nature-99;
+
+//   &.hovered {
+//     transform: translateY(-5px);
+//     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+//   }
+
+//   .card-body {
+//     height: 80px;
+//     padding: 12px;
+//   }
+
+//   .card-title,
+//   .card-text h5 {
+//     font-weight: 400;
+//     color: black;
+//   }
+// }
+
+// // 圖片容器樣式
+// .img-wrapper {
+//   width: 100%;
+//   height: 320px; // 固定高度
+//   overflow: hidden;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+
+//   img {
+//     width: 100%;
+//     height: 100%;
+//     object-fit: cover;
+//   }
+
+//   &.mask img {
+//     opacity: 0.5;
+//     transition: opacity 0.3s;
+//   }
+// }
+
+// // 產品標籤樣式 - 調整為固定大小
+// // 產品標籤樣式 - 調整為適應所有狀態文字
+// .productList-category-tag {
+//   font-weight: 500;
+//   border-radius: 4px;
+//   width: auto; // 更改為自動寬度以適應文字
+//   min-width: 48px; // 設置最小寬度
+//   max-width: 64px; // 設置最大寬度限制
+//   white-space: nowrap; // 防止文字換行
+//   display: flex; // 使用 flex 布局讓文字居中
+//   justify-content: center; // 水平居中
+//   align-items: center; // 垂直居中
+//   padding: 2px 6px; // 在水平方向提供足夠的內邊距
+// }
+
+// // 狀態標籤樣式 
+// .status {
+//   &-default {
+//     background-color: $status-default-bg;
+//   }
+  
+//   &-preorder {
+//     background-color: $status-preorder-bg;
+//   }
+  
+//   &-instock {
+//     background-color: $status-instock-bg;
+//   }
+  
+//   &-restock {
+//     background-color: $status-restock-bg;
+//   }
+// }
+
+// @media (max-width: 576px) {
+//   .card-body {
+//     height: 80px;
+//     padding: 4px;
+//   }
+//   .img-wrapper {
+//     height: 168px;
+//   }
+//   // 在小螢幕上保持一致的標籤尺寸
+//   .productList-category-tag {
+//     width: 36px;
+//     // height: 29px;
+//     font-size: 0.65rem; // 在小螢幕上略微縮小字體
+//   }
+// }
+
+// // 卡片疊加層樣式
+// .card-img-overlay {
+//   display: flex;
+//   flex-direction: column;
+//   justify-content: center;
+//   align-items: center;
+//   height: 75%;
+//   width: 100%;
+// }
+
+// // 價格樣式
+// .listPrice {
+//   color: #adaaaa;
+//   text-decoration: line-through;
+// }
+
+// .discountPrice {
+//   color: red;
+// }
+
+// //============= 收藏按鈕樣式 =============//
+// // Common styles for both favorite buttons
+// .favorite, .favorite-button {
+//   width: $favorite-size;
+//   height: $favorite-size;
+//   position: relative;
+//   padding: 0;
+//   border: 1px solid $border-color;
+//   transition: border-color 0.3s, background-color 0.3s;
+//   background-color: transparent;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   cursor: pointer;
+//   border-radius: 50%; // Make both buttons circular
+
+//   &:hover {
+//     background-color: $hover-bg-color;
+//     border-color: $hover-bg-color;
+//     color: #93908f;
+//   }
+
+//   &.isLike {
+//     background-color: $like-bg-color;
+//     border-color: $like-bg-color;
+//   }
+// }
+
+// // Container for positioning the mobile favorite button
+// .img-wrapper-container {
+//   position: relative;
+//   width: 100%;
+// }
+
+// // Mobile-specific styles
+// .mobile-favorite-container {
+//   position: absolute;
+//   bottom: 8px;
+//   right: 8px;
+//   z-index: 30;
+//   display: none;
+// }
+
+// @media (max-width: 576px) {
+//   .favorite {
+//     display: none;
+//   }
+  
+//   .mobile-favorite-container {
+//     display: block;
+//   }
+
+//   .favorite-button {
+//     width: $favorite-size-mobile;
+//     height: $favorite-size-mobile;
+//     background-color: $favorite-bg-mobile;
+//     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+//   }
+
+//   .favorite-button:hover {
+//     background-color: $hover-bg-color;
+//   }
+
+//   .favorite-button.isLike {
+//     background-color: $like-bg-color;
+//   }
+// }
+
+// // Heart icon styles
+// .favorite.isLike .heartIcon,
+// .favorite-button.isLike .heartIcon-button {
+//   fill: white;
+// }
+
+// //============= 篩選選單相關樣式 =============//
+// /* 篩選選單容器樣式 */
+// .filterMenu-wrap {
+//   background-color: white;
+//   padding: 0.5rem 0;
+// }
+
+// /* 排序選單樣式 */
+// .sortList {
+//   button {
+//     width: 148px;
+//     background-color: white;
+//     color: $text-color;
+//   }
+
+//   .dropdown-menu {
+//     border-radius: 0;
+//     min-width: 148px;
+//   }
+
+//   .dropdown-toggle {
+//     display: flex;
+//     justify-content: space-between;
+//     align-items: center;
+
+//     &::after {
+//       margin-left: auto;
+//     }
+
+//     &:hover {
+//       background-color: white;
+//       color: $text-color;
+//     }
+
+//     &:focus,
+//     &:active {
+//       background-color: white;
+//       color: $text-color;
+//     }
+//   }
+
+//   .dropdown-menu-product {
+//     .dropdown-item {
+//       &:hover,
+//       &:focus {
+//         background-color: #f1f0f0;
+//         color: $text-color;
+//       }
+//     }
+//   }
+
+//   // 按鈕狀態樣式
+//   .btn-check:checked + .btn,
+//   :not(.btn-check) + .btn:active,
+//   .btn:first-child:active,
+//   .btn.active,
+//   .btn.show {
+//     color: $text-color;
+//     background-color: #fff;
+//     border-color: $text-color;
+//   }
+// }
+
+// /* 篩選按鈕樣式 */
+// .selectButton {
+//   width: 139px;
+//   height: 56px;
+//   color: $text-color;
+//   background-color: $brand-orange;
+//   border: none;
+//   display: flex;
+//   align-items: center;
+
+//   h6 {
+//     text-align: left;
+//     margin-bottom: 0;
+//     font-weight: 500;
+//     padding-left: 1rem;
+//   }
+
+//   &:hover {
+//     color: $text-color;
+//     background-color: $brand-orange-dark;
+//   }
+// }
+
+// /* 按鈕樣式修改 */
+// .btn-outline-primary {
+//   --bs-btn-color: #000;
+//   --bs-btn-border-color: #000;
+//   --bs-btn-hover-color: $white;
+//   --bs-btn-hover-bg: $black;
+//   --bs-btn-hover-border-color: $black;
+//   --bs-btn-active-color: $white;
+//   --bs-btn-active-bg: $black;
+//   --bs-btn-active-border-color: $black;
+  
+//   &.selected {
+//     background-color: $black;
+//     color: $white;
+//     border-color: $black;
+//     font-weight: 500;
+    
+//     &:hover, &:focus, &:active {
+//       background-color: $black;
+//       color: $white;
+//       border-color: $black;
+//     }
+//   }
+// }
+
+// /* 類別選單樣式 */
+// .category {
+//   &-button {
+//     font-weight: 600;
+//     border: none;
+//     background-color: transparent;
+//     padding: 0.75rem 0;
+//     font-size: 20px; // 類別標題文字大小
+//     border-bottom: 1px solid #e0e0e0; // 使用淺灰色底線
+//     transition: background-color 0.3s, border-color 0.3s;
+//     margin-bottom: 0; // 確保按鈕下方沒有額外間距
+
+//     &:focus {
+//       box-shadow: none;
+//     }
+    
+//     // 展開時添加頂端線和背景色
+//     &:not(.collapsed) {
+//       border-top: 1px solid #e0e0e0; // 展開時顯示淺灰色頂端線
+//       padding-top: 0.75rem; // 確保間距一致
+//       margin-top: 0.75rem; // 添加一些頂部間距
+//       background-color: $accordion-active-bg; // accordion-header 選取時的背景色
+//     }
+//   }
+
+//   &-subItem {
+//     padding: 0.5rem 0 0 0; // 移除底部內邊距
+//     background-color: white;
+    
+//     .btn-outline-primary {
+//       font-size: 16px; // 手風琴選單選項文字大小
+//       margin-bottom: 0.5rem; // 為按鈕添加底部間距
+//     }
+//   }
+// }
+
+// /* 無資料類別的樣式 */
+// .category-unavailable {
+//   opacity: 0.7;
+  
+//   .category-button {
+//     color: #6c757d;
+//   }
+  
+//   .badge {
+//     font-size: 0.7em;
+//     padding: 0.25em 0.5em;
+//   }
+// }
+
+// /* 篩選數量徽章樣式 */
+// .filter-badge {
+//   display: inline-flex;
+//   align-items: center;
+  
+//   .badge {
+//     font-size: 0.75rem;
+//     padding: 0.35em 0.65em;
+//   }
+// }
+
+// /* 確認按鈕樣式 */
+// .checkItem {
+//   width: 100%;
+//   height: 56px;
+//   background-color: $brand-orange;
+//   border: none;
+//   border-radius: 4px;
+//   margin-top: 20px;
+//   display: flex;
+//   justify-content: center;
+//   align-items: center;
+
+//   &:hover {
+//     background-color: $brand-orange-dark;
+//   }
+
+//   h6 {
+//     margin-bottom: 0;
+//     font-weight: 500;
+//     display: flex;
+//     align-items: center;
+//     justify-content: center;
+//   }
+// }
+
+// /* Offcanvas樣式 */
+// .offcanvas-wrapper {
+//   position: fixed;
+//   top: 0;
+//   left: 0;
+//   width: 100%;
+//   height: 100%;
+//   z-index: 1050;
+//   display: none;
+//   background-color: white;
+  
+//   &.show {
+//     display: block;
+//   }
+// }
+
+// .offcanvas {
+//   &-fullscreen {
+//     width: 100%;
+//     height: 100%;
+//     position: absolute;
+//     top: 0;
+//     left: 0;
+//     z-index: 1060;
+//     background-color: white;
+//     transform: translateX(100%);
+//     transition: transform 0.3s ease-in-out;
+    
+//     &.show {
+//       transform: translateX(0);
+//     }
+//   }
+  
+//   &-header {
+//     border-bottom: 1px solid $border-color;
+//     padding-left: 16px;
+//     padding-right: 16px;
+//     min-height: 60px;
+    
+//     .offcanvas-title {
+//       display: flex;
+//       align-items: center;
+//       margin-top: 1rem;
+      
+//       .badge {
+//         margin-left: 0.5rem;
+//       }
+//     }
+//   }
+  
+//   &-body {
+//     padding-top: 1rem;
+//     padding-bottom: 0; /* 減少內容底部的內邊距 */
+//     padding-left: 16px;
+//     padding-right: 16px;
+//   }
+  
+//   &Close {
+//     border: none;
+//     color: $text-color;
+    
+//     &:hover {
+//       background-color: #f1f0f0;
+//     }
+//   }
+  
+//   &-backdrop {
+//     position: absolute;
+//     top: 0;
+//     left: 0;
+//     width: 100%;
+//     height: 100%;
+//     background-color: rgba(0, 0, 0, 0.5);
+//     z-index: 1055;
+//     opacity: 0;
+//     display: block;
+//     pointer-events: none;
+//     transition: opacity 0.15s linear;
+    
+//     &.show {
+//       opacity: 1;
+//       pointer-events: auto;
+//     }
+//   }
+  
+//   &-cancel-btn {
+//     width: 65px;
+//     height: 40px;
+//     color: #000;
+//     font-weight: normal;
+//     font-size: 14px;
+//     border: 1px solid #e0e0e0;
+//     border-radius: 4px;
+//     background-color: #fff;
+    
+//     &:hover {
+//       background-color: #f8f8f8;
+//     }
+//   }
+// }
+
+// /* Navbar類別樣式 */
+// .navCategory {
+//   background-color: white;
+  
+//   .navbar-brand {
+//     h6 {
+//       font-weight: 500;
+//       font-size: 20px; // 類別標題文字大小
+//     }
+//   }
+
+//   .accordion-item {
+//     border: none;
+//     background-color: white;
+//     margin-bottom: 0; // 移除底部間距
+    
+//     // 第一個項目不需要頂部邊距和頂端線
+//     &:first-of-type .category-button:not(.collapsed) {
+//       margin-top: 0;
+//       border-top: none;
+//     }
+//   }
+
+//   // 為 accordion-button 添加選取時的背景色
+//   .accordion-button {
+//     font-size: 16px; // 手風琴按鈕文字大小
+//     background-color: white;
+
+//     &:not(.collapsed) {
+//       background-color: $accordion-active-bg; // 選取時背景色
+//     }
+//   }
+  
+//   // 移除展開內容的底部間距
+//   .accordion-collapse {
+//     background-color: white;
+    
+//     &.show {
+//       margin-bottom: 0; // 移除原有的底部間距
+//     }
+//   }
+  
+//   .accordion-body {
+//     background-color: white;
+//   }
+// }
+
+// /* 額外添加的樣式，使手風琴更緊湊 */
+// .accordion {
+//   background-color: white;
+// }
+
+// .accordion-body {
+//   padding: 0.5rem 0 0 0; /* 減少內邊距 */
+// }
+
+// /* 使 accordion 子組件靠得更緊 */
+// .accordion-collapse {
+//   transition: none !important; /* 移除轉換動畫，讓展開/折疊更迅速 */
+// }
+
+// /* 調整垂直間距 */
+// .accordion .accordion-item + .accordion-item .accordion-header {
+//   margin-top: 0; /* 移除連續項目之間的間距 */
+// }
+
+// /* 全局移除Bootstrap的默認間距 */
+// .accordion .accordion-item .accordion-header .accordion-button {
+//   padding-bottom: 0.5rem; /* 減少底部內邊距 */
+// }
+
+// /* 確保展開的內容與下一個頭部之間沒有間距 */
+// .accordion-item .accordion-collapse.show + .accordion-item {
+//   margin-top: 0;
+// }
+
+// /* 額外添加針對 Bootstrap 的 accordion-button 選取時的樣式 */
+// .accordion-button:not(.collapsed) {
+//   background-color: $accordion-active-bg; // 使用淺橙色背景
+//   color: $text-color; // 保持文字顏色
+//   box-shadow: none; // 移除 Bootstrap 的默認陰影
+// }
+
+// /* 清除篩選按鈕 */
+// .btn-link {
+//   text-decoration: none;
+  
+//   &:hover {
+//     text-decoration: underline;
+//   }
+// }
+
+// /* 工具類 */
+// .d-none {
+//   display: none;
+// }
+
+// .btn-outline-danger {
+//   --bs-btn-color: #93908f;
+//   --bs-btn-bg: white;
+//   --bs-btn-border-color: #93908f;
+// }

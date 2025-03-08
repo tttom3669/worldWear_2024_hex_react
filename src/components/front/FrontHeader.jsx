@@ -256,7 +256,7 @@ function FrontHeader({ defaultType }) {
                   <li>
                     <Link
                       className="l-menu__dropdown-link"
-                      to={`products/${gender.slug}`}
+                      to={`/products/${gender.slug}`}
                     >
                       所有商品
                     </Link>
@@ -265,7 +265,7 @@ function FrontHeader({ defaultType }) {
                     <li key={category.slug}>
                       <Link
                         className="l-menu__dropdown-link"
-                        to={`products/${category.slug}`}
+                        to={`/products/${gender.slug}/${category.slug}`}
                       >
                         {category.title}
                       </Link>
