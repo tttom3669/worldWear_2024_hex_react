@@ -3,16 +3,37 @@ import FrontHeader from '../../components/front/FrontHeader';
 import CartFlow from '../../components/front/CartFlow';
 import useImgUrl from '../../hooks/useImgUrl';
 import { useEffect, useState } from 'react';
+import useSwal from '../../hooks/useSwal';
 
 const { VITE_API_PATH: API_PATH } = import.meta.env;
 
 export default function Cart() {
   const getImgUrl = useImgUrl();
   const [cartsData, setCartsData] = useState([]);
+  const [cartsTotal, setCartsTotal] = useState(0);
+  const [tempCouponData, setTempCouponData] = useState('');
+  const [couponData, setCouponData] = useState({});
+  const { toastAlert } = useSwal();
 
-  useEffect(() => {
-    getCarts();
-  }, []);
+  const couponHandler = async () => {
+    try {
+      const res = await axios.get(`${API_PATH}/coupons?code=${tempCouponData}`);
+      toastAlert({ icon: 'success', title: '已套用優惠券代碼' });
+      console.log(res);
+      if (res.data.length <= 0) {
+        throw new Error('No coupon data found');
+      }
+      setCouponData(res.data[0]);
+    } catch (error) {
+      setCouponData({});
+      toastAlert({ icon: 'error', title: '輸入錯誤優惠券代碼' });
+      console.log(error);
+    }
+  };
+
+  const calDiscount = (total, percent) => {
+    return percent ? (total * percent) / 100 : 0;
+  };
   const getCarts = async () => {
     // const token = document.cookie.replace(
     //   /(?:(?:^|.*;\s*)worldWearToken\s*\=\s*([^;]*).*$)|^.*$/,
@@ -26,7 +47,38 @@ export default function Cart() {
       `${API_PATH}/carts/?userId=${userId}&_expand=user&_expand=product`
     );
     console.log(res);
+
+    setCartsData(res.data);
   };
+  const updateCarts = async (cartId, qty) => {
+    const method = qty <= 0 ? 'DELETE' : 'PATCH';
+    const alertTitle = qty <= 0 ? '已從購物車中刪除' : '已更新購物車';
+    const apiData = qty <= 0 ? {} : { qty };
+
+    const res = await axios({
+      method,
+      url: `${API_PATH}/carts/${cartId}`,
+      data: apiData,
+    });
+    console.log(res);
+
+    toastAlert({ icon: 'success', title: alertTitle });
+
+    getCarts();
+  };
+
+  useEffect(() => {
+    getCarts();
+  }, []);
+
+  useEffect(() => {
+    setCartsTotal(
+      cartsData
+        .map((cart) => cart.product.price * cart.qty)
+        .reduce((accVal, curVal) => accVal + curVal, 0)
+    );
+  }, [cartsData]);
+
   return (
     <>
       <FrontHeader defaultType={'light'} />
@@ -47,78 +99,80 @@ export default function Cart() {
                       <div>小計</div>
                     </div>
                     <div className="cart__tbody">
-                      <div className="pt-3 pb-5 px-lg-3 py-lg-4">
-                        <img
-                          className="cart__product-img mb-3 md-lg-0"
-                          src={getImgUrl('/images/home/category-skirt.png')}
-                          alt="韓國連線 七月新品 EU27 帆布皮帶側開岔牛仔長裙"
-                        />
-                        <div className="cart__product-content mb-3 px-lg-3 py-lg-4.5 mb-lg-0">
-                          <p className="mb-lg-4">
-                            韓國連線 七月新品 EU27 帆布皮帶側開岔牛仔長裙
-                          </p>
-                          <p>規格：白/L</p>
-                        </div>
-
-                        <div className="cart__product-price mb-3 md-lg-0">
-                          <span className="mb-1">$2,090</span>
-                          <span className="text-decoration-line-through text-nature-70">
-                            $2,290
-                          </span>
-                        </div>
-                        <div className="cart__product-num py-1.5 py-lg-0">
-                          <div className="c-product-num">
-                            <button
-                              className="btn c-product-num__minus"
-                              type="button"
-                            >
-                              <svg className="pe-none" width="24" height="24">
-                                <use
-                                  href={getImgUrl('/icons/minus.svg#minus')}
-                                />
-                              </svg>
-                            </button>
-                            <input
-                              type="text"
-                              className="form-control c-product-num__val"
-                              defaultValue="1"
-                              readOnly
-                            />
-                            <button
-                              className="btn c-product-num__plus"
-                              type="button"
-                            >
-                              <svg className="pe-none" width="24" height="24">
-                                <use href={getImgUrl('/icons/plus.svg#plus')} />
-                              </svg>
-                            </button>
+                      {cartsData.map((cart) => (
+                        <div
+                          className="pt-3 pb-5 px-lg-3 py-lg-4"
+                          key={cart.id}
+                        >
+                          <img
+                            className="cart__product-img mb-3 mb-lg-0"
+                            src={cart.product.imageUrl}
+                            alt={cart.product.title}
+                          />
+                          <div className="cart__product-content mb-3 px-lg-3 py-lg-4.5 mb-lg-0">
+                            <p className="mb-lg-4">{cart.product.title}</p>
+                            <p>
+                              規格：{cart.color}/{cart.size}
+                            </p>
                           </div>
-                          {/* <div className="d-flex  ">
+
+                          <div className="cart__product-price mb-3 md-lg-0">
+                            <span className="mb-1">
+                              ${cart.product.price.toLocaleString('zh-TW')}
+                            </span>
+                            <span className="text-decoration-line-through text-nature-70">
+                              $
+                              {cart.product.origin_price.toLocaleString(
+                                'zh-TW'
+                              )}
+                            </span>
+                          </div>
+                          <div className="cart__product-num py-1.5 py-lg-0">
+                            <div className="c-product-num">
                               <button
-                                id="btnReduce"
-                                className="btnNumber btn  rounded-end-0"
+                                className="btn c-product-num__minus"
                                 type="button"
+                                onClick={() =>
+                                  updateCarts(cart.id, cart.qty - 1)
+                                }
                               >
-                                <img src="../assets/images/reduce.png" alt="" />
+                                <svg className="pe-none" width="24" height="24">
+                                  <use
+                                    href={getImgUrl('/icons/minus.svg#minus')}
+                                  />
+                                </svg>
                               </button>
                               <input
-                                type="number"
-                                className="inputNum"
-                                value="1"
+                                type="text"
+                                className="form-control c-product-num__val"
+                                value={cart.qty}
+                                readOnly
                               />
                               <button
-                                id="btnReduce"
-                                className="btnNumber btn rounded-start-0"
+                                className="btn c-product-num__plus"
                                 type="button"
+                                onClick={() =>
+                                  updateCarts(cart.id, cart.qty + 1)
+                                }
                               >
-                                <img src="../assets/images/ADD.png" alt="" />
+                                <svg className="pe-none" width="24" height="24">
+                                  <use
+                                    href={getImgUrl('/icons/plus.svg#plus')}
+                                  />
+                                </svg>
                               </button>
-                            </div> */}
+                            </div>
+                          </div>
+                          <div className="cart__product-total">
+                            <p>
+                              $
+                              {(cart.product.price * cart.qty).toLocaleString(
+                                'zh-TW'
+                              )}
+                            </p>
+                          </div>
                         </div>
-                        <div className="cart__product-total">
-                          <p>$2,090</p>
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
                   <div className="border-bottom border-nature-90 pb-5 mb-5">
@@ -130,37 +184,56 @@ export default function Cart() {
                               type="text"
                               className="form-control cart__discount-input"
                               placeholder="請輸入折價券"
+                              value={tempCouponData}
+                              onChange={(e) =>
+                                setTempCouponData(e.target.value)
+                              }
                             />
                             <button
                               className="btn btn-outline-primary cart__discount-btn"
                               type="button"
+                              onClick={couponHandler}
+                              disabled={tempCouponData === ''}
                             >
                               使用
                             </button>
                           </div>
                         </div>
-                        <div className="d-flex justify-content-end justify-content-md-start">
-                          <p className="bg-secondary-80 border border-secondary-70 fs-sm rounded-1 px-2 py-1">
-                            商品適用優惠：新會員優惠 10% off
-                          </p>
-                        </div>
+                        {couponData?.title && (
+                          <div className="d-flex justify-content-end justify-content-md-start">
+                            <p className="bg-secondary-80 border border-secondary-70 fs-sm rounded-1 px-2 py-1">
+                              商品適用優惠：{couponData.title}
+                            </p>
+                          </div>
+                        )}
                       </div>
                       <div className="d-flex flex-column gap-2 gap-md-4">
                         <div className="d-flex justify-content-end gap-6">
                           <p>商品金額</p>
-                          <p>$4,070</p>
+                          <p>${cartsTotal.toLocaleString('zh-TW')}</p>
                         </div>
-                        <div className="d-flex justify-content-end gap-6">
-                          <p>折扣碼折抵</p>
-                          <p className="text-secondary-60">$417</p>
-                        </div>
+                        {couponData?.percent && (
+                          <div className="d-flex justify-content-end gap-6">
+                            <p>折扣碼折抵</p>
+                            <p className="text-secondary-60">
+                              ${calDiscount(cartsTotal, couponData?.percent)}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="d-flex align-items-center justify-content-end gap-6">
                       <p>
-                        <span className="fw-bold">3</span>項商品
+                        <span className="fw-bold">{cartsData.length}</span>
+                        項商品
                       </p>
-                      <p className="fw-bold fs-h4">$3,663</p>
+                      <p className="fw-bold fs-h4">
+                        $
+                        {(
+                          cartsTotal -
+                          calDiscount(cartsTotal, couponData?.percent)
+                        ).toLocaleString('zh-TW')}
+                      </p>
                     </div>
                   </div>
                 </div>
