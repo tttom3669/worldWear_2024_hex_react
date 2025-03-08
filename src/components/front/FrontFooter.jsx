@@ -17,7 +17,7 @@ export default function FrontFooter() {
     gsap.timeline({
       scrollTrigger: {
         trigger: main,
-        start: '80% 70%',
+        start: '100% 80%',
         // markers: true,
         onEnter: () => {
           // 向下滾動到達時移除 class
@@ -32,6 +32,7 @@ export default function FrontFooter() {
       },
     });
   });
+
   return (
     <footer className="bg-black py-6 py-md-3">
       <Link
