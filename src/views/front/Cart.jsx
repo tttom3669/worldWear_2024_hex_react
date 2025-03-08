@@ -4,22 +4,24 @@ import CartFlow from '../../components/front/CartFlow';
 import useImgUrl from '../../hooks/useImgUrl';
 import { useEffect, useState } from 'react';
 import useSwal from '../../hooks/useSwal';
+import { useDispatch } from 'react-redux';
+import { setCartsData } from '../../slice/cartsSlice';
 
 const { VITE_API_PATH: API_PATH } = import.meta.env;
 
 export default function Cart() {
   const getImgUrl = useImgUrl();
-  const [cartsData, setCartsData] = useState([]);
+  const [tempCartsData, setTempCartsData] = useState([]);
   const [cartsTotal, setCartsTotal] = useState(0);
   const [tempCouponData, setTempCouponData] = useState('');
   const [couponData, setCouponData] = useState({});
   const { toastAlert } = useSwal();
+  const dispatch = useDispatch();
 
   const couponHandler = async () => {
     try {
       const res = await axios.get(`${API_PATH}/coupons?code=${tempCouponData}`);
       toastAlert({ icon: 'success', title: '已套用優惠券代碼' });
-      console.log(res);
       if (res.data.length <= 0) {
         throw new Error('No coupon data found');
       }
@@ -46,21 +48,18 @@ export default function Cart() {
     const res = await axios.get(
       `${API_PATH}/carts/?userId=${userId}&_expand=user&_expand=product`
     );
-    console.log(res);
-
-    setCartsData(res.data);
+    setTempCartsData(res.data);
   };
   const updateCarts = async (cartId, qty) => {
     const method = qty <= 0 ? 'DELETE' : 'PATCH';
     const alertTitle = qty <= 0 ? '已從購物車中刪除' : '已更新購物車';
     const apiData = qty <= 0 ? {} : { qty };
 
-    const res = await axios({
+    await axios({
       method,
       url: `${API_PATH}/carts/${cartId}`,
       data: apiData,
     });
-    console.log(res);
 
     toastAlert({ icon: 'success', title: alertTitle });
 
@@ -72,12 +71,20 @@ export default function Cart() {
   }, []);
 
   useEffect(() => {
-    setCartsTotal(
-      cartsData
-        .map((cart) => cart.product.price * cart.qty)
-        .reduce((accVal, curVal) => accVal + curVal, 0)
+    const totalPrice = tempCartsData
+      .map((cart) => cart.product.price * cart.qty)
+      .reduce((accVal, curVal) => accVal + curVal, 0);
+
+    setCartsTotal(totalPrice);
+
+    dispatch(
+      setCartsData({
+        total: totalPrice,
+        final_total: totalPrice - calDiscount(totalPrice, couponData?.percent),
+        products: [...tempCartsData],
+      })
     );
-  }, [cartsData]);
+  }, [tempCartsData, couponData]);
 
   return (
     <>
@@ -99,7 +106,7 @@ export default function Cart() {
                       <div>小計</div>
                     </div>
                     <div className="cart__tbody">
-                      {cartsData.map((cart) => (
+                      {tempCartsData.map((cart) => (
                         <div
                           className="pt-3 pb-5 px-lg-3 py-lg-4"
                           key={cart.id}
@@ -224,7 +231,7 @@ export default function Cart() {
                     </div>
                     <div className="d-flex align-items-center justify-content-end gap-6">
                       <p>
-                        <span className="fw-bold">{cartsData.length}</span>
+                        <span className="fw-bold">{tempCartsData.length}</span>
                         項商品
                       </p>
                       <p className="fw-bold fs-h4">
