@@ -1,14 +1,58 @@
-const { VITE_BASE_URL: BASE_URL } = import.meta.env;
+import { useEffect, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
+import axios from 'axios';
+
+// Import Swiper React components
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Pagination } from 'swiper/modules';
+import { Tab } from 'bootstrap';
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+
+import useImgUrl from '../../hooks/useImgUrl';
+import FrontHeader from '../../components/front/FrontHeader';
+import { productCategories as productCategoriesData } from '../../slice/productsSlice';
+import { Link } from 'react-router-dom';
+const { VITE_API_PATH: API_PATH } = import.meta.env;
 
 export default function Home() {
+  const productCategories = useSelector(productCategoriesData);
+  const getImgUrl = useImgUrl();
+  const [popularProducts, setPopularProducts] = useState([]);
+  const tabRef = useRef(null);
+  const swiperRefs = useRef({});
+
+  useEffect(() => {
+    new Tab(tabRef.current);
+    getPopularProducts();
+  }, []);
+
+  const handleNextSlide = (swiperSlug) => {
+    swiperRefs.current[swiperSlug].slideNext();
+  };
+  const handlePrevSlide = (swiperSlug) => {
+    swiperRefs.current[swiperSlug].slidePrev();
+  };
+
+  const getPopularProducts = async () => {
+    const res = await axios.get(`${API_PATH}/products`);
+    const filterProducts = res.data.filter((product) => product.is_hot);
+    setPopularProducts(filterProducts);
+  };
+
   return (
     <>
+      <FrontHeader defaultType={'dark'} />
       <main className="site-index">
         <div className="site-index__banner">
           <div
             className="w-100 h-50 w-md-50 h-md-100 bg-center bg-no-repeat bg-cover text-white d-flex justify-content-center align-items-end pb-10 pb-lg-20"
             style={{
-              backgroundImage: `url('${BASE_URL}images/home/index-banner-l.png')`,
+              backgroundImage: `url(${getImgUrl(
+                '/images/home/index-banner-l.png'
+              )})`,
             }}
           >
             <div className="d-flex flex-column text-center position-relative z-1">
@@ -21,7 +65,9 @@ export default function Home() {
           <div
             className="w-100 h-50 w-md-50 h-md-100 bg-center bg-no-repeat bg-cover text-white d-flex justify-content-center align-items-end pb-10 pb-lg-20"
             style={{
-              backgroundImage: `url('/images/home/index-banner-r.png')`,
+              backgroundImage: `url(${getImgUrl(
+                '/images/home/index-banner-r.png'
+              )})`,
             }}
           >
             <div className="d-flex flex-column text-center position-relative z-1">
@@ -48,12 +94,12 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="section__slogan py-10 py-md-20" data-aos="fade-up">
+        <section
+          className="section__slogan py-10 overflow-hidden py-md-20"
+          data-aos="fade-up"
+        >
           <div className="container">
-            <div
-              className="d-flex justify-content-between align-items-xl-start
-           flex-column  flex-xl-row"
-            >
+            <div className="d-flex justify-content-between align-items-xl-start flex-column flex-xl-row">
               <div className="position-relative">
                 <div className="position-relative z-1">
                   <div className="bg-primary-50 mb-3 w-24px h-24px">&nbsp;</div>
@@ -71,12 +117,12 @@ export default function Home() {
               <div className="section__slogan-img">
                 <img
                   className="section__slogan-img--1"
-                  src="/assets/images/section-slogan-1.png"
+                  src={getImgUrl('/images/home/section-slogan-1.png')}
                   alt="Style&Confidante"
                 />
                 <img
                   className="section__slogan-img--2"
-                  src="/assets/images/section-slogan-2.png"
+                  src={getImgUrl('/images/home/section-slogan-2.png')}
                   alt="Style&Confidante"
                 />
               </div>
@@ -94,266 +140,119 @@ export default function Home() {
                 className="nav nav-tabs section__productCategories-nav"
                 id="nav-tab"
                 role="tablist"
+                ref={tabRef}
               >
-                <button
-                  className="nav-link active"
-                  id="nav-home-tab"
-                  data-bs-toggle="tab"
-                  data-bs-target="#nav-home"
-                  type="button"
-                  role="tab"
-                  aria-controls="nav-home"
-                  aria-selected="true"
-                >
-                  Women
-                </button>
-                <button
-                  className="nav-link"
-                  id="nav-profile-tab"
-                  data-bs-toggle="tab"
-                  data-bs-target="#nav-profile"
-                  type="button"
-                  role="tab"
-                  aria-controls="nav-profile"
-                  aria-selected="false"
-                >
-                  Men
-                </button>
+                {productCategories.map((gender) => (
+                  <button
+                    className={`nav-link ${
+                      gender.slug === 'women' ? 'active' : ''
+                    }`}
+                    id={`nav-${gender.slug}-tab`}
+                    data-bs-toggle="tab"
+                    data-bs-target={`#nav-${gender.slug}`}
+                    type="button"
+                    role="tab"
+                    aria-controls={`nav-${gender.slug}`}
+                    aria-selected="true"
+                    key={gender.slug}
+                  >
+                    {gender.title}
+                  </button>
+                ))}
               </div>
             </nav>
           </div>
           <div className="container-sm">
             <div className="tab-content" id="nav-tabContent">
-              <div
-                className="tab-pane fade show active"
-                id="nav-home"
-                role="tabpanel"
-                aria-labelledby="nav-home-tab"
-                tabIndex="0"
-              >
-                <div className="swiper-container swiper__productCategories-container">
-                  <div className="swiper swiper__productCategories text-white">
-                    <div className="swiper-wrapper">
-                      <div className="swiper-slide">
-                        <div
-                          className="swiper__productCategories-item swiper__productCategories-item--dark "
-                          style={{
-                            backgroundImage: `{url(
-                              '/assets/images/category-top.png'
-                            )}`,
-                          }}
-                        >
-                          <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                            <a href="#" className="text-reset stretched-link">
-                              <h2 className="fs-sm fs-md-h6 fw-bold">上衣</h2>
-                            </a>
-                            <h3 className="fs-dh2 fs-md-dh1 fst-italic fw-normal font-dm-serif">
-                              Top
-                            </h3>
+              {productCategories.map((gender) => (
+                <div
+                  className={`tab-pane fade show ${
+                    gender.slug === 'women' ? 'active' : ''
+                  }`}
+                  id={`nav-${gender.slug}`}
+                  role="tabpanel"
+                  aria-labelledby={`nav-${gender.slug}-tab`}
+                  tabIndex="0"
+                  key={gender.slug}
+                >
+                  <div className="swiper-container swiper__productCategories-container">
+                    <Swiper
+                      className="swiper__productCategories text-white"
+                      modules={[Pagination]}
+                      slidesPerView={1.375}
+                      spaceBetween={24}
+                      breakpoints={{
+                        576: {
+                          slidesPerGroup: 2,
+                          slidesPerView: 2,
+                        },
+                        768: {
+                          slidesPerGroup: 3,
+                          slidesPerView: 3,
+                        },
+                        992: {
+                          slidesPerGroup: 4,
+                          slidesPerView: 4,
+                        },
+                      }}
+                      pagination={{ clickable: true }}
+                      onSwiper={(swiper) => {
+                        swiperRefs.current[gender.slug] = swiper;
+                      }}
+                    >
+                      {gender.categories.map((category) => (
+                        <SwiperSlide key={category.slug}>
+                          <div
+                            className="swiper__productCategories-item swiper__productCategories-item--dark "
+                            style={{
+                              backgroundImage: `url(${getImgUrl(
+                                category.imageUrl
+                              )})`,
+                            }}
+                          >
+                            <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
+                              <Link
+                                to={`/products/${category.slug}`}
+                                className="text-reset stretched-link"
+                              >
+                                <h2 className="fs-sm fs-md-h6 fw-bold">
+                                  {category.title}
+                                </h2>
+                              </Link>
+                              <h3
+                                className={`${
+                                  category.slug !== 'accessories'
+                                    ? 'fs-dh2 fs-md-dh1'
+                                    : 'fs-h2 fs-md-h1'
+                                } fst-italic fw-normal font-dm-serif`}
+                              >
+                                {category.slug[0].toUpperCase() +
+                                  category.slug.slice(1)}
+                              </h3>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                      <div className="swiper-slide">
-                        <div
-                          className="swiper__productCategories-item"
-                          style={{
-                            backgroundImage: `url('/assets/images/category-jacket.png')`,
-                          }}
-                        >
-                          <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                            <a href="#" className="text-reset stretched-link">
-                              <h2 className="fs-sm fs-md-h6 fw-bold">外套</h2>
-                            </a>
-                            <h3 className="fs-dh2 fs-md-dh1 fst-italic fw-normal font-dm-serif">
-                              Jacket
-                            </h3>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="swiper-slide">
-                        <div
-                          className="swiper__productCategories-item swiper__productCategories-item--shadow"
-                          style={{
-                            backgroundImage: `url('/assets/images/category-dress.png')`,
-                          }}
-                        >
-                          <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                            <a href="#" className="text-reset stretched-link">
-                              <h2 className="fs-sm fs-md-h6 fw-bold">洋裝</h2>
-                            </a>
-                            <h3 className="fs-dh2 fs-md-dh1 fst-italic fw-normal font-dm-serif">
-                              Dress
-                            </h3>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="swiper-slide">
-                        <div
-                          className="swiper__productCategories-item"
-                          style={{
-                            backgroundImage: `url('/assets/images/category-pants.png')`,
-                          }}
-                        >
-                          <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                            <a href="#" className="text-reset stretched-link">
-                              <h2 className="fs-sm fs-md-h6 fw-bold">褲子</h2>
-                            </a>
-                            <h3 className="fs-dh2 fs-md-dh1 fst-italic fw-normal font-dm-serif">
-                              Pants
-                            </h3>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="swiper-slide">
-                        <div
-                          className="swiper__productCategories-item swiper__productCategories-item--dark"
-                          style={{
-                            backgroundImage: `url(
-                              '/assets/images/category-skirt.png'
-                            )`,
-                          }}
-                        >
-                          <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                            <a href="#" className="text-reset stretched-link">
-                              <h2 className="fs-sm fs-md-h6 fw-bold">裙子</h2>
-                            </a>
-                            <h3 className="fs-dh2 fs-md-dh1  fst-italic fw-normal font-dm-serif">
-                              Skirts
-                            </h3>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="swiper-slide">
-                        <div
-                          className="swiper__productCategories-item swiper__productCategories-item--dark"
-                          style={{
-                            backgroundImage: `url('/assets/images/category-accessories.png')`,
-                          }}
-                        >
-                          <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                            <a href="#" className="text-reset stretched-link">
-                              <h2 className="fs-sm fs-md-h6 fw-bold">
-                                服飾配件
-                              </h2>
-                            </a>
-                            <h3 className="fs-h2 fs-md-h1 fst-italic fw-normal font-dm-serif">
-                              Accessories
-                            </h3>
-                          </div>
-                        </div>
-                      </div>
+                        </SwiperSlide>
+                      ))}
+                    </Swiper>
+                    <div
+                      className="swiper-button-prev"
+                      onClick={() => handlePrevSlide(gender.slug)}
+                    >
+                      <svg className="pe-none" width="18" height="32">
+                        <use href={getImgUrl('/icons/prev.svg#prev')}></use>
+                      </svg>
                     </div>
-
-                    <div className="swiper-pagination"></div>
-                  </div>
-                  <div className="swiper-button-prev">
-                    <svg width="18" height="32">
-                      <use href="/assets/images/prev.svg#prev"></use>
-                    </svg>
-                  </div>
-                  <div className="swiper-button-next">
-                    <svg width="18" height="32">
-                      <use href="/assets/images/next.svg#next"></use>
-                    </svg>
+                    <div
+                      className="swiper-button-next"
+                      onClick={() => handleNextSlide(gender.slug)}
+                    >
+                      <svg className="pe-none" width="18" height="32">
+                        <use href={getImgUrl('/icons/next.svg#next')}></use>
+                      </svg>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div
-                className="tab-pane fade"
-                id="nav-profile"
-                role="tabpanel"
-                aria-labelledby="nav-profile-tab"
-                tabIndex="0"
-              >
-                <div className="swiper-container swiper__productCategories-container">
-                  <div className="swiper swiper__productCategories text-white">
-                    <div className="swiper-wrapper">
-                      <div className="swiper-slide">
-                        <div
-                          className="swiper__productCategories-item swiper__productCategories-item--dark "
-                          style={{
-                            backgroundImage: `url('/assets/images/category-top-m.png')`,
-                          }}
-                        >
-                          <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                            <a href="#" className="text-reset stretched-link">
-                              <h2 className="fs-sm fs-md-h6 fw-bold">上衣</h2>
-                            </a>
-                            <h3 className="fs-dh2 fs-md-dh1 fst-italic fw-normal font-dm-serif">
-                              Top
-                            </h3>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="swiper-slide">
-                        <div
-                          className="swiper__productCategories-item"
-                          style={{
-                            backgroundImage: `url('/assets/images/category-jacket-m.png')`,
-                          }}
-                        >
-                          <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                            <a href="#" className="text-reset stretched-link">
-                              <h2 className="fs-sm fs-md-h6 fw-bold">外套</h2>
-                            </a>
-                            <h3 className="fs-dh2 fs-md-dh1 fst-italic fw-normal font-dm-serif">
-                              Jacket
-                            </h3>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="swiper-slide">
-                        <div
-                          className="swiper__productCategories-item swiper__productCategories-item--dark"
-                          style={{
-                            backgroundImage: `url('/assets/images/category-pants-m.png')`,
-                          }}
-                        >
-                          <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                            <a href="#" className="text-reset stretched-link">
-                              <h2 className="fs-sm fs-md-h6 fw-bold">褲子</h2>
-                            </a>
-                            <h3 className="fs-dh2 fs-md-dh1 fst-italic fw-normal font-dm-serif">
-                              Pants
-                            </h3>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="swiper-slide">
-                        <div
-                          className="swiper__productCategories-item swiper__productCategories-item--dark"
-                          style={{
-                            backgroundImage: `url('/assets/images/category-accessories-m.png')`,
-                          }}
-                        >
-                          <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                            <a href="#" className="text-reset stretched-link">
-                              <h2 className="fs-sm fs-md-h6 fw-bold">
-                                服飾配件
-                              </h2>
-                            </a>
-                            <h3 className="fs-h2 fs-md-h1 fst-italic fw-normal font-dm-serif">
-                              Accessories
-                            </h3>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="swiper-pagination"></div>
-                  </div>
-                  <div className="swiper-button-prev">
-                    <svg width="18" height="32">
-                      <use href="/assets/images/prev.svg#prev"></use>
-                    </svg>
-                  </div>
-                  <div className="swiper-button-next">
-                    <svg width="18" height="32">
-                      <use href="/assets/images/next.svg#next"></use>
-                    </svg>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </section>
@@ -365,58 +264,60 @@ export default function Home() {
           <div className="container-sm">
             <h2 className="fs-h5 fs-md-h2 fw-bold mb-6">熱門商品</h2>
             <div className="swiper-container swiper__popularProducts-container">
-              <div className="swiper swiper__popularProducts">
-                <div className="swiper-wrapper">
-                  <div className="swiper-slide position-relative">
+              <Swiper
+                className="swiper__popularProducts"
+                modules={[Pagination]}
+                slidesPerView={1.375}
+                spaceBetween={24}
+                breakpoints={{
+                  576: {
+                    slidesPerGroup: 2,
+                    slidesPerView: 2,
+                  },
+                  768: {
+                    slidesPerGroup: 3,
+                    slidesPerView: 3,
+                  },
+                }}
+                pagination={{ clickable: true }}
+                onSwiper={(swiper) => {
+                  swiperRefs.current['popularProducts'] = swiper;
+                }}
+              >
+                {' '}
+                {popularProducts.map((product) => (
+                  <SwiperSlide className="position-relative" key={product.id}>
                     <img
                       className="w-100 img-fluid object-fit-cover mb-3"
-                      src="/assets/images/popular-product-1.png"
-                      alt="popular-product-1"
+                      src={product.imageUrl}
+                      alt={product.title}
                     />
-                    <a href="#" className="stretched-link link-black">
+                    <Link
+                      to={`/product/${product.id}`}
+                      className="stretched-link link-black"
+                    >
                       <h3 className="d-flex flex-column gap-0 gap-md-1 tracking-sm fs-sm fs-md-base lh-base fw-normal">
-                        <span> HOKA Speedgoat 5 Mid</span>
-                        <span>GORE-TEX 男鞋 藍色/琥珀色</span>
+                        <span>{product.title}</span>
+                        <span>{product.categoryItems}</span>
                       </h3>
-                    </a>
-                  </div>
-                  <div className="swiper-slide position-relative">
-                    <img
-                      className="w-100 img-fluid object-fit-cover  mb-3"
-                      src="/assets/images/popular-product-2.png"
-                      alt="popular-product-3"
-                    />
-                    <a href="#" className="stretched-link link-black">
-                      <h3 className="d-flex flex-column gap-0 gap-md-1 tracking-sm fs-sm fs-md-base lh-base fw-normal">
-                        <span> 韓國連線 七月新品 EU27</span>
-                        <span>帆布皮帶側開叉牛仔長裙</span>
-                      </h3>
-                    </a>
-                  </div>
-                  <div className="swiper-slide position-relative">
-                    <img
-                      className="w-100 img-fluid object-fit-cover mb-3"
-                      src="/assets/images/popular-product-3.png"
-                      alt="popular-product-3"
-                    />
-                    <a href="#" className="stretched-link link-black">
-                      <h3 className="d-flex flex-column gap-0 gap-md-1 tracking-sm fs-sm fs-md-base lh-base fw-normal">
-                        <span>TABBY26號新縫單肩手袋</span>
-                        <span>B4/黑色（CP150）</span>
-                      </h3>
-                    </a>
-                  </div>
-                </div>
-                <div className="swiper-pagination"></div>
-              </div>
-              <div className="swiper-button-prev">
-                <svg width="18" height="32">
-                  <use href="/assets/images/prev.svg#prev"></use>
+                    </Link>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+              <div
+                className="swiper-button-prev"
+                onClick={() => handlePrevSlide('popularProducts')}
+              >
+                <svg className="pe-none" width="18" height="32">
+                  <use href={getImgUrl('/icons/prev.svg#prev')}></use>
                 </svg>
               </div>
-              <div className="swiper-button-next">
-                <svg width="18" height="32">
-                  <use href="/assets/images/next.svg#next"></use>
+              <div
+                className="swiper-button-next"
+                onClick={() => handleNextSlide('popularProducts')}
+              >
+                <svg className="pe-none" width="18" height="32">
+                  <use href={getImgUrl('/icons/next.svg#next')}></use>
                 </svg>
               </div>
             </div>
@@ -445,7 +346,7 @@ export default function Home() {
                 </div>
                 <img
                   className="section__features-img"
-                  src="/assets/images/features-img-1.png"
+                  src={getImgUrl('/images/home/features-img-1.png')}
                   alt=""
                 />
               </div>
@@ -465,7 +366,7 @@ export default function Home() {
                 </div>
                 <img
                   className="section__features-img"
-                  src="/assets/images/features-img-2.png"
+                  src={getImgUrl('/images/home/features-img-2.png')}
                   alt=""
                 />
               </div>
@@ -485,7 +386,7 @@ export default function Home() {
                 </div>
                 <img
                   className="section__features-img"
-                  src="/assets/images/features-img-3.png"
+                  src={getImgUrl('/images/home/features-img-3.png')}
                   alt=""
                 />
               </div>
@@ -506,7 +407,7 @@ export default function Home() {
                     <div className="rounded-circle overflow-hidden w-24px h-24px w-md-40px h-md-40px">
                       <img
                         className="img-fluid object-fit-cover w-100 h-100 d-block"
-                        src="/assets/images/comment-1.png"
+                        src={getImgUrl('/images/home/comment-1.png')}
                         alt="comment-1"
                       />
                     </div>
@@ -523,7 +424,7 @@ export default function Home() {
                     <div className="rounded-circle overflow-hidden w-24px h-24px w-md-40px h-md-40px">
                       <img
                         className="img-fluid object-fit-cover w-100 h-100 d-block"
-                        src="/assets/images/comment-2.png"
+                        src={getImgUrl('/images/home/comment-2.png')}
                         alt="comment-2"
                       />
                     </div>
@@ -540,7 +441,7 @@ export default function Home() {
                     <div className="rounded-circle overflow-hidden w-24px h-24px w-md-40px h-md-40px">
                       <img
                         className="img-fluid object-fit-cover w-100 h-100 d-block"
-                        src="/assets/images/comment-3.png"
+                        src={getImgUrl('/images/home/comment-3.png')}
                         alt="comment-3"
                       />
                     </div>
@@ -557,7 +458,7 @@ export default function Home() {
                     <div className="rounded-circle overflow-hidden w-24px h-24px w-md-40px h-md-40px">
                       <img
                         className="img-fluid object-fit-cover w-100 h-100 d-block"
-                        src="/assets/images/comment-4.png"
+                        src={getImgUrl('/images/home/comment-4.png')}
                         alt="comment-4"
                       />
                     </div>

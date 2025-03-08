@@ -1,0 +1,148 @@
+.l-cart-flow {
+  display: grid;
+  grid-template-columns: 40px 1fr 40px 1fr 40px;
+  align-items: center;
+  padding-left: 12px;
+  padding-right: 4px;
+  &__process {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: auto;
+    aspect-ratio: 1/1;
+    border-radius: 50%;
+    color: $primary-60;
+    font-weight: 700;
+    font-size: 14px;
+    background-color: $primary-90;
+    grid-row-start: 1;
+    @include media-breakpoint-up(md){
+      font-size: 16px;
+    }
+    &.active {
+      background-color: $primary-60;
+      color: $white;
+    }
+  }
+  &::before, &::after {
+    display: block;
+    content: '';
+    height: 4px;
+    background-color: $primary-90;
+
+  }
+  &::before{
+    grid-row-start: 1;
+    grid-column: 2 / span 1;
+  }
+  &::after{
+    grid-row-start: 1;
+    grid-column: 4 / span 1;
+  }
+  &:has(:first-child.active){
+    &::before{
+      background-color: $primary-60;
+    }
+  }
+  &:has(:nth-child(2).active){
+    &::after{
+      background-color: $primary-60;
+    }
+  }
+}
+// .pl12px{
+//   padding-left: 12px;
+// }
+// .pl20px{
+//   padding-left: 20px;
+// }
+
+// .mb12px{
+//   margin-bottom: 12px;
+// }
+
+// .w35{
+//   width: 35%;
+// }
+
+// .w76{
+//   width: 76%;
+// }
+
+// .w90{
+//   width: 90%;
+// }
+
+// .w40px{
+//   width: 40px;
+// }
+// .h40px{
+//   height: 40px;
+// }
+
+// .textcolors-Yellow {
+//   color: #865300;
+// }
+
+// .cartFlowGrid {
+//   max-width: 1296px;
+//   // margin-top: 130px;
+//   margin: 130px auto 40px auto;
+//   // padding: 0px 110px;
+
+// }
+
+// .cartFlowTxtDiv{
+//   justify-content: space-between;
+// }
+
+// .cartFlowP {
+//   display: inline-block;
+//   width: 40px;
+//   height: 40px;
+//   color: #C88119;
+//   background-color: #FFDDB9;
+//   font-weight: bold;
+//   text-align: center;
+//   line-height:40px;
+// }
+
+// hr {
+//   //width: 100%;
+//   background-color:#FFDDB9;
+//   border: none; /* 去掉邊框 */
+//   height: 4px; /* 控制粗細 */
+//   opacity:100;
+// }
+
+// .cartFlowChk {
+//   color: #fff;
+//   background-color: rgba(168, 105, 0, 1);
+//   //background-color: rgba(168, 105, 0, 1);
+// }
+
+// .cartFlowChk_hr {
+
+//   background-color: #A86900 !important;
+
+//   //background-color: rgba(168, 105, 0, 1);
+// }
+
+// .cartFlowDiv{
+//   width: 35%;
+// }
+
+// @media (max-width: 768px) {
+//   .cartFlowTxtDiv{
+//       width: 95%;
+//   }
+//   .cartFlowDiv{
+//       width: 40%;
+//   }
+// }
+
+// .vectorImgdiv{
+//   background-color: #FFDDB9;
+
+// }

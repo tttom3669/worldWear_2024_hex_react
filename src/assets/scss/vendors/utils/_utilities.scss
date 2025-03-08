@@ -660,6 +660,8 @@ $utilities: map-merge(
       values: lowercase uppercase capitalize,
     ),
     'white-space': (
+      responsive: true,
+      // cus*
       property: white-space,
       class: text,
       values: (
@@ -943,6 +945,7 @@ $utilities: map-merge(
         property: letter-spacing,
         class: tracking,
         values: (
+          none: 0,
           sm: 0.02em,
           md: 0.04em,
         ),
