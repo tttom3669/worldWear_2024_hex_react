@@ -1,9 +1,32 @@
+import axios from 'axios';
 import FrontHeader from '../../components/front/FrontHeader';
 import CartFlow from '../../components/front/CartFlow';
 import useImgUrl from '../../hooks/useImgUrl';
+import { useEffect, useState } from 'react';
+
+const { VITE_API_PATH: API_PATH } = import.meta.env;
 
 export default function Cart() {
   const getImgUrl = useImgUrl();
+  const [cartsData, setCartsData] = useState([]);
+
+  useEffect(() => {
+    getCarts();
+  }, []);
+  const getCarts = async () => {
+    // const token = document.cookie.replace(
+    //   /(?:(?:^|.*;\s*)worldWearToken\s*\=\s*([^;]*).*$)|^.*$/,
+    //   '$1'
+    // );
+    const userId = document.cookie.replace(
+      /(?:(?:^|.*;\s*)worldWearUserId\s*\=\s*([^;]*).*$)|^.*$/,
+      '$1'
+    );
+    const res = await axios.get(
+      `${API_PATH}/carts/?userId=${userId}&_expand=user&_expand=product`
+    );
+    console.log(res);
+  };
   return (
     <>
       <FrontHeader defaultType={'light'} />

@@ -47,6 +47,7 @@ function FrontHeader({ defaultType }) {
   const isDesktop = () => {
     return window.innerWidth > 992;
   };
+  
   function mainMenuHandler(e) {
     e.preventDefault();
     const name = e.target.name || e.target.parentElement.name;
@@ -129,7 +130,9 @@ function FrontHeader({ defaultType }) {
                     name="search"
                     onClick={(e) => mainMenuHandler(e)}
                     className={`header__searchIcon border-0 bg-transparent justify-content-center align-items-center p-3 p-lg-0  ${
-                      menuData.type === 'search' && menuData.isOpen && isDesktop()
+                      menuData.type === 'search' &&
+                      menuData.isOpen &&
+                      isDesktop()
                         ? 'd-none'
                         : 'd-flex'
                     }`}
@@ -145,7 +148,7 @@ function FrontHeader({ defaultType }) {
                       <li className="d-flex justify-content-center align-items-center">
                         <Link
                           className="position-relative d-flex text-reset"
-                          to='/cart'
+                          to="/cart"
                         >
                           <svg width="16" height="16">
                             <use href={getImgUrl('/icons/cart.svg#cart')}></use>
