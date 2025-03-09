@@ -19,7 +19,7 @@ import {
 
 export default function ProductsList() {
   const dispatch = useDispatch();
-  const { category } = useParams(); // 從 URL 獲取分類參數
+  const { category, gender } = useParams(); // 從 URL 獲取性別和分類參數
   const location = useLocation();
   const [showOffcanvas, setShowOffcanvas] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
@@ -38,6 +38,45 @@ export default function ProductsList() {
 
   const dataLimit = 9;
   const pageLimit = 10;
+
+  // 處理來自不同路由格式的分類參數
+  const getActualCategory = useCallback(() => {
+    // 處理 /products/:gender/:category 格式的路由
+    if (gender && category) {
+      return `${gender}/${category}`;
+    }
+    
+    // 處理 /products/:gender 格式的路由
+    if (gender && !category) {
+      return gender;
+    }
+    
+    // 處理 /products/:category 格式的路由 (如果有)
+    if (category && !gender) {
+      return category;
+    }
+    
+    // 處理 hash 路由格式 (例如 /#/products/women/top)
+    const hashPath = location.hash;
+    if (hashPath) {
+      // 移除 # 符號並解析路徑
+      const path = hashPath.replace('#', '');
+      const pathSegments = path.split('/').filter(Boolean);
+      
+      // 檢查路徑是否包含 products 和分類信息
+      if (pathSegments.length >= 2 && pathSegments[0] === 'products') {
+        if (pathSegments.length >= 3) {
+          // 返回 gender/category 格式 (例如 'women/top')
+          return `${pathSegments[1]}/${pathSegments[2]}`;
+        } else if (pathSegments.length === 2) {
+          // 只有主分類 (例如 'women')
+          return pathSegments[1];
+        }
+      }
+    }
+    
+    return null;
+  }, [gender, category, location.hash]);
 
   // 處理頁面標題顯示
   const getPageTitle = useMemo(() => {
@@ -76,23 +115,34 @@ export default function ProductsList() {
     return "商品一覽";
   }, [currentCategory]);
 
-  // 使用 useEffect 獲取產品數據，根據 category 參數
+  // 使用 useEffect 獲取產品數據，根據實際路徑參數
   useEffect(() => {
-    // 當 URL 中的 category 參數改變時，更新 Redux 中的 currentCategory
-    if (category) {
-      dispatch(setCurrentCategory(category));
+    // 獲取實際分類（從各種可能的路由格式）
+    const actualCategory = getActualCategory();
+    
+    if (actualCategory) {
+      dispatch(setCurrentCategory(actualCategory));
     } else {
-      // 如果沒有 category 參數，可以根據需要設置默認分類或清除當前分類
+      // 如果沒有分類參數，設為 null 以顯示所有產品
       dispatch(setCurrentCategory(null));
     }
-  }, [category, dispatch]);
+    
+    // 調試日誌
+    console.log("路由參數:", { gender, category });
+    console.log("hash 路徑:", location.hash);
+    console.log("提取的實際分類:", actualCategory);
+    
+  }, [gender, category, location.hash, dispatch, getActualCategory]);
 
   // 當 currentCategory 改變時，重新獲取產品數據
   useEffect(() => {
+    // 如果 currentCategory 改變，獲取相應的產品數據
     dispatch(fetchProducts(currentCategory));
+    
     // 重置篩選條件和頁碼，避免切換分類後篩選條件不匹配
     dispatch(resetFilters());
     dispatch(setCurrentPage(1));
+    
   }, [currentCategory, dispatch]);
 
   // 使用 useCallback 優化性能
@@ -137,14 +187,6 @@ export default function ProductsList() {
     ),
     [filters]
   );
-
-  // 調試用日誌
-  useEffect(() => {
-    console.log('當前分類:', currentCategory);
-    console.log('當前篩選條件:', filters);
-    console.log('篩選後產品數量:', filteredItems.length);
-    console.log('原始產品數量:', items.length);
-  }, [currentCategory, filters, filteredItems, items]);
 
   // 在組件被卸載時確保header可見和body滾動恢復
   useEffect(() => {
@@ -205,7 +247,7 @@ export default function ProductsList() {
           <div className="container">
             <div className="row">
               {/* 類別篩選選單 - 桌面版 */}
-              <div className="col-md-3 d-none d-md-block ps-3">
+              <div className="col-md-3 d-none d-md-block ps-3 mb-17">
                 <div className="filterMenu-wrap">
                   <FilterMenu isOffcanvas={false} />
                 </div>

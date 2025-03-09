@@ -20,11 +20,25 @@ const routes = [
       },
       {
         path: "products",
-        element: <ProductsList />,
-      },
-      {
-        path: "products/:category",
-        element: <ProductsList />,
+        children: [
+          {
+            index: true,
+            element: <ProductsList />,
+          },
+          {
+            path: ":gender",
+            children: [
+              {
+                index: true,
+                element: <ProductsList />,
+              },
+              {
+                path: ":category",
+                element: <ProductsList />,
+              }
+            ]
+          }
+        ]
       },
       {
         path: 'cart',

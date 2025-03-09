@@ -8,7 +8,7 @@ const getUniqueValues = (array, key) => {
   return [...new Set(array.map((item) => item?.[key]).filter(Boolean))];
 };
 
-// 定义固定的状态选项
+// 定義固定的狀態選項
 const FIXED_STATUS_OPTIONS = [
   {
     id: "categoryItem-status-all",
