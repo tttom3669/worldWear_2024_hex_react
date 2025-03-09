@@ -1,0 +1,32 @@
+.order-list {
+  svg {
+    transition: transform 0.3s;
+  }
+}
+
+details.order-list[open] {
+  svg {
+    transform: rotate(180deg);
+  }
+}
+
+.order-detail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  & > * {
+    flex: 0 0 100%;
+    @include media-breakpoint-up(md) {
+      flex: 1 1 26.32%;
+    }
+    @include media-breakpoint-up(xl) {
+      flex: 1 1 26.32%;
+    }
+  }
+  & > *:first-child {
+    flex: 0 0 100%;
+    @include media-breakpoint-up(xl) {
+      flex: 0 0 42.44%;
+    }
+  }
+}
