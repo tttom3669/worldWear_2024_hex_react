@@ -87,6 +87,29 @@ const sortProductsBy = (products, sortOption) => {
   return sorter(products);
 };
 
+// 定義類別對應表
+const categoryMappings = {
+  'women': {
+    'top': '上衣',
+    'jacket': '外套',
+    'dress': '洋裝',
+    'pants': '褲子',
+    'skirts': '裙子',
+    'accessories': '服飾配件'
+  },
+  'men': {
+    'top': '上衣',
+    'jacket': '外套',
+    'pants': '褲子',
+    'accessories': '服飾配件'
+  }
+};
+
+// 特殊類別處理映射
+const specialCategoryMappings = {
+  'accessories': '配件' // accessories 在 API 中對應的是 "配件"
+};
+
 // 異步獲取產品 Thunk
 export const fetchProducts = createAsyncThunk(
   "productsList/fetchProducts",
@@ -94,24 +117,6 @@ export const fetchProducts = createAsyncThunk(
     try {
       const baseUrl = 'http://localhost:3000/products';
       const params = new URLSearchParams();
-      
-      // 定義類別對應表
-      const categoryMappings = {
-        'women': {
-          'top': '上衣',
-          'jacket': '外套',
-          'dress': '洋裝',
-          'pants': '褲子',
-          'skirts': '裙子',
-          'accessories': '服飾配件'
-        },
-        'men': {
-          'top': '上衣',
-          'jacket': '外套',
-          'pants': '褲子',
-          'accessories': '服飾配件'
-        }
-      };
       
       // 如果有傳入分類參數
       if (categoryParams) {
@@ -122,8 +127,12 @@ export const fetchProducts = createAsyncThunk(
           const classValue = genderType === 'men' ? '男裝' : genderType === 'women' ? '女裝' : genderType;
           params.append('class', classValue);
           
-          // 如果存在對應的 category 映射，則使用映射值
-          if (categoryMappings[genderType] && categoryMappings[genderType][productType]) {
+          // 處理特殊類別映射 (例如: accessories -> 配件)
+          if (productType === 'accessories') {
+            params.append('category', specialCategoryMappings['accessories']);
+          } 
+          // 一般類別映射
+          else if (categoryMappings[genderType] && categoryMappings[genderType][productType]) {
             params.append('category', categoryMappings[genderType][productType]);
           } else {
             params.append('category', productType);
@@ -135,6 +144,10 @@ export const fetchProducts = createAsyncThunk(
           const classValue = categoryParams === 'men' ? '男裝' : '女裝';
           params.append('class', classValue);
         } 
+        // 檢查是否為特殊類別 (例如: accessories)
+        else if (Object.keys(specialCategoryMappings).includes(categoryParams)) {
+          params.append('category', specialCategoryMappings[categoryParams]);
+        }
         // 否則當作商品分類處理，但需要檢查是否為已知的 slug
         else {
           // 嘗試在男裝和女裝中查找匹配的 slug
@@ -156,12 +169,15 @@ export const fetchProducts = createAsyncThunk(
       
       // 構建完整 URL
       const apiUrl = params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
-      
+      console.log('API 請求 URL:', apiUrl);
       
       const response = await axios.get(apiUrl);
       return response.data;
     } catch (error) {
-      const errorMsg = error.response?.data?.message || "取得產品失敗";
+      // 改進錯誤處理: 提供更詳細的錯誤信息
+      const errorMsg = error.response?.data?.message || 
+                        error.message || 
+                        "取得產品失敗";
       return rejectWithValue(errorMsg);
     }
   }
@@ -187,6 +203,10 @@ const productsListSlice = createSlice({
     // 設置當前分類
     setCurrentCategory: (state, action) => {
       state.currentCategory = action.payload;
+      // 清空之前的商品列表，避免顯示上一次的資料
+      state.items = [];
+      state.filteredItems = [];
+      state.status = "idle";
     },
     
     // 排序 Action
@@ -243,6 +263,8 @@ const productsListSlice = createSlice({
     builder
       .addCase(fetchProducts.pending, (state) => {
         state.status = "loading";
+        // 重置錯誤信息
+        state.error = null;
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.status = "succeeded";
@@ -260,6 +282,11 @@ const productsListSlice = createSlice({
       .addCase(fetchProducts.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload || "發生未知錯誤";
+        // 確保在錯誤情況下仍有有效的初始狀態
+        if (!state.items.length) {
+          state.items = [];
+          state.filteredItems = [];
+        }
       });
   },
 });

@@ -89,29 +89,13 @@ export default function ProductsList() {
       // 處理子分類
       const pathParts = currentCategory.split('/');
       if (pathParts.length > 1) {
+        // 只顯示性別類別，不顯示子類別
         const gender = pathParts[0] === 'men' ? '男裝' : '女裝';
-        const categoryMappings = {
-          'men': {
-            'top': '上衣',
-            'jacket': '外套',
-            'pants': '褲子',
-            'accessories': '服飾配件'
-          },
-          'women': {
-            'top': '上衣',
-            'jacket': '外套',
-            'dress': '洋裝',
-            'pants': '褲子',
-            'skirts': '裙子',
-            'accessories': '服飾配件'
-          }
-        };
-        
-        const subCategory = categoryMappings[pathParts[0]]?.[pathParts[1]] || pathParts[1];
-        return `${gender} ${subCategory} 商品一覽`;
+        return `${gender} 商品一覽`;
       }
       return `${currentCategory} 商品一覽`;
     }
+    // 預設顯示
     return "商品一覽";
   }, [currentCategory]);
 
@@ -123,7 +107,7 @@ export default function ProductsList() {
     if (actualCategory) {
       dispatch(setCurrentCategory(actualCategory));
     } else {
-      // 如果沒有分類參數，設為 null 以顯示所有產品
+      // 如果沒有分類參數，設置為 null 顯示所有商品
       dispatch(setCurrentCategory(null));
     }
     
@@ -131,18 +115,22 @@ export default function ProductsList() {
     console.log("路由參數:", { gender, category });
     console.log("hash 路徑:", location.hash);
     console.log("提取的實際分類:", actualCategory);
-    
   }, [gender, category, location.hash, dispatch, getActualCategory]);
 
   // 當 currentCategory 改變時，重新獲取產品數據
   useEffect(() => {
-    // 如果 currentCategory 改變，獲取相應的產品數據
-    dispatch(fetchProducts(currentCategory));
-    
-    // 重置篩選條件和頁碼，避免切換分類後篩選條件不匹配
+    // 在獲取新數據前先重置篩選條件和頁碼
     dispatch(resetFilters());
     dispatch(setCurrentPage(1));
     
+    // 新增延遲，確保頁面顯示「載入中」狀態，避免閃現舊數據
+    const timer = setTimeout(() => {
+      if (currentCategory !== undefined) {
+        dispatch(fetchProducts(currentCategory));
+      }
+    }, 50);
+    
+    return () => clearTimeout(timer); // 清除計時器，避免記憶體洩漏
   }, [currentCategory, dispatch]);
 
   // 使用 useCallback 優化性能
@@ -188,6 +176,16 @@ export default function ProductsList() {
     [filters]
   );
 
+  // 調試用日誌
+  useEffect(() => {
+    console.log('當前分類:', currentCategory);
+    console.log('當前 URL 路徑:', location.pathname);
+    console.log('當前 URL 參數:', { gender, category });
+    console.log('當前篩選條件:', filters);
+    console.log('篩選後產品數量:', filteredItems.length);
+    console.log('原始產品數量:', items.length);
+  }, [currentCategory, location, gender, category, filters, filteredItems, items]);
+
   // 在組件被卸載時確保header可見和body滾動恢復
   useEffect(() => {
     return () => {
@@ -201,7 +199,7 @@ export default function ProductsList() {
 
   // 渲染內容
   const renderContent = () => {
-    if (status === "loading") {
+    if (status === "loading" || status === "idle" && currentCategory) {
       return (
         <div className="text-center py-5">
           <div className="spinner-border text-primary" role="status">
@@ -241,13 +239,13 @@ export default function ProductsList() {
 
   return (
     <>
-      {showHeader && <FrontHeader defaultType={"light"} />}
+      {showHeader && <FrontHeader defaultType="light" />}
       <main className="mt-17 bg-nature-99">
         <section className="productList-section bg-nature-99">
           <div className="container">
             <div className="row">
               {/* 類別篩選選單 - 桌面版 */}
-              <div className="col-md-3 d-none d-md-block ps-3 mb-17">
+              <div className="col-md-3 d-none d-md-block ps-3 mb-20">
                 <div className="filterMenu-wrap">
                   <FilterMenu isOffcanvas={false} />
                 </div>
