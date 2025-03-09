@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
+const { VITE_API_PATH: API_PATH } = import.meta.env;
+
 // 狀態優先級映射
 const STATUS_PRIORITY = {
   現貨: 3,
@@ -115,7 +117,6 @@ export const fetchProducts = createAsyncThunk(
   "productsList/fetchProducts",
   async (categoryParams, { rejectWithValue }) => {
     try {
-      const baseUrl = 'http://localhost:3000/products';
       const params = new URLSearchParams();
       
       // 如果有傳入分類參數
@@ -167,17 +168,18 @@ export const fetchProducts = createAsyncThunk(
         }
       }
       
-      // 構建完整 URL
-      const apiUrl = params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
-      console.log('API 請求 URL:', apiUrl);
+      // 構建完整 URL，使用環境變數
+      const apiUrl = params.toString() ? `${API_PATH}/products?${params.toString()}` : `${API_PATH}/products`;
+      // console.log('API 請求 URL:', apiUrl);
       
-      const response = await axios.get(apiUrl);
-      return response.data;
+      const { data } = await axios.get(apiUrl);
+      return data;
     } catch (error) {
       // 改進錯誤處理: 提供更詳細的錯誤信息
       const errorMsg = error.response?.data?.message || 
                         error.message || 
                         "取得產品失敗";
+      console.error('取得產品錯誤:', errorMsg);
       return rejectWithValue(errorMsg);
     }
   }
