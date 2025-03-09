@@ -1,13 +1,16 @@
 import { createHashRouter } from 'react-router-dom';
 import App from '../App.jsx';
-import AdminLayout from '../Layout/AdminLayout.jsx';
+import AdminLayout from '../Layout/admin/AdminLayout.jsx';
 import AdminHome from '../views/admin/AdminHome.jsx';
 import Home from '../views/front/Home.jsx';
 import Login from '../views/Login.jsx';
 import Signup from '../views/Signup.jsx';
 import NotFound from '../views/NotFound.jsx';
 import Cart from '../views/front/Cart.jsx';
-import ProductsList from '../views/front/ProductsList.jsx'
+import ProductsList from '../views/front/ProductsList.jsx';
+import FrontUserLayout from '../Layout/front/FrontUserLayout.jsx';
+import { element } from 'prop-types';
+import UserOrder from '../views/front/user/UserOrder.jsx';
 
 const routes = [
   {
@@ -19,30 +22,44 @@ const routes = [
         element: <Home />,
       },
       {
-        path: "products",
+        path: 'products',
         children: [
           {
             index: true,
             element: <ProductsList />,
           },
           {
-            path: ":gender",
+            path: ':gender',
             children: [
               {
                 index: true,
                 element: <ProductsList />,
               },
               {
-                path: ":category",
+                path: ':category',
                 element: <ProductsList />,
-              }
-            ]
-          }
-        ]
+              },
+            ],
+          },
+        ],
       },
       {
         path: 'cart',
         element: <Cart />,
+      },
+      {
+        path: 'user',
+        element: <FrontUserLayout />,
+        children: [
+          {
+            index: true,
+            element: <UserOrder />,
+          },
+          {
+            path: 'order',
+            element: <UserOrder />,
+          },
+        ],
       },
     ],
   },

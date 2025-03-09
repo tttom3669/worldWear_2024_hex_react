@@ -2,7 +2,7 @@ import axios from 'axios';
 import FrontHeader from '../../components/front/FrontHeader';
 import CartFlow from '../../components/front/CartFlow';
 import useImgUrl from '../../hooks/useImgUrl';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import useSwal from '../../hooks/useSwal';
 import { useDispatch } from 'react-redux';
 import { setCartsData } from '../../slice/cartsSlice';
@@ -12,7 +12,6 @@ const { VITE_API_PATH: API_PATH } = import.meta.env;
 export default function Cart() {
   const getImgUrl = useImgUrl();
   const [tempCartsData, setTempCartsData] = useState([]);
-  const [cartsTotal, setCartsTotal] = useState(0);
   const [tempCouponData, setTempCouponData] = useState('');
   const [couponData, setCouponData] = useState({});
   const { toastAlert } = useSwal();
@@ -70,21 +69,25 @@ export default function Cart() {
     getCarts();
   }, []);
 
-  useEffect(() => {
-    const totalPrice = tempCartsData
+  const cartsTotal = useMemo(() => {
+    return tempCartsData
       .map((cart) => cart.product.price * cart.qty)
       .reduce((accVal, curVal) => accVal + curVal, 0);
+  }, [tempCartsData]);
 
-    setCartsTotal(totalPrice);
+  const cartsDiscount = useMemo(() => {
+    return calDiscount(cartsTotal, couponData?.percent);
+  }, [cartsTotal, couponData]);
 
+  useEffect(() => {
     dispatch(
       setCartsData({
-        total: totalPrice,
-        final_total: totalPrice - calDiscount(totalPrice, couponData?.percent),
+        total: cartsTotal,
+        final_total: cartsTotal - cartsDiscount,
         products: [...tempCartsData],
       })
     );
-  }, [tempCartsData, couponData]);
+  }, [cartsTotal, cartsDiscount]);
 
   return (
     <>
@@ -223,7 +226,7 @@ export default function Cart() {
                           <div className="d-flex justify-content-end gap-6">
                             <p>折扣碼折抵</p>
                             <p className="text-secondary-60">
-                              ${calDiscount(cartsTotal, couponData?.percent)}
+                              ${cartsDiscount}
                             </p>
                           </div>
                         )}
@@ -235,11 +238,7 @@ export default function Cart() {
                         項商品
                       </p>
                       <p className="fw-bold fs-h4">
-                        $
-                        {(
-                          cartsTotal -
-                          calDiscount(cartsTotal, couponData?.percent)
-                        ).toLocaleString('zh-TW')}
+                        ${(cartsTotal - cartsDiscount).toLocaleString('zh-TW')}
                       </p>
                     </div>
                   </div>

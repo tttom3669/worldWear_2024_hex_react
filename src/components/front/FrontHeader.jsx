@@ -47,7 +47,7 @@ function FrontHeader({ defaultType }) {
   const isDesktop = () => {
     return window.innerWidth > 992;
   };
-  
+
   function mainMenuHandler(e) {
     e.preventDefault();
     const name = e.target.name || e.target.parentElement.name;
@@ -171,14 +171,14 @@ function FrontHeader({ defaultType }) {
                         </Link>
                       </li>
                       <li>
-                        <a href="#">
+                        <Link to="/user">
                           <img
                             src={getImgUrl('/images/shared/user.png')}
                             alt="user"
                             width="24"
                             height="24"
                           />
-                        </a>
+                        </Link>
                       </li>
                     </ul>
                   </div>
@@ -212,7 +212,7 @@ function FrontHeader({ defaultType }) {
                       </Link>
                     </li>
                     <li>
-                      <Link className="nav-link l-menu__link" to="#">
+                      <Link className="nav-link l-menu__link" to="/user">
                         會員中心
                       </Link>
                     </li>

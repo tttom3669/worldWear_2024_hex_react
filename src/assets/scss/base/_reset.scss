@@ -15,3 +15,21 @@ h5,
 h6 {
   letter-spacing: 0.04em;
 }
+
+details::details-content {
+  display: grid !important;
+  content-visibility: auto !important;
+  overflow: hidden;
+  grid-template-rows: repeat(1, minmax(0, 0fr));
+  transition: all 0.3s;
+}
+details[open]::details-content {
+  grid-template-rows: repeat(1, minmax(0, 1fr));
+}
+
+.site {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr);
+}
