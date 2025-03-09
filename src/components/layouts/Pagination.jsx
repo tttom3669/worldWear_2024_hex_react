@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Row } from "react-bootstrap";
 
 const Pagination = ({ data, RenderComponent, pageLimit, dataLimit }) => {
