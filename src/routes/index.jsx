@@ -8,6 +8,7 @@ import Signup from '../views/Signup.jsx';
 import NotFound from '../views/NotFound.jsx';
 import Cart from '../views/front/Cart.jsx';
 import ProductsList from '../views/front/ProductsList.jsx'
+import Product from '../views/front/Product.jsx';
 
 const routes = [
   {
@@ -43,6 +44,10 @@ const routes = [
       {
         path: 'cart',
         element: <Cart />,
+      },
+      {
+        path: 'product/:id',
+        element: <Product />,
       },
     ],
   },
