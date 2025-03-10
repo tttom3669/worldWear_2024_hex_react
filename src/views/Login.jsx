@@ -2,17 +2,18 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import FrontFooter from "../components/front/FrontFooter";
+import useSwal from '../hooks/useSwal';
 
 const { VITE_API_PATH: API_PATH } = import.meta.env;
 
 export default function Login() {
   const navigate = useNavigate();
-
+  const { toastAlert } = useSwal();
   const [activeTab, setActiveTab] = useState("login");
 
   const [account, setAccount] = useState({
-    email: "",
-    password: "",
+    email: "",  //test@gmail.com
+    password: "",  //AAbbcc12345678
   });
 
   const handleLogin = async (e) => {
@@ -25,7 +26,9 @@ export default function Login() {
         password: account.password
       });
 
-      const res = await axios.post(`${API_PATH}/login`, account);
+      // const res = await axios.post(`${API_PATH}/login`, account);
+      //測試用
+      const res = await axios.post('http://localhost:3000/login', account);
       console.log("登入響應:", res.data);
 
       // const { accessToken, expired } = res.data;
@@ -35,11 +38,11 @@ export default function Login() {
       axios.defaults.headers.common["Authorization"] = accessToken;
       setAccount(true);
       // checkUserLogin(); // 登入成功後立即檢查
+      navigate("/");
       console.log("登入成功");
-      alert("登入成功！");
     } catch (error) {
       console.error("登入錯誤詳情:", error);
-      alert("登入失敗");
+      toastAlert({ icon: 'error', title: '登入失敗' });
     }
   };
 
@@ -61,6 +64,7 @@ export default function Login() {
     document.cookie = `worldWearToken=${accessToken};`;
     document.cookie = `worldWearUserId=${user.id}`;
     console.log(accessToken, user.id);
+    navigate("/");
   };
 
   const handleTabChange = (tab) => {

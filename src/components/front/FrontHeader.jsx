@@ -160,7 +160,7 @@ function FrontHeader({ defaultType }) {
                       </li>
                       <li className="d-flex justify-content-center align-items-center">
                         <Link
-                          to="/favorites"
+                          to="/user/favorites"
                           className=" text-reset header__heart d-flex"
                         >
                           <svg width="16" height="16">
