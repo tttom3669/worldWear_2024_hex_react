@@ -1,0 +1,116 @@
+// 自定義變數 - 使用有語意的命名
+$tab-primary-color: #555555;       // 主要標籤顏色（深灰色）
+$tab-text-inactive: #000000;       // 未選中頁籤的文字顏色（黑色）
+$tab-text-active: #555555;         // 選中頁籤的文字顏色（灰色）
+$tab-border-active: #555555;       // 選中頁籤的邊框顏色
+$animation-duration: 0.3s;         // 動畫持續時間
+$white: #ffffff;                   // 白色背景
+
+// 使用屬性選擇器和後代選擇器提高特異性
+html body {
+  // 提高選擇器特異性，確保不被Bootstrap覆蓋
+  .nav-tabs.w-100 {
+    border-bottom: none;
+    
+    .nav-item.w-50 {
+      text-align: center;
+      
+      button.nav-link.w-100 {
+        border: none;
+        border-radius: 0;
+        padding: 1rem 0;
+        transition: color $animation-duration ease, background-color $animation-duration ease, border-top $animation-duration ease;
+        border-top: 3px solid transparent;
+        
+        // 未選中狀態，強制指定顏色
+        &.inactive {
+          color: $tab-text-inactive;
+          background-color: transparent;
+        }
+        
+        // 選中狀態，增加特異性
+        &.active {
+          color: $tab-text-active;
+          background-color: $white;
+          border-top: 3px solid $tab-border-active;
+        }
+        
+        // 懸停狀態
+        &:hover:not(.active) {
+          color: $tab-text-active;
+          background-color: rgba($white, 0.5);
+        }
+      }
+    }
+  }
+
+  // 提高內容區域的選擇器特異性
+  div.tab-content.bg-white {
+    div.tab-pane.fade {
+      padding: 1rem 0;
+      transition: opacity $animation-duration linear, transform $animation-duration ease;
+      
+      &.show.active {
+        animation: tab-fade-in $animation-duration;
+      }
+    }
+  }
+}
+
+// 淡入動畫 (使用唯一名稱避免衝突)
+@keyframes tab-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// // 響應式調整
+// // @media (max-width: 576px) {
+// //   html body .nav-tabs.w-100 .nav-item.w-50 button.nav-link.w-100 {
+// //     padding: 0.75rem 0;
+// //     font-size: 0.9rem;
+// //   }
+// // }
+
+// /* 基本設置 - 確保主容器至少佔用整個視口高度 */
+// .bg-nature-99.d-flex.flex-column {
+//   min-height: 100vh;  /* 確保至少為整個視口高度 */
+//   display: flex;
+//   flex-direction: column;
+// }
+
+// /* 確保主要內容區域可以彈性增長以填充空間 */
+// .flex-grow-1 {
+//   flex-grow: 1;
+// }
+
+// /* 確保頁尾在小螢幕尺寸下固定在底部 */
+// @media (max-width: 576px) {
+//   /* 重新設置主容器在小螢幕下的樣式 */
+//   .bg-nature-99.d-flex.flex-column {
+//     min-height: 100vh;
+//     display: flex;
+//     flex-direction: column;
+//   }
+  
+//   /* 確保主要內容區域在小螢幕下彈性填充 */
+//   main.flex-grow-1 {
+//     flex: 1 0 auto;  /* flex-grow: 1, flex-shrink: 0, flex-basis: auto */
+//   }
+  
+//   /* 確保頁尾不會被壓縮 */
+//   footer.footer {
+//     flex-shrink: 0;
+//     width: 100%;
+//   }
+  
+//   /* 移除可能影響布局的樣式 */
+//   .mt-auto-md {
+//     margin-top: auto !important;
+//   }
+// }

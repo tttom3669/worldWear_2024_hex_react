@@ -162,11 +162,6 @@ export default function ProductsList() {
     document.body.style.overflow = showOffcanvas ? "" : "hidden";
   }, [showOffcanvas]);
 
-  // 使用 useCallback 優化重置篩選邏輯
-  const handleResetFilters = useCallback(() => {
-    dispatch(resetFilters());
-  }, [dispatch]);
-
   // 計算總篩選數量
   const totalFilterCount = useMemo(() =>
     Object.values(filters).reduce(
@@ -175,16 +170,6 @@ export default function ProductsList() {
     ),
     [filters]
   );
-
-  // 調試用日誌
-  useEffect(() => {
-    console.log('當前分類:', currentCategory);
-    console.log('當前 URL 路徑:', location.pathname);
-    console.log('當前 URL 參數:', { gender, category });
-    console.log('當前篩選條件:', filters);
-    console.log('篩選後產品數量:', filteredItems.length);
-    console.log('原始產品數量:', items.length);
-  }, [currentCategory, location, gender, category, filters, filteredItems, items]);
 
   // 在組件被卸載時確保header可見和body滾動恢復
   useEffect(() => {

@@ -11,11 +11,12 @@ const ProductCard = ({ data }) => {
 
   const handleToggleFavorite = (e) => {
     e.preventDefault();
+    e.stopPropagation();  // 停止事件冒泡，防止觸發父元素的連結
     dispatch(toggleFavorite(data.id));
   };
 
   const handleImageClick = (e) => {
-    e.preventDefault();
+    // 移除 e.preventDefault()，讓連結可以正常工作
     setIsClicked(true);
     setTimeout(() => setIsClicked(false), 400);
   };
@@ -80,14 +81,14 @@ const ProductCard = ({ data }) => {
               className="card-img-top"
               animate={{ x: isClicked ? 40 : 0 }}
               transition={{ type: "spring", stiffness: 150 }}
-              onClick={handleImageClick}
+              onClick={handleImageClick}  // 保留點擊動畫但不阻止導航
             />
             {data.status === "補貨中" && (
               <div className="card-img-overlay d-flex align-items-center justify-content-center mt-12">
                 <h2 className="card-title fst-italic font-dm-serif text-white">
                   Sold Out
                 </h2>
-                <p class="card-text"><h5 class="text-white">已售完</h5></p>
+                <p className="card-text"><h5 className="text-white">已售完</h5></p>
               </div>
             )}
           </motion.div>
@@ -109,7 +110,7 @@ const ProductCard = ({ data }) => {
               className={`btn favorite-button ${
                 data.isFavorite ? "isLike" : ""
               }`}
-              onClick={handleToggleFavorite}
+              onClick={handleToggleFavorite}  // 這裡已包含 preventDefault 和 stopPropagation
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -133,7 +134,7 @@ const ProductCard = ({ data }) => {
             <button
               type="button"
               className={`btn favorite ${data.isFavorite ? "isLike" : ""}`}
-              onClick={handleToggleFavorite}
+              onClick={handleToggleFavorite}  // 這裡已包含 preventDefault 和 stopPropagation
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
