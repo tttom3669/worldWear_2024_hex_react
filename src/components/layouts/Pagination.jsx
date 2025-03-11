@@ -46,7 +46,7 @@ const Pagination = ({ data, RenderComponent, pageLimit, dataLimit }) => {
             disabled={currentPage === 1}
           >
             <svg width="10" height="19">
-              <use href="/public/icons/prev.svg#prev"></use>
+              <use href="/icons/prev.svg#prev"></use>
             </svg>
           </button>
 
@@ -68,7 +68,7 @@ const Pagination = ({ data, RenderComponent, pageLimit, dataLimit }) => {
             disabled={currentPage === pages}
           >
             <svg width="10" height="19">
-              <use href="/public/icons/next.svg#next"></use>
+              <use href="/icons/next.svg#next"></use>
             </svg>
           </button>
         </div>

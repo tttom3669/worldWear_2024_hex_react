@@ -452,7 +452,7 @@ export const FilterSortButton = memo(
               )}
             </h6>
             <span className="dropdown-icon ms-2">
-              <img src="/public/icons/dropdownIcon.svg" alt="dropdown-Icon" />
+              <img src="/icons/dropdownIcon.svg" alt="dropdown-Icon" />
             </span>
           </button>
 
