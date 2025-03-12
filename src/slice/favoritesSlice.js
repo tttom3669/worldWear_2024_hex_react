@@ -1,54 +1,109 @@
 // favoritesSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { 
+  getUserId, 
+  isUserLoggedIn, 
+  getWorldWearTokenFromCookie, 
+  COOKIE_NAMES, 
+  getCookie 
+} from "../components/tools/cookieUtils";
 
 const { VITE_API_PATH: API_PATH } = import.meta.env;
 
-// 獲取用戶ID的輔助函數
-const getUserId = () => {
-  return document.cookie.replace(
-    /(?:(?:^|.*;\s*)worldWearUserId\s*\=\s*([^;]*).*$)|^.*$/,
-    "$1"
-  );
+// 設置 API 的基本 URL
+const API_URL = API_PATH || 'http://localhost:3000';
+
+// 設置和獲取 axios 請求頭中的 Authorization 
+const ensureAuthHeader = () => {
+  // 優先從 localStorage 獲取 token
+  const token = localStorage.getItem('token');
+  
+  // 如果 localStorage 中沒有找到，則從 cookie 獲取
+  const cookieToken = token || getWorldWearTokenFromCookie();
+  
+  if (cookieToken) {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${cookieToken}`;
+    console.log('favoritesSlice: 已設置 Authorization header');
+    return cookieToken;
+  }
+  
+  console.log('favoritesSlice: 未找到 token，無法設置 Authorization header');
+  delete axios.defaults.headers.common['Authorization'];
+  return null;
 };
 
-// 檢查用戶是否已登入
-const isUserLoggedIn = () => {
-  const userId = getUserId();
-  return !!userId && userId.length > 0;
+// 獲取用戶 ID 的多重檢查函數 - 優先從 Redux 狀態獲取
+const getSecureUserId = (getState) => {
+  const state = getState();
+  // 使用 cookieUtils 的 getUserId 函數從多個來源獲取用戶 ID
+  return getUserId(state);
 };
 
-// 獲取收藏列表數據
+// 獲取收藏列表數據 - 使用新的 API 端點
 export const getFavorites = createAsyncThunk(
   "favorites/getFavorites",
-  async (_, { rejectWithValue }) => {
+  async (_, { getState, rejectWithValue }) => {
     try {
+      // 確保設置 Authorization header，並獲取可能使用的 token
+      const token = ensureAuthHeader();
+      
       // 檢查用戶是否已登入，如果未登入，直接返回空數據而不是拋出錯誤
       if (!isUserLoggedIn()) {
+        console.log("用戶未登入，無法獲取收藏列表");
         return {
           total: 0,
           products: [],
         };
       }
 
-      const userId = getUserId();
-      // 使用 _expand 查詢參數獲取相關聯的產品信息
-      const res = await axios.get(
-        `${API_PATH}/favorites?userId=${userId}&_expand=product`
-      );
+      // 從 state 中獲取用戶 ID (使用增強版的獲取函數)
+      const userId = getSecureUserId(getState);
+      
+      // 如果仍然沒有獲取到用戶 ID，返回空數據
+      if (!userId) {
+        console.log("未找到用戶 ID，無法獲取收藏列表");
+        return {
+          total: 0,
+          products: [],
+        };
+      }
 
-      // 將API響應轉換為需要的格式
+      console.log("獲取收藏列表，使用者ID:", userId);
+      
+      // 使用新的 API 端點，添加 _expand 參數
+      const response = await axios.get(
+        `${API_URL}/favorites/?userId=${userId}&_expand=user&_expand=product`,
+        {
+          headers: token ? {
+            Authorization: `Bearer ${token}`
+          } : undefined
+        }
+      );
+      
+      console.log("API 返回收藏數據:", response.data);
+      
+      // 處理 API 返回的數據
+      const favoritesWithProducts = response.data.map(item => ({
+        ...item,
+        // 確保有基本的產品信息
+        product: item.product || null
+      }));
+      
       return {
-        total: res.data.length,
-        products: res.data,
+        total: favoritesWithProducts.length,
+        products: favoritesWithProducts,
       };
     } catch (error) {
       console.error("獲取收藏列表失敗:", error);
-      // 返回空數據而不是拋出錯誤
-      return {
-        total: 0,
-        products: [],
-      };
+      
+      // 如果是 API 錯誤，嘗試返回更具體的錯誤信息
+      if (error.response) {
+        return rejectWithValue(error.response.data.message || "獲取收藏列表失敗");
+      }
+      
+      // 如果是網絡錯誤或其他錯誤，返回一般性錯誤
+      return rejectWithValue("獲取收藏列表失敗，請檢查網絡連接");
     }
   }
 );
@@ -56,42 +111,63 @@ export const getFavorites = createAsyncThunk(
 // 新增收藏項目
 export const addToFavorites = createAsyncThunk(
   "favorites/addToFavorites",
-  async (favoriteItem, { rejectWithValue }) => {
+  async (favoriteItem, { getState, rejectWithValue, dispatch }) => {
     try {
+      // 確保設置 Authorization header，並獲取可能使用的 token
+      const token = ensureAuthHeader();
+      
       // 確保用戶已登入
       if (!isUserLoggedIn()) {
         return rejectWithValue("請先登入再加入收藏");
       }
 
-      // 確保 userId 存在
-      const userId = favoriteItem.userId || getUserId();
+      // 從 state 中獲取用戶 ID (使用增強版的獲取函數)
+      const userId = getSecureUserId(getState);
+      
+      if (!userId) {
+        return rejectWithValue("無法獲取用戶ID，請重新登入");
+      }
 
-      // 檢查並確保必要字段的存在
-      const item = {
+      // 準備要發送的數據
+      const favoriteData = {
         userId: userId,
         productId: favoriteItem.productId,
         qty: favoriteItem.qty || 1,
         color: favoriteItem.color || "",
-        size: favoriteItem.size || "",
+        size: favoriteItem.size || ""
       };
       
-      // 檢查是否已經收藏過該產品
-      const checkRes = await axios.get(
-        `${API_PATH}/favorites?userId=${userId}&productId=${item.productId}`
-      );
-      
-      // 如果已經收藏過，則返回現有記錄而不是創建新記錄
-      if (checkRes.data.length > 0) {
-        return checkRes.data[0];
-      }
-      
       // 發送 API 請求添加收藏
-      const response = await axios.post(`${API_PATH}/favorites`, item);
+      const response = await axios.post(`${API_URL}/favorites`, favoriteData, {
+        headers: token ? {
+          Authorization: `Bearer ${token}`
+        } : undefined
+      });
       
-      return response.data;
+      console.log("API 返回新增收藏結果:", response.data);
+      
+      // 更新產品收藏狀態
+      dispatch(updateProductFavoriteStatus({
+        productId: favoriteItem.productId,
+        isInFavorites: true,
+        favoriteItem: response.data
+      }));
+      
+      // 由於使用新的 API，直接返回響應數據
+      return {
+        ...response.data,
+        product: response.data.product || null
+      };
     } catch (error) {
       console.error("添加收藏失敗:", error);
-      return rejectWithValue(error.response?.data || error.message || "添加收藏失敗");
+      
+      // 如果是 API 錯誤，嘗試返回更具體的錯誤信息
+      if (error.response) {
+        return rejectWithValue(error.response.data.message || "添加收藏失敗");
+      }
+      
+      // 如果是網絡錯誤或其他錯誤，返回一般性錯誤
+      return rejectWithValue(error.message || "添加收藏失敗，請檢查網絡連接");
     }
   }
 );
@@ -99,21 +175,59 @@ export const addToFavorites = createAsyncThunk(
 // 移除收藏項目
 export const removeFromFavorites = createAsyncThunk(
   "favorites/removeFromFavorites",
-  async (id, { rejectWithValue }) => {
+  async (id, { getState, rejectWithValue, dispatch }) => {
     try {
+      // 確保設置 Authorization header，並獲取可能使用的 token
+      const token = ensureAuthHeader();
+      
       // 確保用戶已登入
       if (!isUserLoggedIn()) {
         return rejectWithValue("請先登入再操作收藏");
       }
       
-      // 使用 DELETE 方法刪除
-      await axios.delete(`${API_PATH}/favorites/${id}`);
+      // 從 state 中獲取用戶 ID (使用增強版的獲取函數)
+      const userId = getSecureUserId(getState);
+      
+      if (!userId) {
+        return rejectWithValue("無法獲取用戶ID，請重新登入");
+      }
+      
+      // 找到要刪除的收藏項目，以獲取其產品 ID
+      const favoriteItem = getState().favorites.favoritesData.products.find(
+        item => item.id === id
+      );
+      
+      // 發送 API 請求刪除收藏
+      await axios.delete(`${API_URL}/favorites/${id}`, {
+        headers: token ? {
+          Authorization: `Bearer ${token}`
+        } : undefined,
+        params: { userId } // 確保刪除操作是針對當前用戶的
+      });
+      
+      console.log("成功刪除收藏項目:", id);
+      
+      // 如果找到相應的收藏項目，更新其產品的收藏狀態
+      if (favoriteItem && favoriteItem.productId) {
+        dispatch(updateProductFavoriteStatus({
+          productId: favoriteItem.productId,
+          isInFavorites: false,
+          favoriteItem: null
+        }));
+      }
       
       // 返回被刪除的收藏項ID
-      return { id };
+      return { id, productId: favoriteItem?.productId };
     } catch (error) {
       console.error("移除收藏失敗:", error);
-      return rejectWithValue(error.response?.data || error.message || "移除收藏失敗");
+      
+      // 如果是 API 錯誤，嘗試返回更具體的錯誤信息
+      if (error.response) {
+        return rejectWithValue(error.response.data.message || "移除收藏失敗");
+      }
+      
+      // 如果是網絡錯誤或其他錯誤，返回一般性錯誤
+      return rejectWithValue(error.message || "移除收藏失敗，請檢查網絡連接");
     }
   }
 );
@@ -121,23 +235,50 @@ export const removeFromFavorites = createAsyncThunk(
 // 更新收藏項目數量
 export const updateFavoriteItemQuantity = createAsyncThunk(
   "favorites/updateFavoriteItemQuantity",
-  async ({ id, qty }, { rejectWithValue }) => {
+  async ({ id, qty }, { getState, rejectWithValue }) => {
     try {
+      // 確保設置 Authorization header，並獲取可能使用的 token
+      const token = ensureAuthHeader();
+      
       // 確保用戶已登入
       if (!isUserLoggedIn()) {
         return rejectWithValue("請先登入再操作收藏");
       }
 
+      // 從 state 中獲取用戶 ID (使用增強版的獲取函數)
+      const userId = getSecureUserId(getState);
+      
+      if (!userId) {
+        return rejectWithValue("無法獲取用戶ID，請重新登入");
+      }
+      
       // 確保數量至少為1
       const validQty = Math.max(1, qty);
-
-      // 使用 PATCH 方法更新數量
-      await axios.patch(`${API_PATH}/favorites/${id}`, { qty: validQty });
-
+      
+      // 發送 API 請求更新數量
+      const response = await axios.patch(`${API_URL}/favorites/${id}`, 
+        { qty: validQty }, 
+        {
+          headers: token ? {
+            Authorization: `Bearer ${token}`
+          } : undefined,
+          params: { userId } // 確保更新操作是針對當前用戶的
+        }
+      );
+      
+      console.log("API 返回更新數量結果:", response.data);
+      
       return { id, qty: validQty };
     } catch (error) {
       console.error("更新收藏項目數量失敗:", error);
-      return rejectWithValue(error.response?.data || error.message || "更新收藏項目數量失敗");
+      
+      // 如果是 API 錯誤，嘗試返回更具體的錯誤信息
+      if (error.response) {
+        return rejectWithValue(error.response.data.message || "更新收藏項目數量失敗");
+      }
+      
+      // 如果是網絡錯誤或其他錯誤，返回一般性錯誤
+      return rejectWithValue(error.message || "更新收藏項目數量失敗，請檢查網絡連接");
     }
   }
 );
@@ -145,15 +286,24 @@ export const updateFavoriteItemQuantity = createAsyncThunk(
 // 將收藏項目加入購物車
 export const addFavoriteToCart = createAsyncThunk(
   "favorites/addFavoriteToCart",
-  async (favoriteItem, { rejectWithValue }) => {
+  async (favoriteItem, { getState, rejectWithValue }) => {
     try {
+      // 確保設置 Authorization header，並獲取可能使用的 token
+      const token = ensureAuthHeader();
+      
       // 確保用戶已登入
       if (!isUserLoggedIn()) {
         return rejectWithValue("請先登入再加入購物車");
       }
 
-      const userId = getUserId();
+      // 從 state 中獲取用戶 ID (使用增強版的獲取函數)
+      const userId = getSecureUserId(getState);
+      
+      if (!userId) {
+        return rejectWithValue("無法獲取用戶ID，請重新登入");
+      }
 
+      // 準備要發送的數據
       const cartItem = {
         userId: userId,
         productId: favoriteItem.productId,
@@ -162,12 +312,26 @@ export const addFavoriteToCart = createAsyncThunk(
         size: favoriteItem.size || favoriteItem.product?.size || "",
       };
 
-      // 使用 POST 方法添加項目
-      await axios.post(`${API_PATH}/carts`, cartItem);
+      // 發送 API 請求添加到購物車
+      const response = await axios.post(`${API_URL}/cart`, cartItem, {
+        headers: token ? {
+          Authorization: `Bearer ${token}`
+        } : undefined
+      });
+      
+      console.log("API 返回添加購物車結果:", response.data);
+      
       return { success: true, productId: cartItem.productId };
     } catch (error) {
       console.error("加入購物車失敗:", error);
-      return rejectWithValue(error.response?.data || error.message || "加入購物車失敗");
+      
+      // 如果是 API 錯誤，嘗試返回更具體的錯誤信息
+      if (error.response) {
+        return rejectWithValue(error.response.data.message || "加入購物車失敗");
+      }
+      
+      // 如果是網絡錯誤或其他錯誤，返回一般性錯誤
+      return rejectWithValue(error.message || "加入購物車失敗，請檢查網絡連接");
     }
   }
 );
@@ -175,8 +339,11 @@ export const addFavoriteToCart = createAsyncThunk(
 // 檢查特定產品是否已收藏
 export const checkProductFavoriteStatus = createAsyncThunk(
   "favorites/checkProductFavoriteStatus",
-  async (productId, { dispatch }) => {
+  async (productId, { getState, dispatch }) => {
     try {
+      // 確保設置 Authorization header，並獲取可能使用的 token
+      const token = ensureAuthHeader();
+      
       // 如果用戶未登入，直接返回未收藏狀態
       if (!isUserLoggedIn()) {
         return { 
@@ -186,29 +353,43 @@ export const checkProductFavoriteStatus = createAsyncThunk(
         };
       }
 
-      const userId = getUserId();
+      // 從 state 中獲取用戶 ID (使用增強版的獲取函數)
+      const userId = getSecureUserId(getState);
       
-      // 檢查產品是否已在收藏列表中
-      const response = await axios.get(
-        `${API_PATH}/favorites?userId=${userId}&productId=${productId}`
-      );
+      if (!userId) {
+        return { 
+          productId,
+          isInFavorites: false, 
+          favoriteItem: null
+        };
+      }
       
-      const isInFavorites = response.data.length > 0;
-      const favoriteItem = isInFavorites ? response.data[0] : null;
+      // 發送 API 請求檢查收藏狀態
+      const response = await axios.get(`${API_URL}/favorites/check`, {
+        params: { userId, productId },
+        headers: token ? {
+          Authorization: `Bearer ${token}`
+        } : undefined
+      });
+      
+      console.log(`API 返回產品 ${productId} 的收藏狀態:`, response.data);
+      
+      // 假設 API 返回 { isInFavorites: true/false, favoriteItem: {...} }
+      const result = response.data;
       
       // 更新 UI 狀態
-      if (isInFavorites && favoriteItem) {
+      if (result.isInFavorites && result.favoriteItem) {
         dispatch(updateProductFavoriteStatus({
           productId,
           isInFavorites: true,
-          favoriteItem
+          favoriteItem: result.favoriteItem
         }));
       }
       
       return { 
         productId,
-        isInFavorites, 
-        favoriteItem: favoriteItem || null
+        isInFavorites: result.isInFavorites, 
+        favoriteItem: result.favoriteItem || null
       };
     } catch (error) {
       console.error("檢查收藏狀態失敗:", error);
@@ -231,10 +412,11 @@ const initialState = {
   status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null,
   recentlyAddedProductIds: [], // 追蹤最近添加到收藏的產品ID
+  productFavoriteStatus: {}, // 存儲產品 ID 到收藏狀態的映射
 };
 
 // 創建slice
-export const favoritesSlice = createSlice({
+const favoritesSlice = createSlice({
   name: "favorites",
   initialState,
   reducers: {
@@ -252,6 +434,12 @@ export const favoritesSlice = createSlice({
     updateProductFavoriteStatus(state, action) {
       const { productId, isInFavorites, favoriteItem } = action.payload;
       
+      // 將產品收藏狀態存儲到 productFavoriteStatus
+      state.productFavoriteStatus[productId] = {
+        isInFavorites,
+        favoriteItem: favoriteItem || null
+      };
+      
       // 將產品 ID 添加到最近收藏的列表中
       if (isInFavorites && !state.recentlyAddedProductIds.includes(productId)) {
         state.recentlyAddedProductIds.push(productId);
@@ -261,7 +449,16 @@ export const favoritesSlice = createSlice({
           pid => pid !== productId
         );
       }
-    }
+    },
+    // 清空收藏列表
+    clearFavorites(state) {
+      state.favoritesData = {
+        total: 0,
+        products: [],
+      };
+      state.recentlyAddedProductIds = [];
+      state.productFavoriteStatus = {};
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -273,6 +470,16 @@ export const favoritesSlice = createSlice({
         state.status = "succeeded";
         state.favoritesData = action.payload;
         state.error = null;
+        
+        // 更新產品收藏狀態
+        action.payload.products.forEach(item => {
+          if (item.productId) {
+            state.productFavoriteStatus[item.productId] = {
+              isInFavorites: true,
+              favoriteItem: item
+            };
+          }
+        });
       })
       .addCase(getFavorites.rejected, (state, action) => {
         state.status = "failed";
@@ -289,6 +496,25 @@ export const favoritesSlice = createSlice({
         if (productId && !state.recentlyAddedProductIds.includes(productId)) {
           state.recentlyAddedProductIds.push(productId);
         }
+        
+        // 更新收藏列表
+        const existingProductIndex = state.favoritesData.products.findIndex(
+          product => product.id === action.payload.id
+        );
+        
+        if (existingProductIndex === -1) {
+          state.favoritesData.products.push(action.payload);
+          state.favoritesData.total = state.favoritesData.products.length;
+        }
+        
+        // 更新產品收藏狀態
+        if (productId) {
+          state.productFavoriteStatus[productId] = {
+            isInFavorites: true,
+            favoriteItem: action.payload
+          };
+        }
+        
         state.status = "succeeded";
       })
       .addCase(addToFavorites.rejected, (state, action) => {
@@ -302,17 +528,33 @@ export const favoritesSlice = createSlice({
       })
       .addCase(removeFromFavorites.fulfilled, (state, action) => {
         // 從最近添加的產品列表中移除
-        if (action.payload && action.payload.id) {
-          const favoriteItem = state.favoritesData.products.find(
-            item => item.id === action.payload.id
-          );
-          if (favoriteItem) {
+        if (action.payload) {
+          // 移除收藏項目
+          if (action.payload.id) {
+            state.favoritesData.products = state.favoritesData.products.filter(
+              product => product.id !== action.payload.id
+            );
+            state.favoritesData.total = state.favoritesData.products.length;
+          }
+          
+          // 更新產品收藏狀態
+          if (action.payload.productId) {
+            if (state.productFavoriteStatus[action.payload.productId]) {
+              state.productFavoriteStatus[action.payload.productId] = {
+                isInFavorites: false,
+                favoriteItem: null
+              };
+            }
+            
+            // 從最近添加的列表中移除
             state.recentlyAddedProductIds = state.recentlyAddedProductIds.filter(
-              pid => pid !== favoriteItem.productId
+              id => id !== action.payload.productId
             );
           }
         }
+        
         state.status = "succeeded";
+        state.error = null;
       })
       .addCase(removeFromFavorites.rejected, (state, action) => {
         state.status = "failed";
@@ -331,8 +573,18 @@ export const favoritesSlice = createSlice({
 
         if (productIndex !== -1) {
           state.favoritesData.products[productIndex].qty = qty;
+          
+          // 同時更新 productFavoriteStatus 中的數據
+          const product = state.favoritesData.products[productIndex];
+          if (product.productId && state.productFavoriteStatus[product.productId]) {
+            state.productFavoriteStatus[product.productId].favoriteItem = {
+              ...state.productFavoriteStatus[product.productId].favoriteItem,
+              qty
+            };
+          }
         }
         state.status = "succeeded";
+        state.error = null;
       })
       .addCase(updateFavoriteItemQuantity.rejected, (state, action) => {
         state.status = "failed";
@@ -345,6 +597,7 @@ export const favoritesSlice = createSlice({
       })
       .addCase(addFavoriteToCart.fulfilled, (state) => {
         state.status = "succeeded";
+        state.error = null;
       })
       .addCase(addFavoriteToCart.rejected, (state, action) => {
         state.status = "failed";
@@ -353,7 +606,13 @@ export const favoritesSlice = createSlice({
 
       // 處理 checkProductFavoriteStatus
       .addCase(checkProductFavoriteStatus.fulfilled, (state, action) => {
-        // 不需要特別處理，因為我們使用單獨的 action 來更新產品收藏狀態
+        // 更新產品收藏狀態
+        if (action.payload && action.payload.productId) {
+          state.productFavoriteStatus[action.payload.productId] = {
+            isInFavorites: action.payload.isInFavorites,
+            favoriteItem: action.payload.favoriteItem
+          };
+        }
       });
   },
 });
@@ -375,6 +634,12 @@ export const isFavoriteProduct = (state, productId) => {
   // 如果用戶未登入，直接返回 false
   if (!isUserLoggedIn()) return false;
   
+  // 首先從 productFavoriteStatus 查找，這是最精確的
+  if (state.favorites?.productFavoriteStatus?.[productId]?.isInFavorites) {
+    return true;
+  }
+  
+  // 如果沒有在狀態中找到，則查詢收藏列表
   return state.favorites?.favoritesData?.products?.some(item => 
     item.productId === productId
   ) || false;
@@ -384,9 +649,27 @@ export const getFavoriteItem = (state, productId) => {
   // 如果用戶未登入，直接返回 null
   if (!isUserLoggedIn()) return null;
   
+  // 首先從 productFavoriteStatus 查找，這是最精確的
+  if (state.favorites?.productFavoriteStatus?.[productId]?.favoriteItem) {
+    return state.favorites.productFavoriteStatus[productId].favoriteItem;
+  }
+  
+  // 如果沒有在狀態中找到，則查詢收藏列表
   return state.favorites?.favoritesData?.products?.find(item => 
     item.productId === productId
   ) || null;
+};
+
+// 獲取產品的收藏狀態詳細信息
+export const getProductFavoriteStatus = (state, productId) => {
+  // 如果用戶未登入，直接返回未收藏狀態
+  if (!isUserLoggedIn()) {
+    return { isInFavorites: false, favoriteItem: null };
+  }
+  
+  // 從 productFavoriteStatus 獲取狀態信息
+  return state.favorites?.productFavoriteStatus?.[productId] || 
+    { isInFavorites: false, favoriteItem: null };
 };
 
 // Action creators
@@ -394,1113 +677,8 @@ export const {
   setFavoritesData, 
   resetFavoritesError, 
   clearRecentlyAddedProducts,
-  updateProductFavoriteStatus
+  updateProductFavoriteStatus,
+  clearFavorites
 } = favoritesSlice.actions;
 
 export default favoritesSlice.reducer;
-
-// // favoritesSlice.js
-// import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-// import axios from "axios";
-
-// const { VITE_API_PATH: API_PATH } = import.meta.env;
-
-// // 獲取用戶ID的輔助函數
-// const getUserId = () => {
-//   return document.cookie.replace(
-//     /(?:(?:^|.*;\s*)worldWearUserId\s*\=\s*([^;]*).*$)|^.*$/,
-//     "$1"
-//   );
-// };
-
-// // 獲取認證 token
-// const getAuthToken = () => {
-//   return document.cookie.replace(
-//     /(?:(?:^|.*;\s*)worldWearToken\s*\=\s*([^;]*).*$)|^.*$/,
-//     "$1"
-//   );
-// };
-
-// // 檢查用戶是否已登入
-// const isUserLoggedIn = () => {
-//   const userId = getUserId();
-//   const token = getAuthToken();
-//   return !!userId && userId.length > 0 && !!token && token.length > 0;
-// };
-
-// // 配置 axios 請求頭部
-// const configureAxiosHeaders = () => {
-//   const token = getAuthToken();
-//   return {
-//     headers: {
-//       Authorization: `Bearer ${token}`,
-//       'Content-Type': 'application/json'
-//     }
-//   };
-// };
-
-// // 獲取收藏列表數據
-// export const getFavorites = createAsyncThunk(
-//   "favorites/getFavorites",
-//   async (_, { rejectWithValue }) => {
-//     try {
-//       // 檢查用戶是否已登入，如果未登入，直接返回空數據而不是拋出錯誤
-//       if (!isUserLoggedIn()) {
-//         return {
-//           total: 0,
-//           products: [],
-//         };
-//       }
-
-//       const userId = getUserId();
-//       const config = configureAxiosHeaders();
-      
-//       // 添加認證頭
-//       const res = await axios.get(
-//         `${API_PATH}/favorites?userId=${userId}`,
-//         config
-//       );
-
-//       // 獲取收藏列表產品詳細資訊
-//       const productsWithDetails = await Promise.all(
-//         res.data.map(async (item) => {
-//           try {
-//             // 使用 productId 來獲取產品資訊 (產品資訊可能不需要認證)
-//             const productRes = await axios.get(`${API_PATH}/products/${item.productId}`);
-//             return {
-//               ...item,
-//               product: productRes.data
-//             };
-//           } catch (error) {
-//             console.error(`獲取產品 ${item.productId} 詳細資訊失敗:`, error);
-//             return {
-//               ...item,
-//               product: null
-//             };
-//           }
-//         })
-//       );
-
-//       // 將API響應轉換為需要的格式
-//       return {
-//         total: productsWithDetails.length,
-//         products: productsWithDetails,
-//       };
-//     } catch (error) {
-//       console.error("獲取收藏列表失敗:", error);
-//       // 在控制台記錄錯誤，但不拋出錯誤
-//       return {
-//         total: 0,
-//         products: [],
-//       };
-//     }
-//   }
-// );
-
-// // 新增收藏項目
-// export const addToFavorites = createAsyncThunk(
-//   "favorites/addToFavorites",
-//   async (favoriteItem, { rejectWithValue }) => {
-//     try {
-//       // 確保用戶已登入
-//       if (!isUserLoggedIn()) {
-//         return rejectWithValue("請先登入再加入收藏");
-//       }
-
-//       // 確保 userId 存在
-//       const userId = favoriteItem.userId || getUserId();
-//       const config = configureAxiosHeaders();
-
-//       // 檢查並確保必要字段的存在
-//       const item = {
-//         userId: userId,
-//         productId: favoriteItem.productId, // 使用 productId
-//         qty: favoriteItem.qty || 1,
-//         color: favoriteItem.color || "",
-//         size: favoriteItem.size || "",
-//       };
-      
-//       // 檢查是否已經收藏過該產品
-//       const checkRes = await axios.get(
-//         `${API_PATH}/favorites?userId=${userId}&productId=${item.productId}`,
-//         config
-//       );
-      
-//       // 如果已經收藏過，則返回現有記錄而不是創建新記錄
-//       if (checkRes.data.length > 0) {
-//         return checkRes.data[0];
-//       }
-      
-//       // 發送 API 請求添加收藏
-//       const response = await axios.post(`${API_PATH}/favorites`, item, config);
-      
-//       return response.data;
-//     } catch (error) {
-//       console.error("添加收藏失敗:", error);
-//       return rejectWithValue(error.message || "添加收藏失敗");
-//     }
-//   }
-// );
-
-// // 移除收藏項目
-// export const removeFromFavorites = createAsyncThunk(
-//   "favorites/removeFromFavorites",
-//   async (id, { rejectWithValue }) => {
-//     try {
-//       // 確保用戶已登入
-//       if (!isUserLoggedIn()) {
-//         return rejectWithValue("請先登入再操作收藏");
-//       }
-      
-//       const config = configureAxiosHeaders();
-      
-//       // 發送 API 請求刪除收藏
-//       await axios.delete(`${API_PATH}/favorites/${id}`, config);
-      
-//       // 返回被刪除的收藏項ID
-//       return { id };
-//     } catch (error) {
-//       console.error("移除收藏失敗:", error);
-//       return rejectWithValue(error.message || "移除收藏失敗");
-//     }
-//   }
-// );
-
-// // 更新收藏項目數量
-// export const updateFavoriteItemQuantity = createAsyncThunk(
-//   "favorites/updateFavoriteItemQuantity",
-//   async ({ id, qty }, { dispatch, rejectWithValue }) => {
-//     try {
-//       // 確保用戶已登入
-//       if (!isUserLoggedIn()) {
-//         return rejectWithValue("請先登入再操作收藏");
-//       }
-
-//       // 確保數量至少為1
-//       const validQty = Math.max(1, qty);
-//       const config = configureAxiosHeaders();
-
-//       // 發送API請求
-//       await axios.patch(`${API_PATH}/favorites/${id}`, { qty: validQty }, config);
-
-//       return { id, qty: validQty };
-//     } catch (error) {
-//       console.error("更新收藏項目數量失敗:", error);
-//       return rejectWithValue(error.message || "更新收藏項目數量失敗");
-//     }
-//   }
-// );
-
-// // 將收藏項目加入購物車
-// export const addFavoriteToCart = createAsyncThunk(
-//   "favorites/addFavoriteToCart",
-//   async (favoriteItem, { rejectWithValue }) => {
-//     try {
-//       // 確保用戶已登入
-//       if (!isUserLoggedIn()) {
-//         return rejectWithValue("請先登入再加入購物車");
-//       }
-
-//       const userId = getUserId();
-//       const config = configureAxiosHeaders();
-
-//       const cartItem = {
-//         userId: userId,
-//         productId: favoriteItem.productId,
-//         qty: favoriteItem.qty || 1,
-//         color: favoriteItem.color || favoriteItem.product?.color || "",
-//         size: favoriteItem.size || favoriteItem.product?.size || "",
-//       };
-
-//       await axios.post(`${API_PATH}/cart`, cartItem, config);
-//       return { success: true, productId: cartItem.productId };
-//     } catch (error) {
-//       console.error("加入購物車失敗:", error);
-//       return rejectWithValue(error.message || "加入購物車失敗");
-//     }
-//   }
-// );
-
-// // 檢查特定產品是否已收藏 - 這只會在使用者明確請求檢查時使用
-// export const checkProductFavoriteStatus = createAsyncThunk(
-//   "favorites/checkProductFavoriteStatus",
-//   async (productId, { dispatch, rejectWithValue }) => {
-//     try {
-//       // 如果用戶未登入，直接返回未收藏狀態
-//       if (!isUserLoggedIn()) {
-//         return { 
-//           productId,
-//           isInFavorites: false, 
-//           favoriteItem: null
-//         };
-//       }
-
-//       const userId = getUserId();
-//       const config = configureAxiosHeaders();
-      
-//       // 檢查產品是否已在收藏列表中
-//       const response = await axios.get(
-//         `${API_PATH}/favorites?userId=${userId}&productId=${productId}`,
-//         config
-//       );
-      
-//       const isInFavorites = response.data.length > 0;
-//       const favoriteItem = isInFavorites ? response.data[0] : null;
-      
-//       // 更新 UI 狀態
-//       if (isInFavorites && favoriteItem) {
-//         dispatch(updateProductFavoriteStatus({
-//           productId,
-//           isInFavorites: true,
-//           favoriteItem
-//         }));
-//       }
-      
-//       return { 
-//         productId,
-//         isInFavorites, 
-//         favoriteItem: favoriteItem || null
-//       };
-//     } catch (error) {
-//       console.error("檢查收藏狀態失敗:", error);
-//       // 返回默認值而不是錯誤
-//       return { 
-//         productId,
-//         isInFavorites: false, 
-//         favoriteItem: null
-//       };
-//     }
-//   }
-// );
-
-// // 初始狀態
-// const initialState = {
-//   favoritesData: {
-//     total: 0,
-//     products: [],
-//   },
-//   status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
-//   error: null,
-//   recentlyAddedProductIds: [], // 追蹤最近添加到收藏的產品ID
-// };
-
-// // 創建slice
-// export const favoritesSlice = createSlice({
-//   name: "favorites",
-//   initialState,
-//   reducers: {
-//     // 直接設置收藏數據 (如果需要)
-//     setFavoritesData(state, action) {
-//       state.favoritesData = { ...action.payload };
-//     },
-//     resetFavoritesError(state) {
-//       state.error = null;
-//     },
-//     clearRecentlyAddedProducts(state) {
-//       state.recentlyAddedProductIds = [];
-//     },
-//     // 更新產品的收藏狀態
-//     updateProductFavoriteStatus(state, action) {
-//       const { productId, isInFavorites, favoriteItem } = action.payload;
-      
-//       // 將產品 ID 添加到最近收藏的列表中
-//       if (isInFavorites && !state.recentlyAddedProductIds.includes(productId)) {
-//         state.recentlyAddedProductIds.push(productId);
-//       } else if (!isInFavorites) {
-//         // 如果移除收藏，則從最近添加的產品列表中移除
-//         state.recentlyAddedProductIds = state.recentlyAddedProductIds.filter(
-//           pid => pid !== productId
-//         );
-//       }
-//     }
-//   },
-//   extraReducers: (builder) => {
-//     builder
-//       // 處理 getFavorites
-//       .addCase(getFavorites.pending, (state) => {
-//         state.status = "loading";
-//       })
-//       .addCase(getFavorites.fulfilled, (state, action) => {
-//         state.status = "succeeded";
-//         state.favoritesData = action.payload;
-//         state.error = null;
-//       })
-//       .addCase(getFavorites.rejected, (state, action) => {
-//         state.status = "failed";
-//         state.error = action.payload || action.error.message;
-//       })
-
-//       // 處理 addToFavorites
-//       .addCase(addToFavorites.pending, (state) => {
-//         state.status = "loading";
-//       })
-//       .addCase(addToFavorites.fulfilled, (state, action) => {
-//         // 添加到最近添加的產品列表
-//         const productId = action.payload.productId;
-//         if (productId && !state.recentlyAddedProductIds.includes(productId)) {
-//           state.recentlyAddedProductIds.push(productId);
-//         }
-//         state.status = "succeeded";
-//       })
-//       .addCase(addToFavorites.rejected, (state, action) => {
-//         state.status = "failed";
-//         state.error = action.payload || action.error.message;
-//       })
-
-//       // 處理 removeFromFavorites
-//       .addCase(removeFromFavorites.pending, (state) => {
-//         state.status = "loading";
-//       })
-//       .addCase(removeFromFavorites.fulfilled, (state, action) => {
-//         // 從最近添加的產品列表中移除
-//         if (action.payload && action.payload.id) {
-//           const favoriteItem = state.favoritesData.products.find(
-//             item => item.id === action.payload.id
-//           );
-//           if (favoriteItem) {
-//             state.recentlyAddedProductIds = state.recentlyAddedProductIds.filter(
-//               pid => pid !== favoriteItem.productId
-//             );
-//           }
-//         }
-//         state.status = "succeeded";
-//       })
-//       .addCase(removeFromFavorites.rejected, (state, action) => {
-//         state.status = "failed";
-//         state.error = action.payload || action.error.message;
-//       })
-
-//       // 處理 updateFavoriteItemQuantity
-//       .addCase(updateFavoriteItemQuantity.pending, (state) => {
-//         state.status = "loading";
-//       })
-//       .addCase(updateFavoriteItemQuantity.fulfilled, (state, action) => {
-//         const { id, qty } = action.payload;
-//         const productIndex = state.favoritesData.products.findIndex(
-//           (product) => product.id === id
-//         );
-
-//         if (productIndex !== -1) {
-//           state.favoritesData.products[productIndex].qty = qty;
-//         }
-//         state.status = "succeeded";
-//       })
-//       .addCase(updateFavoriteItemQuantity.rejected, (state, action) => {
-//         state.status = "failed";
-//         state.error = action.payload || action.error.message;
-//       })
-
-//       // 處理 addFavoriteToCart
-//       .addCase(addFavoriteToCart.pending, (state) => {
-//         state.status = "loading";
-//       })
-//       .addCase(addFavoriteToCart.fulfilled, (state) => {
-//         state.status = "succeeded";
-//       })
-//       .addCase(addFavoriteToCart.rejected, (state, action) => {
-//         state.status = "failed";
-//         state.error = action.payload || action.error.message;
-//       })
-
-//       // 處理 checkProductFavoriteStatus
-//       .addCase(checkProductFavoriteStatus.fulfilled, (state) => {
-//         // 不需要特別處理，因為我們使用單獨的 action 來更新產品收藏狀態
-//       });
-//   },
-// });
-
-// // 選擇器 - 添加安全檢查
-// export const favoritesData = (state) =>
-//   state.favorites?.favoritesData || { total: 0, products: [] };
-// export const favoritesStatus = (state) => state.favorites?.status || "idle";
-// export const favoritesError = (state) => state.favorites?.error || null;
-// export const recentlyAddedProductIds = (state) => 
-//   state.favorites?.recentlyAddedProductIds || [];
-// export const isFavoriteProduct = (state, productId) => {
-//   // 如果用戶未登入，直接返回 false
-//   if (!isUserLoggedIn()) return false;
-  
-//   return state.favorites?.favoritesData?.products?.some(item => 
-//     item.productId === productId
-//   ) || false;
-// };
-// export const getFavoriteItem = (state, productId) => {
-//   // 如果用戶未登入，直接返回 null
-//   if (!isUserLoggedIn()) return null;
-  
-//   return state.favorites?.favoritesData?.products?.find(item => 
-//     item.productId === productId
-//   ) || null;
-// };
-
-// // Action creators
-// export const { 
-//   setFavoritesData, 
-//   resetFavoritesError, 
-//   clearRecentlyAddedProducts,
-//   updateProductFavoriteStatus
-// } = favoritesSlice.actions;
-
-// export default favoritesSlice.reducer;
-
-
-
-
-// // favoritesSlice.js
-// import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-// import axios from "axios";
-
-// const { VITE_API_PATH: API_PATH } = import.meta.env;
-
-// // 獲取用戶ID的輔助函數
-// const getUserId = () => {
-//   return document.cookie.replace(
-//     /(?:(?:^|.*;\s*)worldWearUserId\s*\=\s*([^;]*).*$)|^.*$/,
-//     "$1"
-//   );
-// };
-
-// // 檢查用戶是否已登入
-// const isUserLoggedIn = () => {
-//   const userId = getUserId();
-//   return !!userId && userId.length > 0;
-// };
-
-// // 獲取收藏列表數據
-// export const getFavorites = createAsyncThunk(
-//   "favorites/getFavorites",
-//   async (_, { rejectWithValue }) => {
-//     try {
-//       // 檢查用戶是否已登入，如果未登入，直接返回空數據而不是拋出錯誤
-//       if (!isUserLoggedIn()) {
-//         return {
-//           total: 0,
-//           products: [],
-//         };
-//       }
-
-//       const userId = getUserId();
-//       const res = await axios.get(
-//         `${API_PATH}/favorites?userId=${userId}`
-//       );
-
-//       // 獲取收藏列表產品詳細資訊
-//       const productsWithDetails = await Promise.all(
-//         res.data.map(async (item) => {
-//           try {
-//             // 使用 productId 來獲取產品資訊
-//             const productRes = await axios.get(`${API_PATH}/products/${item.productId}`);
-//             return {
-//               ...item,
-//               product: productRes.data
-//             };
-//           } catch (error) {
-//             console.error(`獲取產品 ${item.productId} 詳細資訊失敗:`, error);
-//             return {
-//               ...item,
-//               product: null
-//             };
-//           }
-//         })
-//       );
-
-//       // 將API響應轉換為需要的格式
-//       return {
-//         total: productsWithDetails.length,
-//         products: productsWithDetails,
-//       };
-//     } catch (error) {
-//       console.error("獲取收藏列表失敗:", error);
-//       // 在控制台記錄錯誤，但不拋出錯誤
-//       return {
-//         total: 0,
-//         products: [],
-//       };
-//     }
-//   }
-// );
-
-// // 新增收藏項目
-// export const addToFavorites = createAsyncThunk(
-//   "favorites/addToFavorites",
-//   async (favoriteItem, { rejectWithValue }) => {
-//     try {
-//       // 確保用戶已登入
-//       if (!isUserLoggedIn()) {
-//         return rejectWithValue("請先登入再加入收藏");
-//       }
-
-//       // 確保 userId 存在
-//       const userId = favoriteItem.userId || getUserId();
-
-//       // 檢查並確保必要字段的存在
-//       const item = {
-//         userId: userId,
-//         productId: favoriteItem.productId, // 使用 productId
-//         qty: favoriteItem.qty || 1,
-//         color: favoriteItem.color || "",
-//         size: favoriteItem.size || "",
-//       };
-      
-//       // 檢查是否已經收藏過該產品
-//       const checkRes = await axios.get(
-//         `${API_PATH}/favorites?userId=${userId}&productId=${item.productId}`
-//       );
-      
-//       // 如果已經收藏過，則返回現有記錄而不是創建新記錄
-//       if (checkRes.data.length > 0) {
-//         return checkRes.data[0];
-//       }
-      
-//       // 發送 API 請求添加收藏
-//       const response = await axios.post(`${API_PATH}/favorites`, item);
-      
-//       return response.data;
-//     } catch (error) {
-//       console.error("添加收藏失敗:", error);
-//       return rejectWithValue(error.message || "添加收藏失敗");
-//     }
-//   }
-// );
-
-// // 移除收藏項目
-// export const removeFromFavorites = createAsyncThunk(
-//   "favorites/removeFromFavorites",
-//   async (id, { rejectWithValue }) => {
-//     try {
-//       // 確保用戶已登入
-//       if (!isUserLoggedIn()) {
-//         return rejectWithValue("請先登入再操作收藏");
-//       }
-      
-//       // 發送 API 請求刪除收藏
-//       await axios.delete(`${API_PATH}/favorites/${id}`);
-      
-//       // 返回被刪除的收藏項ID
-//       return { id };
-//     } catch (error) {
-//       console.error("移除收藏失敗:", error);
-//       return rejectWithValue(error.message || "移除收藏失敗");
-//     }
-//   }
-// );
-
-// // 更新收藏項目數量
-// export const updateFavoriteItemQuantity = createAsyncThunk(
-//   "favorites/updateFavoriteItemQuantity",
-//   async ({ id, qty }, { dispatch, rejectWithValue }) => {
-//     try {
-//       // 確保用戶已登入
-//       if (!isUserLoggedIn()) {
-//         return rejectWithValue("請先登入再操作收藏");
-//       }
-
-//       // 確保數量至少為1
-//       const validQty = Math.max(1, qty);
-
-//       // 發送API請求
-//       await axios.patch(`${API_PATH}/favorites/${id}`, { qty: validQty });
-
-//       return { id, qty: validQty };
-//     } catch (error) {
-//       console.error("更新收藏項目數量失敗:", error);
-//       return rejectWithValue(error.message || "更新收藏項目數量失敗");
-//     }
-//   }
-// );
-
-// // 將收藏項目加入購物車
-// export const addFavoriteToCart = createAsyncThunk(
-//   "favorites/addFavoriteToCart",
-//   async (favoriteItem, { rejectWithValue }) => {
-//     try {
-//       // 確保用戶已登入
-//       if (!isUserLoggedIn()) {
-//         return rejectWithValue("請先登入再加入購物車");
-//       }
-
-//       const userId = getUserId();
-
-//       const cartItem = {
-//         userId: userId,
-//         productId: favoriteItem.productId,
-//         qty: favoriteItem.qty || 1,
-//         color: favoriteItem.color || favoriteItem.product?.color || "",
-//         size: favoriteItem.size || favoriteItem.product?.size || "",
-//       };
-
-//       await axios.post(`${API_PATH}/cart`, cartItem);
-//       return { success: true, productId: cartItem.productId };
-//     } catch (error) {
-//       console.error("加入購物車失敗:", error);
-//       return rejectWithValue(error.message || "加入購物車失敗");
-//     }
-//   }
-// );
-
-// // 檢查特定產品是否已收藏 - 這只會在使用者明確請求檢查時使用
-// export const checkProductFavoriteStatus = createAsyncThunk(
-//   "favorites/checkProductFavoriteStatus",
-//   async (productId, { dispatch, rejectWithValue }) => {
-//     try {
-//       // 如果用戶未登入，直接返回未收藏狀態
-//       if (!isUserLoggedIn()) {
-//         return { 
-//           productId,
-//           isInFavorites: false, 
-//           favoriteItem: null
-//         };
-//       }
-
-//       const userId = getUserId();
-      
-//       // 檢查產品是否已在收藏列表中
-//       const response = await axios.get(
-//         `${API_PATH}/favorites?userId=${userId}&productId=${productId}`
-//       );
-      
-//       const isInFavorites = response.data.length > 0;
-//       const favoriteItem = isInFavorites ? response.data[0] : null;
-      
-//       // 更新 UI 狀態
-//       if (isInFavorites && favoriteItem) {
-//         dispatch(updateProductFavoriteStatus({
-//           productId,
-//           isInFavorites: true,
-//           favoriteItem
-//         }));
-//       }
-      
-//       return { 
-//         productId,
-//         isInFavorites, 
-//         favoriteItem: favoriteItem || null
-//       };
-//     } catch (error) {
-//       console.error("檢查收藏狀態失敗:", error);
-//       // 返回默認值而不是錯誤
-//       return { 
-//         productId,
-//         isInFavorites: false, 
-//         favoriteItem: null
-//       };
-//     }
-//   }
-// );
-
-// // 初始狀態
-// const initialState = {
-//   favoritesData: {
-//     total: 0,
-//     products: [],
-//   },
-//   status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
-//   error: null,
-//   recentlyAddedProductIds: [], // 追蹤最近添加到收藏的產品ID
-// };
-
-// // 創建slice
-// export const favoritesSlice = createSlice({
-//   name: "favorites",
-//   initialState,
-//   reducers: {
-//     // 直接設置收藏數據 (如果需要)
-//     setFavoritesData(state, action) {
-//       state.favoritesData = { ...action.payload };
-//     },
-//     resetFavoritesError(state) {
-//       state.error = null;
-//     },
-//     clearRecentlyAddedProducts(state) {
-//       state.recentlyAddedProductIds = [];
-//     },
-//     // 更新產品的收藏狀態
-//     updateProductFavoriteStatus(state, action) {
-//       const { productId, isInFavorites, favoriteItem } = action.payload;
-      
-//       // 將產品 ID 添加到最近收藏的列表中
-//       if (isInFavorites && !state.recentlyAddedProductIds.includes(productId)) {
-//         state.recentlyAddedProductIds.push(productId);
-//       } else if (!isInFavorites) {
-//         // 如果移除收藏，則從最近添加的產品列表中移除
-//         state.recentlyAddedProductIds = state.recentlyAddedProductIds.filter(
-//           pid => pid !== productId
-//         );
-//       }
-//     }
-//   },
-//   extraReducers: (builder) => {
-//     builder
-//       // 處理 getFavorites
-//       .addCase(getFavorites.pending, (state) => {
-//         state.status = "loading";
-//       })
-//       .addCase(getFavorites.fulfilled, (state, action) => {
-//         state.status = "succeeded";
-//         state.favoritesData = action.payload;
-//         state.error = null;
-//       })
-//       .addCase(getFavorites.rejected, (state, action) => {
-//         state.status = "failed";
-//         state.error = action.payload || action.error.message;
-//       })
-
-//       // 處理 addToFavorites
-//       .addCase(addToFavorites.pending, (state) => {
-//         state.status = "loading";
-//       })
-//       .addCase(addToFavorites.fulfilled, (state, action) => {
-//         // 添加到最近添加的產品列表
-//         const productId = action.payload.productId;
-//         if (productId && !state.recentlyAddedProductIds.includes(productId)) {
-//           state.recentlyAddedProductIds.push(productId);
-//         }
-//         state.status = "succeeded";
-//       })
-//       .addCase(addToFavorites.rejected, (state, action) => {
-//         state.status = "failed";
-//         state.error = action.payload || action.error.message;
-//       })
-
-//       // 處理 removeFromFavorites
-//       .addCase(removeFromFavorites.pending, (state) => {
-//         state.status = "loading";
-//       })
-//       .addCase(removeFromFavorites.fulfilled, (state, action) => {
-//         // 從最近添加的產品列表中移除
-//         if (action.payload && action.payload.id) {
-//           const favoriteItem = state.favoritesData.products.find(
-//             item => item.id === action.payload.id
-//           );
-//           if (favoriteItem) {
-//             state.recentlyAddedProductIds = state.recentlyAddedProductIds.filter(
-//               pid => pid !== favoriteItem.productId
-//             );
-//           }
-//         }
-//         state.status = "succeeded";
-//       })
-//       .addCase(removeFromFavorites.rejected, (state, action) => {
-//         state.status = "failed";
-//         state.error = action.payload || action.error.message;
-//       })
-
-//       // 處理 updateFavoriteItemQuantity
-//       .addCase(updateFavoriteItemQuantity.pending, (state) => {
-//         state.status = "loading";
-//       })
-//       .addCase(updateFavoriteItemQuantity.fulfilled, (state, action) => {
-//         const { id, qty } = action.payload;
-//         const productIndex = state.favoritesData.products.findIndex(
-//           (product) => product.id === id
-//         );
-
-//         if (productIndex !== -1) {
-//           state.favoritesData.products[productIndex].qty = qty;
-//         }
-//         state.status = "succeeded";
-//       })
-//       .addCase(updateFavoriteItemQuantity.rejected, (state, action) => {
-//         state.status = "failed";
-//         state.error = action.payload || action.error.message;
-//       })
-
-//       // 處理 addFavoriteToCart
-//       .addCase(addFavoriteToCart.pending, (state) => {
-//         state.status = "loading";
-//       })
-//       .addCase(addFavoriteToCart.fulfilled, (state) => {
-//         state.status = "succeeded";
-//       })
-//       .addCase(addFavoriteToCart.rejected, (state, action) => {
-//         state.status = "failed";
-//         state.error = action.payload || action.error.message;
-//       })
-
-//       // 處理 checkProductFavoriteStatus
-//       .addCase(checkProductFavoriteStatus.fulfilled, (state) => {
-//         // 不需要特別處理，因為我們使用單獨的 action 來更新產品收藏狀態
-//       });
-//   },
-// });
-
-// // 選擇器 - 添加安全檢查
-// export const favoritesData = (state) =>
-//   state.favorites?.favoritesData || { total: 0, products: [] };
-// export const favoritesStatus = (state) => state.favorites?.status || "idle";
-// export const favoritesError = (state) => state.favorites?.error || null;
-// export const recentlyAddedProductIds = (state) => 
-//   state.favorites?.recentlyAddedProductIds || [];
-// export const isFavoriteProduct = (state, productId) => {
-//   // 如果用戶未登入，直接返回 false
-//   if (!isUserLoggedIn()) return false;
-  
-//   return state.favorites?.favoritesData?.products?.some(item => 
-//     item.productId === productId
-//   ) || false;
-// };
-// export const getFavoriteItem = (state, productId) => {
-//   // 如果用戶未登入，直接返回 null
-//   if (!isUserLoggedIn()) return null;
-  
-//   return state.favorites?.favoritesData?.products?.find(item => 
-//     item.productId === productId
-//   ) || null;
-// };
-
-// // Action creators
-// export const { 
-//   setFavoritesData, 
-//   resetFavoritesError, 
-//   clearRecentlyAddedProducts,
-//   updateProductFavoriteStatus
-// } = favoritesSlice.actions;
-
-// export default favoritesSlice.reducer;
-
-
-
-
-// // favoritesSlice.js
-// import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-// import axios from "axios";
-
-// const { VITE_API_PATH: API_PATH } = import.meta.env;
-
-// // 獲取收藏列表數據
-// export const getFavorites = createAsyncThunk(
-//   "favorites/getFavorites",
-//   async (_, { rejectWithValue }) => {
-//     try {
-//       const userId = document.cookie.replace(
-//         /(?:(?:^|.*;\s*)worldWearUserId\s*\=\s*([^;]*).*$)|^.*$/,
-//         "$1"
-//       );
-
-//       if (!userId) {
-//         return rejectWithValue("未登入或無法獲取用戶ID");
-//       }
-
-//       const res = await axios.get(
-//         `${API_PATH}/favorites/?userId=${userId}&_expand=user&_expand=product`
-//       );
-
-//       // 將API響應轉換為需要的格式
-//       return {
-//         total: res.data.length,
-//         products: res.data.map((item) => ({
-//           ...item,
-//           id: item.id,
-//           product_id: item.product_id,
-//           qty: item.qty || 1, // 確保每個項目都有數量，默認為1
-//           product: item.product,
-//         })),
-//       };
-//     } catch (error) {
-//       console.error("獲取收藏列表失敗:", error);
-//       return rejectWithValue(error.message || "獲取收藏列表失敗");
-//     }
-//   }
-// );
-
-// // 更新收藏項目數量
-// export const updateFavoriteItemQuantity = createAsyncThunk(
-//   "favorites/updateFavoriteItemQuantity",
-//   async ({ id, productId, qty }, { dispatch, rejectWithValue }) => {
-//     try {
-//       // 確保數量至少為1
-//       const validQty = Math.max(1, qty);
-
-//       // 發送API請求
-//       await axios.patch(`${API_PATH}/favorites/${id}`, { qty: validQty });
-
-//       return { id, qty: validQty };
-//     } catch (error) {
-//       console.error("更新收藏項目數量失敗:", error);
-//       return rejectWithValue(error.message || "更新收藏項目數量失敗");
-//     }
-//   }
-// );
-
-// // 刪除收藏項目
-// export const deleteFavoriteItem = createAsyncThunk(
-//   "favorites/deleteFavoriteItem",
-//   async (id, { rejectWithValue }) => {
-//     try {
-//       // 發送API請求
-//       await axios.delete(`${API_PATH}/favorites/${id}`);
-//       return id;
-//     } catch (error) {
-//       console.error("刪除收藏項目失敗:", error);
-//       return rejectWithValue(error.message || "刪除收藏項目失敗");
-//     }
-//   }
-// );
-
-// // 將收藏項目加入購物車
-// export const addFavoriteToCart = createAsyncThunk(
-//   "favorites/addFavoriteToCart",
-//   async (favoriteItem, { rejectWithValue }) => {
-//     try {
-//       const userId = document.cookie.replace(
-//         /(?:(?:^|.*;\s*)worldWearUserId\s*\=\s*([^;]*).*$)|^.*$/,
-//         "$1"
-//       );
-
-//       if (!userId) {
-//         return rejectWithValue("未登入或無法獲取用戶ID");
-//       }
-
-//       const cartItem = {
-//         userId: parseInt(userId),
-//         product_id: favoriteItem.product_id,
-//         qty: favoriteItem.qty,
-//         color: favoriteItem.color || favoriteItem.product?.color,
-//         size: favoriteItem.size || favoriteItem.product?.size,
-//       };
-
-//       await axios.post(`${API_PATH}/cart`, cartItem);
-//       return { success: true };
-//     } catch (error) {
-//       console.error("加入購物車失敗:", error);
-//       return rejectWithValue(error.message || "加入購物車失敗");
-//     }
-//   }
-// );
-
-// // 初始狀態
-// const initialState = {
-//   favoritesData: {
-//     total: 0,
-//     products: [],
-//   },
-//   status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
-//   error: null,
-// };
-
-// // 創建slice
-// export const favoritesSlice = createSlice({
-//   name: "favorites",
-//   initialState,
-//   reducers: {
-//     // 直接設置收藏數據 (如果需要)
-//     setFavoritesData(state, action) {
-//       state.favoritesData = { ...action.payload };
-//     },
-//     resetFavoritesError(state) {
-//       state.error = null;
-//     },
-//   },
-//   extraReducers: (builder) => {
-//     builder
-//       // 處理 getFavorites
-//       .addCase(getFavorites.pending, (state) => {
-//         state.status = "loading";
-//         state.error = null;
-//       })
-//       .addCase(getFavorites.fulfilled, (state, action) => {
-//         state.status = "succeeded";
-//         state.favoritesData = action.payload;
-//         state.error = null;
-//       })
-//       .addCase(getFavorites.rejected, (state, action) => {
-//         state.status = "failed";
-//         state.error = action.payload || action.error.message;
-//       })
-
-//       // 處理 updateFavoriteItemQuantity
-//       .addCase(updateFavoriteItemQuantity.pending, (state) => {
-//         // 可以設置loading狀態 (如果需要)
-//       })
-//       .addCase(updateFavoriteItemQuantity.fulfilled, (state, action) => {
-//         const { id, qty } = action.payload;
-//         const productIndex = state.favoritesData.products.findIndex(
-//           (product) => product.id === id
-//         );
-
-//         if (productIndex !== -1) {
-//           state.favoritesData.products[productIndex].qty = qty;
-//         }
-//       })
-//       .addCase(updateFavoriteItemQuantity.rejected, (state, action) => {
-//         state.error = action.payload || action.error.message;
-//       })
-
-//       // 處理 deleteFavoriteItem
-//       .addCase(deleteFavoriteItem.fulfilled, (state, action) => {
-//         const id = action.payload;
-//         state.favoritesData.products = state.favoritesData.products.filter(
-//           (product) => product.id !== id
-//         );
-//         state.favoritesData.total = state.favoritesData.products.length;
-//       })
-//       .addCase(deleteFavoriteItem.rejected, (state, action) => {
-//         state.error = action.payload || action.error.message;
-//       })
-
-//       // 處理 addFavoriteToCart
-//       .addCase(addFavoriteToCart.rejected, (state, action) => {
-//         state.error = action.payload || action.error.message;
-//       });
-//   },
-// });
-
-// // 選擇器 - 添加安全檢查
-// export const favoritesData = (state) =>
-//   state.favorites?.favoritesData || { total: 0, products: [] };
-// export const favoritesStatus = (state) => state.favorites?.status || "idle";
-// export const favoritesError = (state) => state.favorites?.error || null;
-
-// // Action creators
-// export const { setFavoritesData, resetFavoritesError } = favoritesSlice.actions;
-
-// export default favoritesSlice.reducer;
-
-// // // favoritesSlice.js
-// // import { createSlice } from '@reduxjs/toolkit';
-
-// // export const favoritesSlice = createSlice({
-// //   name: 'favorites',
-// //   initialState: {
-// //     favoritesData: {
-// //       total: 0,
-// //       products: [],
-// //     },
-// //   },
-// //   reducers: {
-// //     setFavoritesData(state, action) {
-// //       state.favoritesData = { ...action.payload };
-// //     },
-// //     updateFavoriteQuantity(state, action) {
-// //       const { id, qty } = action.payload;
-// //       const productIndex = state.favoritesData.products.findIndex(
-// //         (product) => product.id === id
-// //       );
-
-// //       if (productIndex !== -1) {
-// //         // 確保數量至少為1
-// //         const newQty = Math.max(1, qty);
-// //         state.favoritesData.products[productIndex].qty = newQty;
-// //       }
-// //     },
-// //     removeFavoriteItem(state, action) {
-// //       const productId = action.payload;
-// //       state.favoritesData.products = state.favoritesData.products.filter(
-// //         (product) => product.id !== productId
-// //       );
-// //       state.favoritesData.total = state.favoritesData.products.length;
-// //     },
-// //   },
-// // });
-
-// // // 選擇器
-// // export const favoritesData = (state) => state.favorites.favoritesData;
-
-// // // Action creators
-// // export const {
-// //   setFavoritesData,
-// //   updateFavoriteQuantity,
-// //   removeFavoriteItem
-// // } = favoritesSlice.actions;
-
-// // export default favoritesSlice.reducer;
