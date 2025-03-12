@@ -283,30 +283,28 @@ const CategoryItem = memo(
               const optionId = isOffcanvas ? `${option.id}-sm` : option.id;
               const isSelected = selectedItems[option.id] || false;
               return (
-                <>
-                  <div key={optionId}>
-                    <input
-                      type="checkbox"
-                      className="d-none"
-                      name="categoryItem"
-                      id={optionId}
-                      checked={isSelected}
-                      onChange={
-                        option.label === "全部"
-                          ? handleAllCheckboxChange
-                          : handleCheckboxChange(option.id)
-                      }
-                    />
-                    <label
-                      htmlFor={optionId}
-                      className={`btn btn-outline-primary fs-sm ${
-                        isSelected ? "selected" : ""
-                      }`}
-                    >
-                      {option.label}
-                    </label>
-                  </div>
-                </>
+                <div key={optionId}>
+                  <input
+                    type="checkbox"
+                    className="d-none"
+                    name="categoryItem"
+                    id={optionId}
+                    checked={isSelected}
+                    onChange={
+                      option.label === "全部"
+                        ? handleAllCheckboxChange
+                        : handleCheckboxChange(option.id)
+                    }
+                  />
+                  <label
+                    htmlFor={optionId}
+                    className={`btn btn-outline-primary fs-sm ${
+                      isSelected ? "selected" : ""
+                    }`}
+                  >
+                    {option.label}
+                  </label>
+                </div>
               );
             })}
           </div>
@@ -454,7 +452,7 @@ export const FilterSortButton = memo(
               )}
             </h6>
             <span className="dropdown-icon ms-2">
-              <img src="/public/icons/dropdownIcon.svg" alt="dropdown-Icon" />
+              <img src="/icons/dropdownIcon.svg" alt="dropdown-Icon" />
             </span>
           </button>
 
