@@ -2,13 +2,12 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
-
+import { useSelector,useDispatch  } from 'react-redux';
 import { productCategories as productCategoriesData } from '../../slice/productsSlice';
 import useImgUrl from '../../hooks/useImgUrl';
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { isUserLoggedIn } from '../tools/cookieUtils';
+import { checkLogin } from "../../slice/authSlice";
 
 // 登入功能等 登入註冊做完，才來實作
 // 搜尋功能。 等產品頁面，才來實作
@@ -25,9 +24,29 @@ function FrontHeader({ defaultType }) {
   gsap.registerPlugin(ScrollTrigger);
   gsap.registerPlugin(useGSAP);
 
+  const [isInitialized, setIsInitialized] = useState(false);
+  const dispatch = useDispatch();
+  const auth = useSelector((state) => state.authSlice);
+
+  // 初始化認證狀態 - 使用 checkLogin action
   useEffect(() => {
-    setIsLogin(isUserLoggedIn());
-  }, []);
+    // 檢查用戶是否已登入
+    dispatch(checkLogin());
+    setIsInitialized(true);
+  }, [dispatch]);
+
+  // 更新登入狀態
+  useEffect(() => {
+    if (isInitialized) {
+      const loggedIn = auth.status === 'logged-in' && auth.user !== null;
+      setIsLogin(loggedIn);
+      
+      if (loggedIn) {
+        console.log("FrontHeader: 用戶已登入");
+      }
+    }
+  }, [isInitialized, auth.status, auth.user]);
+
   useEffect(() => {
     setHeaderType(defaultType);
   }, [defaultType]);
@@ -196,12 +215,7 @@ function FrontHeader({ defaultType }) {
                   <ul className="navbar-nav l-menu header--logout__item ">
                     <li>
                       <Link className="l-menu__link" to="/login">
-                        登入
-                      </Link>
-                    </li>
-                    <li>
-                      <Link className="l-menu__link" to="/signup">
-                        註冊
+                        登入 / 註冊
                       </Link>
                     </li>
                   </ul>
