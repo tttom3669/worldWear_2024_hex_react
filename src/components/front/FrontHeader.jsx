@@ -63,7 +63,7 @@ function FrontHeader({ defaultType }) {
         與世界共舞，與時尚同步 - WorldWear
       </aside>
       <header
-        className={`header header--login
+        className={`header header--logout
         ${
           isHeaderScroll
             ? 'header--scroll'
