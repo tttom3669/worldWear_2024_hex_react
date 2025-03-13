@@ -34,8 +34,8 @@ const TABS = {
 };
 
 const initialLoginData = {
-  email: '',
-  password: '',
+  email: 'worldwear@gmail.com',
+  password: 'worldwear',
   rememberMe: false, // 記住我選項
 };
 
