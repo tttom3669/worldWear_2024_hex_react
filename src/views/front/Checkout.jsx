@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from "react-redux";
 import axios from 'axios';
 
 import FrontHeader from '../../components/front/FrontHeader';
@@ -12,6 +13,53 @@ const { VITE_API_PATH: API_PATH } = import.meta.env;
 export default function Checkout() {
   const getImgUrl = useImgUrl();
   const navigate = useNavigate();
+  const user = useSelector(state => state.authSlice.user);
+  const carts = useSelector(state => state.carts.cartsData);
+
+  const userCheckout = async () => {
+    try {
+      const orderData = {
+        is_paid: true,
+        status: '未出貨',
+        products: carts.products,
+        orderDate: new Date(),
+        paymentInfo: {
+          totalAmount: carts.total,
+          discount: carts.total - carts.final_total,
+          paymentMethod: "信用卡一次付款"
+        },
+        deliveryInfo: {
+          recipient: "王小明",
+          deliveryMethod: "宅配",
+          address: "桃園市中壢區中和路139號",
+          phone: "0975664552"
+        },
+        invoiceInfo: {
+          invoiceType: "電子發票",
+          carrier: "會員載具"
+        },
+        total: carts.total,
+        final_total: carts.final_total,
+        userId: user.id,
+      }
+      await axios.post(`${API_PATH}/orders`, orderData)
+      navigate("/checkout-success")
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      console.log('有token:', token)
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
+  }, [])
+
+  useEffect(() => {
+    console.log('cart', carts)
+  }, [carts])
 
   return (
     <>
@@ -160,13 +208,13 @@ export default function Checkout() {
               <div className="bg-white p-4">
                 <div className="d-flex justify-content-between">
                   <span>商品原價金額</span>
-                  <span className="fw-bold">NT 1,730</span>
+                  <span className="fw-bold">NT {carts.total}</span>
                 </div>
                 <div className="d-flex justify-content-between mt-2">
                   <span>結帳金額</span>
-                  <span className="fw-bold text-danger">NT 1,730</span>
+                  <span className="fw-bold text-danger">NT {carts.final_total}</span>
                 </div>
-                <button onClick={() => navigate("/checkout-success")} className="btn btn-warning w-100 mt-3">確認付款</button>
+                <button onClick={userCheckout} className="btn btn-warning w-100 mt-3">確認付款</button>
               </div>
             </div>
           </div>
