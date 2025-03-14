@@ -3,6 +3,7 @@ import FrontHeader from '../../components/front/FrontHeader';
 import CartFlow from '../../components/front/CartFlow';
 import useImgUrl from '../../hooks/useImgUrl';
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useSwal from '../../hooks/useSwal';
 import { useDispatch } from 'react-redux';
 import { setCartsData } from '../../slice/cartsSlice';
@@ -11,6 +12,7 @@ const { VITE_API_PATH: API_PATH } = import.meta.env;
 
 export default function Cart() {
   const getImgUrl = useImgUrl();
+  const navigate = useNavigate();
   const [tempCartsData, setTempCartsData] = useState([]);
   const [tempCouponData, setTempCouponData] = useState('');
   const [couponData, setCouponData] = useState({});
@@ -251,6 +253,7 @@ export default function Cart() {
                     value="繼續逛逛"
                   />
                   <input
+                    onClick={() => navigate("/checkout")}
                     type="button"
                     className="btn btn-lg btn-primary"
                     value="前往結賬"
