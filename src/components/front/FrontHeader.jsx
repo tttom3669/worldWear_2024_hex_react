@@ -214,12 +214,12 @@ function FrontHeader({ defaultType }) {
                 >
                   <ul className="navbar-nav l-menu header--logout__item ">
                     <li>
-                      <Link className="l-menu__link" to="/login">
+                      <Link className="l-menu__link" to="/login" state={{ activeTab: 'login' }} >
                         登入
                       </Link>
                     </li>
                     <li>
-                      <Link className="l-menu__link" to="/login">
+                      <Link className="l-menu__link" to="/login" state={{ activeTab: 'register' }}>
                         註冊
                       </Link>
                     </li>
