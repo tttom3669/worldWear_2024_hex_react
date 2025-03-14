@@ -56,11 +56,14 @@ export const setUserIdCookie = (userId, days = 7) => {
   return setCookie(COOKIE_NAMES.USER_ID, userId, days);
 };
 
-// 設置 Token Cookie
+// 設置 Token Cookie - 修正版
 export const setTokenCookie = (token, days = 7) => {
-  // 如果 token 不是以 Bearer 開頭，添加它
-  const formattedToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-  return setCookie(COOKIE_NAMES.TOKEN, formattedToken, days);
+  // 確保移除可能存在的 Bearer 前綴
+  const rawToken = token.startsWith('Bearer ') ? token.substring(7).trim() : token.trim();
+  console.log('設置 token cookie, 值:', rawToken.substring(0, 10) + '...');
+  
+  // 直接存儲純 token，不添加 Bearer 前綴
+  return setCookie(COOKIE_NAMES.TOKEN, rawToken, days);
 };
 
 // 刪除特定 Cookie
@@ -83,26 +86,52 @@ export const clearAllUserCookies = () => {
   deleteCookie(COOKIE_NAMES.USER_ID);
 };
 
-// 獲取 JWT Token，確保返回正確格式的帶有 Bearer 前綴的 token
+// 獲取 JWT Token，確保返回正確格式的帶有 Bearer 前綴的 token - 修正版
 export const getJWTToken = () => {
   try {
     // 依次嘗試從不同來源獲取 token
     const tokenFromLocalStorage = localStorage.getItem('token');
     const tokenFromCookie = getCookie(COOKIE_NAMES.TOKEN);
+    const directTokenFromCookie = getCookie('worldWearToken');
     
-    let token = tokenFromLocalStorage || tokenFromCookie || null;
+    console.log('可用的 token 來源:', {
+      localStorage: tokenFromLocalStorage ? '有值' : '無',
+      cookieConstant: tokenFromCookie ? '有值' : '無',
+      directCookie: directTokenFromCookie ? '有值' : '無'
+    });
     
-    // 確保 token 格式正確
-    if (token) {
-      // 如果 token 已經有 Bearer 前綴，直接返回
-      if (token.startsWith('Bearer ')) {
-        return token;
-      }
-      // 否則添加 Bearer 前綴
-      return `Bearer ${token}`;
+    // 移除可能存在的 Bearer 前綴，獲取純 token
+    let rawToken = null;
+    
+    if (tokenFromLocalStorage) {
+      rawToken = tokenFromLocalStorage.startsWith('Bearer ') 
+        ? tokenFromLocalStorage.substring(7).trim() 
+        : tokenFromLocalStorage.trim();
+    } else if (tokenFromCookie) {
+      rawToken = tokenFromCookie.startsWith('Bearer ') 
+        ? tokenFromCookie.substring(7).trim() 
+        : tokenFromCookie.trim();
+    } else if (directTokenFromCookie) {
+      rawToken = directTokenFromCookie.startsWith('Bearer ') 
+        ? directTokenFromCookie.substring(7).trim() 
+        : directTokenFromCookie.trim();
     }
     
-    return null;
+    // 如果找不到 token，返回 null
+    if (!rawToken) {
+      console.log('未找到有效的 token');
+      return null;
+    }
+    
+    console.log('找到原始 token:', rawToken.substring(0, 10) + '...');
+    
+    // 驗證 token 格式
+    if (rawToken.split('.').length !== 3) {
+      console.warn('獲取到的 token 不是標準的 JWT 格式（應該有三個部分以點分隔）');
+    }
+    
+    // 返回 Bearer + token 格式
+    return `Bearer ${rawToken}`;
   } catch (error) {
     console.error('獲取 JWT Token 時發生錯誤:', error);
     return null;
@@ -130,24 +159,36 @@ export const setAuthorizationHeader = (axios) => {
   }
 };
 
-// 儲存登入資訊，一次性設置所有相關的 Cookie 和 localStorage
+// 儲存登入資訊，一次性設置所有相關的 Cookie 和 localStorage - 修正版
 export const saveLoginInfo = (userData, token, refreshToken = null) => {
   try {
-    // 確保 token 格式正確
-    const formattedToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+    console.log('保存登入信息，原始 token:', token);
     
-    // 設置 Cookie
-    setTokenCookie(formattedToken);
+    // 確保移除可能存在的 Bearer 前綴，獲取純 token
+    let rawToken = token;
+    if (token && token.startsWith('Bearer ')) {
+      rawToken = token.substring(7).trim();
+    }
+    
+    console.log('處理後的純 token:', rawToken);
+    
+    // 設置 Cookie - 直接存儲純 token，不添加 Bearer 前綴
+    setTokenCookie(rawToken);
     setUserIdCookie(userData.id);
     
-    // 設置 localStorage
-    localStorage.setItem('token', formattedToken);
+    // 設置 localStorage - 也存儲純 token
+    localStorage.setItem('token', rawToken);
     localStorage.setItem('user', JSON.stringify(userData));
     
     if (refreshToken) {
-      localStorage.setItem('refreshToken', refreshToken);
+      let rawRefreshToken = refreshToken;
+      if (refreshToken.startsWith('Bearer ')) {
+        rawRefreshToken = refreshToken.substring(7).trim();
+      }
+      localStorage.setItem('refreshToken', rawRefreshToken);
     }
     
+    console.log('登入信息保存成功');
     return true;
   } catch (error) {
     console.error('儲存登入資訊失敗:', error);

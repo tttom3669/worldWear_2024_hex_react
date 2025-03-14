@@ -1,12 +1,12 @@
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { useGSAP } from '@gsap/react';
-import PropTypes from 'prop-types';
-import { useSelector,useDispatch  } from 'react-redux';
-import { productCategories as productCategoriesData } from '../../slice/productsSlice';
-import useImgUrl from '../../hooks/useImgUrl';
-import { useEffect, useRef, useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+import PropTypes from "prop-types";
+import { useSelector, useDispatch } from "react-redux";
+import { productCategories as productCategoriesData } from "../../slice/productsSlice";
+import useImgUrl from "../../hooks/useImgUrl";
+import { useEffect, useRef, useState } from "react";
+import { Link, NavLink } from "react-router-dom";
 import { checkLogin } from "../../slice/authSlice";
 
 // 登入功能等 登入註冊做完，才來實作
@@ -15,7 +15,7 @@ import { checkLogin } from "../../slice/authSlice";
 
 function FrontHeader({ defaultType }) {
   const getImgUrl = useImgUrl();
-  const [headerType, setHeaderType] = useState('');
+  const [headerType, setHeaderType] = useState("");
   const [isHeaderScroll, setIsHeaderScroll] = useState(false);
   const [menuData, setMenuData] = useState({ isOpen: false });
   const [isLogin, setIsLogin] = useState(false);
@@ -38,9 +38,9 @@ function FrontHeader({ defaultType }) {
   // 更新登入狀態
   useEffect(() => {
     if (isInitialized) {
-      const loggedIn = auth.status === 'logged-in' && auth.user !== null;
+      const loggedIn = auth.status === "logged-in" && auth.user !== null;
       setIsLogin(loggedIn);
-      
+
       if (loggedIn) {
         console.log("FrontHeader: 用戶已登入");
       }
@@ -55,8 +55,8 @@ function FrontHeader({ defaultType }) {
     gsap.timeline({
       scrollTrigger: {
         trigger: headerRef.current,
-        start: 'top top',
-        end: 'bottom top',
+        start: "top top",
+        end: "bottom top",
         // markers: true,
         onEnter: () => {
           setIsHeaderScroll(true);
@@ -87,15 +87,15 @@ function FrontHeader({ defaultType }) {
         與世界共舞，與時尚同步 - WorldWear
       </aside>
       <header
-        className={`header ${isLogin ? 'header--login' : 'header--logout'}
+        className={`header ${isLogin ? "header--login" : "header--logout"}
         ${
           isHeaderScroll
-            ? 'header--scroll'
-            : headerType === 'dark'
-            ? 'header--dark'
-            : 'header--light'
+            ? "header--scroll"
+            : headerType === "dark"
+            ? "header--dark"
+            : "header--light"
         }
-        ${menuData.isOpen ? 'isOpen' : ''}`}
+        ${menuData.isOpen ? "isOpen" : ""}`}
         ref={headerRef}
         onMouseLeave={() => setMenuData({ ...menuData, isOpen: false })}
       >
@@ -106,7 +106,7 @@ function FrontHeader({ defaultType }) {
                 <Link className="text-reset me-auto m-lg-0" to="/">
                   <h1 className="d-flex">
                     <svg className="l-logo" width="120" height="72">
-                      <use href={getImgUrl('/icons/Logo.svg#logo')}></use>
+                      <use href={getImgUrl("/icons/Logo.svg#logo")}></use>
                     </svg>
                   </h1>
                 </Link>
@@ -119,8 +119,8 @@ function FrontHeader({ defaultType }) {
                         onClick={(e) => mainMenuHandler(e)}
                         className={`l-menu__link ${
                           menuData.type === gender.slug && menuData.isOpen
-                            ? 'active'
-                            : ''
+                            ? "active"
+                            : ""
                         }`}
                       >
                         {gender.title[0].toUpperCase() + gender.title.slice(1)}
@@ -133,9 +133,9 @@ function FrontHeader({ defaultType }) {
                 <div className="position-lg-relative d-flex align-items-center">
                   <div
                     className={`header__searchBar-container ${
-                      menuData.type === 'search' && menuData.isOpen
-                        ? 'show'
-                        : ''
+                      menuData.type === "search" && menuData.isOpen
+                        ? "show"
+                        : ""
                     }`}
                   >
                     <div className="container px-lg-0">
@@ -154,15 +154,15 @@ function FrontHeader({ defaultType }) {
                     name="search"
                     onClick={(e) => mainMenuHandler(e)}
                     className={`header__searchIcon border-0 bg-transparent justify-content-center align-items-center p-3 p-lg-0  ${
-                      menuData.type === 'search' &&
+                      menuData.type === "search" &&
                       menuData.isOpen &&
                       isDesktop()
-                        ? 'd-none'
-                        : 'd-flex'
+                        ? "d-none"
+                        : "d-flex"
                     }`}
                   >
                     <svg width="16" height="16" className="pe-none">
-                      <use href={getImgUrl('/icons/search.svg#search')}></use>
+                      <use href={getImgUrl("/icons/search.svg#search")}></use>
                     </svg>
                   </button>
                 </div>
@@ -175,7 +175,7 @@ function FrontHeader({ defaultType }) {
                           to="/cart"
                         >
                           <svg width="16" height="16">
-                            <use href={getImgUrl('/icons/cart.svg#cart')}></use>
+                            <use href={getImgUrl("/icons/cart.svg#cart")}></use>
                           </svg>
                           <span className="header__cart-badge d-flex justify-content-center align-items-center position-absolute top-0 start-100 translate-middle  rounded-circle bg-danger text-white fs-xxs">
                             2
@@ -189,7 +189,7 @@ function FrontHeader({ defaultType }) {
                         >
                           <svg width="16" height="16">
                             <use
-                              href={getImgUrl('/icons/heart.svg#heart')}
+                              href={getImgUrl("/icons/heart.svg#heart")}
                             ></use>
                           </svg>
                         </Link>
@@ -197,7 +197,7 @@ function FrontHeader({ defaultType }) {
                       <li>
                         <Link to="/user">
                           <img
-                            src={getImgUrl('/images/shared/user.png')}
+                            src={getImgUrl("/images/shared/user.png")}
                             alt="user"
                             width="24"
                             height="24"
@@ -209,13 +209,18 @@ function FrontHeader({ defaultType }) {
                 </div>
                 <div
                   className={`l-menu__collapse ${
-                    menuData.type === 'user' && menuData.isOpen ? 'show' : ''
+                    menuData.type === "user" && menuData.isOpen ? "show" : ""
                   }`}
                 >
                   <ul className="navbar-nav l-menu header--logout__item ">
                     <li>
                       <Link className="l-menu__link" to="/login">
-                        登入 / 註冊
+                        登入
+                      </Link>
+                    </li>
+                    <li>
+                      <Link className="l-menu__link" to="/login">
+                        註冊
                       </Link>
                     </li>
                   </ul>
@@ -246,15 +251,15 @@ function FrontHeader({ defaultType }) {
               >
                 <div className="header--logout__item">
                   <svg className="pe-none" width="24" height="24">
-                    <use href={getImgUrl('/icons/list.svg#list')}></use>
+                    <use href={getImgUrl("/icons/list.svg#list")}></use>
                   </svg>
                   <svg className="pe-none d-none" width="24" height="24">
-                    <use href={getImgUrl('/icons/close.svg#close')}></use>
+                    <use href={getImgUrl("/icons/close.svg#close")}></use>
                   </svg>
                 </div>
                 <img
                   className="header--login__item"
-                  src={getImgUrl('/images/shared/user.png')}
+                  src={getImgUrl("/images/shared/user.png")}
                   alt="user"
                   width="24"
                   height="24"
@@ -267,7 +272,7 @@ function FrontHeader({ defaultType }) {
             <div
               key={gender.slug}
               className={`l-menu__dropdown ${
-                menuData.type === gender.slug && menuData.isOpen ? 'show' : ''
+                menuData.type === gender.slug && menuData.isOpen ? "show" : ""
               }`}
             >
               <div className="container">
