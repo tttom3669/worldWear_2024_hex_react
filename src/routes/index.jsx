@@ -1,23 +1,25 @@
-import { createHashRouter } from 'react-router-dom';
-import App from '../App.jsx';
-import AdminLayout from '../Layout/admin/AdminLayout.jsx';
-import AdminHome from '../views/admin/AdminHome.jsx';
-import Home from '../views/front/Home.jsx';
-import Login from '../views/Login.jsx';
-import Signup from '../views/Signup.jsx';
-import NotFound from '../views/NotFound.jsx';
-import Cart from '../views/front/Cart.jsx';
+import { createHashRouter } from "react-router-dom";
+import App from "../App.jsx";
+import AdminLayout from "../Layout/admin/AdminLayout.jsx";
+import AdminHome from "../views/admin/AdminHome.jsx";
+import Home from "../views/front/Home.jsx";
+import Login from "../views/Login.jsx";
+import Signup from "../views/Signup.jsx";
+import NotFound from "../views/NotFound.jsx";
+import Cart from "../views/front/Cart.jsx";
 import Checkout from '../views/front/Checkout.jsx';
 import CheckoutSuccess from '../views/front/CheckoutSuccess.jsx';
-import ProductsList from '../views/front/ProductsList.jsx';
-import FrontUserLayout from '../Layout/front/FrontUserLayout.jsx';
-import { element } from 'prop-types';
-import UserOrder from '../views/front/user/UserOrder.jsx';
-import Product from '../views/front/Product.jsx';
+import ProductsList from "../views/front/ProductsList.jsx";
+import FrontUserLayout from "../Layout/front/FrontUserLayout.jsx";
+import { element } from "prop-types";
+import UserOrder from "../views/front/user/UserOrder.jsx";
+import Product from "../views/front/Product.jsx";
+import UserFavorites from "../views/front/user/UserFavorites.jsx";
+import UserInfo from "../views/front/user/UserInfo.jsx";
 
 const routes = [
   {
-    path: '/',
+    path: "/",
     element: <App />,
     children: [
       {
@@ -25,21 +27,21 @@ const routes = [
         element: <Home />,
       },
       {
-        path: 'products',
+        path: "products",
         children: [
           {
             index: true,
             element: <ProductsList />,
           },
           {
-            path: ':gender',
+            path: ":gender",
             children: [
               {
                 index: true,
                 element: <ProductsList />,
               },
               {
-                path: ':category',
+                path: ":category",
                 element: <ProductsList />,
               },
             ],
@@ -47,7 +49,7 @@ const routes = [
         ],
       },
       {
-        path: 'cart',
+        path: "cart",
         element: <Cart />,
       },
       {
@@ -59,7 +61,7 @@ const routes = [
         element: <CheckoutSuccess />,
       },
       {
-        path: 'user',
+        path: "user",
         element: <FrontUserLayout />,
         children: [
           {
@@ -67,19 +69,27 @@ const routes = [
             element: <UserOrder />,
           },
           {
-            path: 'order',
+            path: "order",
             element: <UserOrder />,
+          },
+          {
+            path: "favorites",
+            element: <UserFavorites />,
+          },
+          {
+            path: "userInfo",
+            element: <UserInfo />,
           },
         ],
       },
-	  {
-        path: 'product/:id',
+      {
+        path: "product/:id",
         element: <Product />,
       },
     ],
   },
   {
-    path: '/admin',
+    path: "/admin",
     element: <AdminLayout />,
     children: [
       {
@@ -94,15 +104,15 @@ const routes = [
     ],
   },
   {
-    path: '/login',
+    path: "/login",
     element: <Login />,
   },
   {
-    path: '/signup',
+    path: "/signup",
     element: <Signup />,
   },
   {
-    path: '*',
+    path: "*",
     element: <NotFound />,
   },
 ];

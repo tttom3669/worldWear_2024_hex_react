@@ -8,6 +8,7 @@ import { productCategories as productCategoriesData } from '../../slice/products
 import useImgUrl from '../../hooks/useImgUrl';
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
+import { isUserLoggedIn } from '../tools/cookieUtils';
 
 // 登入功能等 登入註冊做完，才來實作
 // 搜尋功能。 等產品頁面，才來實作
@@ -18,11 +19,15 @@ function FrontHeader({ defaultType }) {
   const [headerType, setHeaderType] = useState('');
   const [isHeaderScroll, setIsHeaderScroll] = useState(false);
   const [menuData, setMenuData] = useState({ isOpen: false });
+  const [isLogin, setIsLogin] = useState(false);
   const headerRef = useRef(null);
   const productCategories = useSelector(productCategoriesData);
   gsap.registerPlugin(ScrollTrigger);
   gsap.registerPlugin(useGSAP);
 
+  useEffect(() => {
+    setIsLogin(isUserLoggedIn());
+  }, []);
   useEffect(() => {
     setHeaderType(defaultType);
   }, [defaultType]);
@@ -63,7 +68,7 @@ function FrontHeader({ defaultType }) {
         與世界共舞，與時尚同步 - WorldWear
       </aside>
       <header
-        className={`header header--login
+        className={`header ${isLogin ? 'header--login' : 'header--logout'}
         ${
           isHeaderScroll
             ? 'header--scroll'
@@ -160,7 +165,7 @@ function FrontHeader({ defaultType }) {
                       </li>
                       <li className="d-flex justify-content-center align-items-center">
                         <Link
-                          to="/favorites"
+                          to="/user/favorites"
                           className=" text-reset header__heart d-flex"
                         >
                           <svg width="16" height="16">
