@@ -1,6 +1,6 @@
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { logout } from "../../slice/authSlice";
+import { logoutUser  } from "../../slice/authSlice";
 
 export default function UserAside() {
   const location = useLocation();
@@ -19,12 +19,23 @@ export default function UserAside() {
     return location.pathname.startsWith(path);
   };
 
-  // 處理登出功能，簡化版本 - 直接呼叫 logout action
-  const handleLogout = () => {
-    console.log("登出按鈕被點擊"); // 添加除錯訊息
-    dispatch(logout());
-    // 導航回首頁
-    navigate("/");
+  // 處理登出功能 - 使用 logoutUser action
+  const handleLogout = async () => {
+    try {
+      console.log("登出按鈕被點擊"); // 添加除錯訊息
+      
+      // 執行登出 action 並等待完成
+      await dispatch(logoutUser()).unwrap();
+      
+      console.log("登出成功，準備導航回首頁");
+      
+      // 登出成功後導航回首頁
+      navigate("/");
+    } catch (error) {
+      console.error("登出失敗:", error);
+      // 即使登出失敗，也嘗試導航回首頁
+      navigate("/");
+    }
   };
 
   return (
