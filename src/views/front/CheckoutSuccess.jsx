@@ -1,7 +1,11 @@
+import { useNavigate } from 'react-router-dom';
+
 import FrontHeader from '../../components/front/FrontHeader';
 import CartFlow from '../../components/front/CartFlow';
 
 export default function CheckoutSuccess() {
+  const navigate = useNavigate();
+
   return (
     <>
       <FrontHeader defaultType={'light'} />
@@ -19,8 +23,8 @@ export default function CheckoutSuccess() {
 
             {/* 按鈕 */}
             <div className="d-flex justify-content-center gap-3 mt-4">
-              <button className="btn btn-outline-dark px-4">繼續逛逛</button>
-              <button className="btn btn-outline-dark px-4">查看訂單紀錄</button>
+              <button onClick={() => navigate('/products')} className="btn btn-outline-dark px-4">繼續逛逛</button>
+              <button onClick={() => navigate('/user/order')} className="btn btn-outline-dark px-4">查看訂單紀錄</button>
             </div>
           </div>
         </div>
