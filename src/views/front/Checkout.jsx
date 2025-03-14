@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 import FrontHeader from '../../components/front/FrontHeader';
@@ -26,19 +26,19 @@ export default function Checkout() {
               <div className="px-5 py-8 bg-white border border-nature-90">
                 {/* 姓名 */}
                 <div className="d-flex align-items-center mb-3">
-                  <label className="form-label me-6">姓名</label>
+                  <label className="form-label form-label-text me-6">姓名</label>
                   <input type="text" className="form-control form-input bg-white" defaultValue="王小明" />
                 </div>
 
                 {/* 手機 */}
                 <div className="d-flex align-items-center mb-3">
-                  <label className="form-label me-6">手機</label>
+                  <label className="form-label form-label-text me-6">手機</label>
                   <input type="text" className="form-control form-input bg-white" defaultValue="0975664552" />
                 </div>
 
                 {/* EMAIL */}
                 <div className="d-flex align-items-center mb-3">
-                  <label className="form-label me-6">EMAIL</label>
+                  <label className="form-label form-label-text me-6">EMAIL</label>
                   <input type="email" className="form-control form-input bg-white" defaultValue="xiaojming@gmail.com" />
                 </div>
               </div>
@@ -53,11 +53,11 @@ export default function Checkout() {
                   <label className="form-check-label" htmlFor="sameAsBuyer">收貨人同訂購人</label>
                 </div>
                 <div className="d-flex align-items-center mb-3">
-                  <label className="form-label me-6">收貨人</label>
+                  <label className="form-label form-label-text me-6">收貨人</label>
                   <input type="text" className="form-control form-input bg-white" defaultValue="王小明" />
                 </div>
                 <div className="d-flex align-items-center mb-3 pb-3 border-bottom border-nature-90">
-                  <label className="form-label me-6">手機</label>
+                  <label className="form-label form-label-text me-6">手機</label>
                   <input type="text" className="form-control form-input bg-white" defaultValue="0975664552" />
                 </div>
                 <div className="d-flex align-items-center gap-4 mb-3">
@@ -71,7 +71,7 @@ export default function Checkout() {
                   </div>
                 </div>
                 <div className="row align-items-center">
-                  <label className="form-label">宅配地址</label>
+                  <label className="form-label form-label-text">宅配地址</label>
                   <div className="col-md-3">
                     <select className="form-select bg-white">
                       <option>桃園市</option>
@@ -111,15 +111,15 @@ export default function Checkout() {
                   <img src={getImgUrl('/images/checkout/ic_jcb.png')} alt="ic_jcb" className="ms-2" width="30" />
                 </div>
                 <div className="d-flex align-items-center mb-3">
-                  <label className="form-label">卡號*</label>
+                  <label className="form-label form-label-text">卡號*</label>
                   <input type="text" className="form-control  form-input" defaultValue="092091209128" />
                 </div>
                 <div className="d-flex align-items-center mb-3">
-                  <label className="form-label">有效期限*</label>
+                  <label className="form-label form-label-text">有效期限*</label>
                   <input type="text" className="form-control  form-input" defaultValue="08/30" />
                 </div>
                 <div className="d-flex align-items-center mb-3">
-                  <label className="form-label">卡片後三碼*</label>
+                  <label className="form-label form-label-text">卡片後三碼*</label>
                   <input type="text" className="form-control  form-input" defaultValue="801" />
                 </div>
               </div>
@@ -134,14 +134,14 @@ export default function Checkout() {
                   <label className="form-check-label" htmlFor="invoiceData">帶入上次結帳資料</label>
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">發票類型</label>
+                  <label className="form-label form-label-text">發票類型</label>
                   <select className="form-select bg-white">
                     <option>電子發票</option>
                     <option>紙本發票</option>
                   </select>
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">發票載具</label>
+                  <label className="form-label form-label-text">發票載具</label>
                   <select className="form-select bg-white">
                     <option>存入會員載具，中獎後通知</option>
                     <option>手機條碼載具</option>
