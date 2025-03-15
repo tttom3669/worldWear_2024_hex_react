@@ -222,11 +222,7 @@ function FrontHeader({ defaultType }) {
                       <Link
                         className="l-menu__link"
                         to="/login"
-<<<<<<< HEAD
                         state={{ activeTab: 'login' }}
-=======
-                        state={{ activeTab: "login" }}
->>>>>>> feature/page-products
                       >
                         登入
                       </Link>
@@ -235,11 +231,7 @@ function FrontHeader({ defaultType }) {
                       <Link
                         className="l-menu__link"
                         to="/login"
-<<<<<<< HEAD
                         state={{ activeTab: 'register' }}
-=======
-                        state={{ activeTab: "register" }}
->>>>>>> feature/page-products
                       >
                         註冊
                       </Link>
@@ -317,7 +309,7 @@ function FrontHeader({ defaultType }) {
                     </li>
                   ))} */}
                   {gender.categories
-                    .filter((category) => category.slug !== "product-status")
+                    .filter((category) => category.slug !== 'product-status')
                     .map((category) => (
                       <li key={category.slug}>
                         <Link

@@ -1,6 +1,7 @@
 import useImgUrl from '../../../hooks/useImgUrl';
 import FormTitle from '../../../components/front/FormTitle';
 import UserAside from '../../../components/front/UserAside';
+import ScreenLoading from '../../../components/front/ScreenLoading';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 
@@ -8,24 +9,31 @@ export default function UserOrder() {
   const getImgUrl = useImgUrl();
   const { VITE_API_PATH: API_PATH } = import.meta.env;
   const [orderData, setOrderData] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const getOrder = async () => {
-    const userId = document.cookie.replace(
-      /(?:(?:^|.*;\s*)worldWearUserId\s*\=\s*([^;]*).*$)|^.*$/,
-      '$1'
-    );
-    const token = document.cookie.replace(
-      /(?:(?:^|.*;\s*)worldWearToken\s*\=\s*([^;]*).*$)|^.*$/,
-      '$1'
-    );
-
-    const res = await axios.get(`${API_PATH}/orders?userId=${userId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    console.log(res);
-    setOrderData(res.data);
+    try {
+      setIsLoading(true);
+      const userId = document.cookie.replace(
+        /(?:(?:^|.*;\s*)worldWearUserId\s*\=\s*([^;]*).*$)|^.*$/,
+        '$1'
+      );
+      const token = document.cookie.replace(
+        /(?:(?:^|.*;\s*)worldWearToken\s*\=\s*([^;]*).*$)|^.*$/,
+        '$1'
+      );
+      const res = await axios.get(`${API_PATH}/orders?userId=${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log(res);
+      setOrderData(res.data);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
   useEffect(() => {
     getOrder();
@@ -44,7 +52,7 @@ export default function UserOrder() {
                   訂單列表
                 </h1>
                 <div className="bg-white border-opacity-0 border-opacity-sm-100 border border-nature-95 px-3 py-6 p-sm-6">
-                  <ul>
+                  <ul className="d-flex flex-column gap-5">
                     {orderData &&
                       orderData.map((order) => (
                         <li key={order.id}>
@@ -224,6 +232,7 @@ export default function UserOrder() {
           </div>
         </div>
       </main>
+      <ScreenLoading isLoading={isLoading} />
     </>
   );
 }
