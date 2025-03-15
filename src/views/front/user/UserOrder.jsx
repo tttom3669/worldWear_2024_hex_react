@@ -85,7 +85,7 @@ export default function UserOrder() {
                             <div className="border border-nature-95 border-opacity-0 pt-6 border-opacity-sm-100 p-sm-6">
                               <div className="mb-4 mb-sm-5.5">
                                 <FormTitle
-                                  title={'配送中'}
+                                  title={order.status}
                                   borderColor={`border-nature-90`}
                                   titleBgColor={`bg-nature-90`}
                                 />
@@ -186,7 +186,9 @@ export default function UserOrder() {
                                     </div>
 
                                     <div className="d-flex gap-1">
-                                      <span> 配送地址 :</span>
+                                      <span className="text-nowrap">
+                                        配送地址 :
+                                      </span>
                                       <span>{order.deliveryInfo.address}</span>
                                     </div>
                                     <div className="d-flex gap-1">

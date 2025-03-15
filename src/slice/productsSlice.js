@@ -12,7 +12,6 @@ export const productsSlice = createSlice({
             slug: 'top',
             title: '上衣',
             imageUrl: '/images/home/category-top.png',
-            // 之後擴充 subCategories: []
           },
           {
             slug: 'jacket',
