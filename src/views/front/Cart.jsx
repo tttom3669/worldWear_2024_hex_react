@@ -20,6 +20,10 @@ export default function Cart() {
   const { toastAlert } = useSwal();
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
+  const [updateCartData, setUpdateCartData] = useState({
+    isLoading: false,
+    cartId: null,
+  });
 
   const couponHandler = async () => {
     try {
@@ -48,7 +52,6 @@ export default function Cart() {
       '$1'
     );
     try {
-      setIsLoading(true);
       const res = await axios.get(
         `${API_PATH}/carts/?userId=${userId}&_expand=user&_expand=product`
       );
@@ -63,19 +66,43 @@ export default function Cart() {
     const method = qty <= 0 ? 'DELETE' : 'PATCH';
     const alertTitle = qty <= 0 ? '已從購物車中刪除' : '已更新購物車';
     const apiData = qty <= 0 ? {} : { qty };
+    try {
+      setUpdateCartData({
+        cartId,
+        isLoading: true,
+      });
+      await axios({
+        method,
+        url: `${API_PATH}/carts/${cartId}`,
+        data: apiData,
+      });
 
-    await axios({
-      method,
-      url: `${API_PATH}/carts/${cartId}`,
-      data: apiData,
-    });
+      toastAlert({ icon: 'success', title: alertTitle });
+      getCarts();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setUpdateCartData({
+        ...updateCartData,
+        isLoading: false,
+      });
+    }
+  };
 
-    toastAlert({ icon: 'success', title: alertTitle });
-
-    getCarts();
+  const checkBtnDisabled = (cart, type) => {
+    // 正在更新購物車或超出庫存，則禁止增減購物車數量
+    if (type === 'plus') {
+      return (
+        (updateCartData.isLoading && updateCartData.cartId === cart.id) ||
+        cart.qty >= cart.product.num[cart.color][cart.size]
+      );
+    } else {
+      return updateCartData.isLoading && updateCartData.cartId === cart.id;
+    }
   };
 
   useEffect(() => {
+    setIsLoading(true);
     getCarts();
   }, []);
 
@@ -157,6 +184,7 @@ export default function Cart() {
                                     onClick={() =>
                                       updateCarts(cart.id, cart.qty - 1)
                                     }
+                                    disabled={checkBtnDisabled(cart, 'minus')}
                                   >
                                     <svg
                                       className="pe-none"
@@ -182,6 +210,7 @@ export default function Cart() {
                                     onClick={() =>
                                       updateCarts(cart.id, cart.qty + 1)
                                     }
+                                    disabled={checkBtnDisabled(cart, 'plus')}
                                   >
                                     <svg
                                       className="pe-none"
