@@ -222,7 +222,11 @@ function FrontHeader({ defaultType }) {
                       <Link
                         className="l-menu__link"
                         to="/login"
+<<<<<<< HEAD
                         state={{ activeTab: 'login' }}
+=======
+                        state={{ activeTab: "login" }}
+>>>>>>> feature/page-products
                       >
                         登入
                       </Link>
@@ -231,7 +235,11 @@ function FrontHeader({ defaultType }) {
                       <Link
                         className="l-menu__link"
                         to="/login"
+<<<<<<< HEAD
                         state={{ activeTab: 'register' }}
+=======
+                        state={{ activeTab: "register" }}
+>>>>>>> feature/page-products
                       >
                         註冊
                       </Link>
@@ -298,7 +306,7 @@ function FrontHeader({ defaultType }) {
                       所有商品
                     </Link>
                   </li>
-                  {gender.categories.map((category) => (
+                  {/* {gender.categories.map((category) => (
                     <li key={category.slug}>
                       <Link
                         className="l-menu__dropdown-link"
@@ -307,7 +315,19 @@ function FrontHeader({ defaultType }) {
                         {category.title}
                       </Link>
                     </li>
-                  ))}
+                  ))} */}
+                  {gender.categories
+                    .filter((category) => category.slug !== "product-status")
+                    .map((category) => (
+                      <li key={category.slug}>
+                        <Link
+                          className="l-menu__dropdown-link"
+                          to={`/products/${gender.slug}/${category.slug}`}
+                        >
+                          {category.title}
+                        </Link>
+                      </li>
+                    ))}
                 </ul>
               </div>
             </div>

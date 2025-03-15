@@ -27,22 +27,32 @@ const routes = [
         element: <Home />,
       },
       {
-        path: "products",
+        path: "products",  //顯示所有產品
         children: [
           {
             index: true,
             element: <ProductsList />,
           },
           {
-            path: ":gender",
+            path: ":gender",  //顯示特定性別的產品（如女裝或男裝）
             children: [
               {
                 index: true,
                 element: <ProductsList />,
               },
               {
-                path: ":category",
-                element: <ProductsList />,
+                path: ":category",  //顯示特定性別下的特定類別（如女裝/上衣）
+                children: [
+                  {
+                    index: true,
+                    element: <ProductsList />,
+                  },
+                  {
+                    // 新增子類別層級
+                    path: ":subcategory",  //顯示特定性別、類別下的子類別（如女裝/上衣/襯衫）
+                    element: <ProductsList />,
+                  },
+                ],
               },
             ],
           },
