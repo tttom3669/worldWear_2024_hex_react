@@ -297,29 +297,29 @@ $accordion-active-bg: #FFDDB9; // 保留但不使用
 }
 
 /* 按鈕樣式修改 */
-.btn-outline-primary {
-  --bs-btn-color: #000;
-  --bs-btn-border-color: #000;
-  --bs-btn-hover-color: $white;
-  --bs-btn-hover-bg: $black;
-  --bs-btn-hover-border-color: $black;
-  --bs-btn-active-color: $white;
-  --bs-btn-active-bg: $black;
-  --bs-btn-active-border-color: $black;
+// .btn-outline-primary {
+//   --bs-btn-color: #000;
+//   --bs-btn-border-color: #000;
+//   --bs-btn-hover-color: $white;
+//   --bs-btn-hover-bg: $black;
+//   --bs-btn-hover-border-color: $black;
+//   --bs-btn-active-color: $white;
+//   --bs-btn-active-bg: $black;
+//   --bs-btn-active-border-color: $black;
   
-  &.selected {
-    background-color: $black;
-    color: $white;
-    border-color: $black;
-    font-weight: 500;
+//   &.selected {
+//     background-color: $black;
+//     color: $white;
+//     border-color: $black;
+//     font-weight: 500;
     
-    &:hover, &:focus, &:active {
-      background-color: $black;
-      color: $white;
-      border-color: $black;
-    }
-  }
-}
+//     &:hover, &:focus, &:active {
+//       background-color: $black;
+//       color: $white;
+//       border-color: $black;
+//     }
+//   }
+// }
 
 /* 類別選單樣式 */
 .category {

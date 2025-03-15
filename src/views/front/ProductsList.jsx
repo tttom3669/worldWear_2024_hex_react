@@ -11,6 +11,7 @@ import {
 import FrontHeader from "../../components/front/FrontHeader";
 import Pagination from "../../components/layouts/Pagination";
 import ProductCard from "../../components/front/ProductCard";
+import ScreenLoading from '../../components/front/ScreenLoading';
 import {
   FilterMenu,
   FilterSortButton,
@@ -184,15 +185,15 @@ export default function ProductsList() {
 
   // 渲染內容
   const renderContent = () => {
-    if (status === "loading" || status === "idle" && currentCategory) {
-      return (
-        <div className="text-center py-5">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">載入中...</span>
-          </div>
-        </div>
-      );
-    }
+    // if (status === "loading" || status === "idle" && currentCategory) {
+    //   return (
+    //     <div className="text-center py-5">
+    //       <div className="spinner-border text-primary" role="status">
+    //         <span className="visually-hidden">載入中...</span>
+    //       </div>
+    //     </div>
+    //   );
+    // }
 
     if (status === "failed") {
       return (
@@ -307,6 +308,7 @@ export default function ProductsList() {
           ></div>
         </div>
       </main>
+      <ScreenLoading isLoading={status === "loading" || status === "idle" && currentCategory}/>
     </>
   );
 }
