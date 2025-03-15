@@ -1,6 +1,4 @@
 import axios from 'axios';
-import FrontHeader from '../../components/front/FrontHeader';
-import CartFlow from '../../components/front/CartFlow';
 import useImgUrl from '../../hooks/useImgUrl';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -8,7 +6,11 @@ import useSwal from '../../hooks/useSwal';
 import { useDispatch } from 'react-redux';
 import { setCartsData } from '../../slice/cartsSlice';
 import ScreenLoading from '../../components/front/ScreenLoading';
+import FrontHeader from '../../components/front/FrontHeader';
+import CartFlow from '../../components/front/CartFlow';
 const { VITE_API_PATH: API_PATH } = import.meta.env;
+
+// 處理庫存、相同購物車品項產品問題
 
 export default function Cart() {
   const getImgUrl = useImgUrl();

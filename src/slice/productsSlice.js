@@ -12,15 +12,12 @@ export const productsSlice = createSlice({
             slug: 'top',
             title: '上衣',
             imageUrl: '/images/home/category-top.png',
-<<<<<<< HEAD
-=======
             subCategories: [
               { slug: 'shirt', title: '襯衫' },
               { slug: 'knitwear', title: '針織衫' },
               { slug: 'tshirt', title: 'T恤' },
               { slug: 'casual', title: '休閒上衣' }
             ]
->>>>>>> feature/page-products
           },
           {
             slug: 'jacket',

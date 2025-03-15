@@ -1,26 +1,22 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useParams, useLocation, useSearchParams } from "react-router-dom";
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useParams, useLocation, useSearchParams } from 'react-router-dom';
 import {
   fetchProducts,
   sortProducts,
   setCurrentPage,
   resetFilters,
   setCurrentCategory,
-} from "../../slice/productsListSlice";
-import FrontHeader from "../../components/front/FrontHeader";
-import Pagination from "../../components/layouts/Pagination";
-import ProductCard from "../../components/front/ProductCard";
-<<<<<<< HEAD
+} from '../../slice/productsListSlice';
+import FrontHeader from '../../components/front/FrontHeader';
+import Pagination from '../../components/layouts/Pagination';
+import ProductCard from '../../components/front/ProductCard';
 import ScreenLoading from '../../components/front/ScreenLoading';
-import {
-  FilterMenu,
-=======
+
 import ProductAside, {
->>>>>>> feature/page-products
   FilterSortButton,
-  SortFilter
-} from "../../components/front/ProductAside";
+  SortFilter,
+} from '../../components/front/ProductAside';
 
 export default function ProductsList() {
   const dispatch = useDispatch();
@@ -34,9 +30,9 @@ export default function ProductsList() {
   const {
     filteredItems = [],
     items = [],
-    status = "idle",
+    status = 'idle',
     error = null,
-    sortOption = "最新上架",
+    sortOption = '最新上架',
     currentPage = 1,
     filters = {},
     currentCategory = null,
@@ -93,17 +89,17 @@ export default function ProductsList() {
     if (currentCategory) {
       // 檢查是否為頂層性別類別
       if (currentCategory === 'men') {
-        return "男裝 商品一覽";
+        return '男裝 商品一覽';
       } else if (currentCategory === 'women') {
-        return "女裝 商品一覽";
+        return '女裝 商品一覽';
       }
-      
+
       // 處理包含路徑的類別
       const pathParts = currentCategory.split('/');
       if (pathParts.length > 0) {
         // 顯示性別類別
         const gender = pathParts[0] === 'men' ? '男裝' : '女裝';
-        
+
         if (pathParts.length > 1) {
           // 有子類別，但仍只顯示主類別
           return `${gender} 商品一覽`;
@@ -111,9 +107,9 @@ export default function ProductsList() {
         return `${gender} 商品一覽`;
       }
     }
-    
+
     // 預設顯示
-    return "商品一覽";
+    return '商品一覽';
   }, [currentCategory]);
 
   // 使用 useEffect 獲取產品數據，根據實際路徑參數
@@ -129,14 +125,21 @@ export default function ProductsList() {
     }
 
     // 調試日誌
-    console.log("路由參數:", { gender, category, subcategory });
-    console.log("hash 路徑:", location.hash);
-    console.log("提取的實際分類:", actualCategory);
-  }, [gender, category, subcategory, location.hash, dispatch, getActualCategory]);
+    console.log('路由參數:', { gender, category, subcategory });
+    console.log('hash 路徑:', location.hash);
+    console.log('提取的實際分類:', actualCategory);
+  }, [
+    gender,
+    category,
+    subcategory,
+    location.hash,
+    dispatch,
+    getActualCategory,
+  ]);
 
   // 在組件初始化時，從 URL 查詢參數讀取頁碼
   useEffect(() => {
-    const pageParam = searchParams.get("page");
+    const pageParam = searchParams.get('page');
     if (pageParam) {
       const pageNumber = parseInt(pageParam, 10);
       if (!isNaN(pageNumber) && pageNumber >= 1) {
@@ -149,9 +152,9 @@ export default function ProductsList() {
   useEffect(() => {
     // 在獲取新數據前先重置篩選條件，但保留頁碼
     dispatch(resetFilters());
-    
+
     // 如果 URL 中沒有 page 參數，重置頁碼到第 1 頁
-    const pageParam = searchParams.get("page");
+    const pageParam = searchParams.get('page');
     if (!pageParam) {
       dispatch(setCurrentPage(1));
     }
@@ -186,38 +189,39 @@ export default function ProductsList() {
     setShowOffcanvas((prev) => !prev);
     setShowHeader((prev) => !prev);
 
-    const headerContainer = document.getElementById("header-container");
+    const headerContainer = document.getElementById('header-container');
     if (headerContainer) {
-      headerContainer.style.display = showOffcanvas ? "block" : "none";
+      headerContainer.style.display = showOffcanvas ? 'block' : 'none';
     }
 
     // 控制 body 的滾動
-    document.body.style.overflow = showOffcanvas ? "" : "hidden";
+    document.body.style.overflow = showOffcanvas ? '' : 'hidden';
   }, [showOffcanvas]);
 
   // 計算總篩選數量
-  const totalFilterCount = useMemo(() =>
-    Object.values(filters).reduce(
-      (count, labels) => count + (labels.includes("全部") ? 0 : labels.length),
-      0
-    ),
+  const totalFilterCount = useMemo(
+    () =>
+      Object.values(filters).reduce(
+        (count, labels) =>
+          count + (labels.includes('全部') ? 0 : labels.length),
+        0
+      ),
     [filters]
   );
 
   // 在組件被卸載時確保header可見和body滾動恢復
   useEffect(() => {
     return () => {
-      const headerContainer = document.getElementById("header-container");
+      const headerContainer = document.getElementById('header-container');
       if (headerContainer) {
-        headerContainer.style.display = "block";
+        headerContainer.style.display = 'block';
       }
-      document.body.style.overflow = "";
+      document.body.style.overflow = '';
     };
   }, []);
 
   // 渲染內容
   const renderContent = () => {
-<<<<<<< HEAD
     // if (status === "loading" || status === "idle" && currentCategory) {
     //   return (
     //     <div className="text-center py-5">
@@ -227,22 +231,11 @@ export default function ProductsList() {
     //     </div>
     //   );
     // }
-=======
-    if (status === "loading" || (status === "idle" && currentCategory)) {
-      return (
-        <div className="text-center py-5">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">載入中...</span>
-          </div>
-        </div>
-      );
-    }
->>>>>>> feature/page-products
 
-    if (status === "failed") {
+    if (status === 'failed') {
       return (
         <div className="alert alert-danger" role="alert">
-          {error || "載入產品時發生錯誤"}
+          {error || '載入產品時發生錯誤'}
         </div>
       );
     }
@@ -307,18 +300,20 @@ export default function ProductsList() {
         </section>
 
         {/* Offcanvas */}
-        <div className={`offcanvas-wrapper ${showOffcanvas ? "show" : ""}`}>
+        <div className={`offcanvas-wrapper ${showOffcanvas ? 'show' : ''}`}>
           <div
             className={`offcanvas offcanvas-fullscreen ${
-              showOffcanvas ? "show" : ""
+              showOffcanvas ? 'show' : ''
             }`}
             tabIndex="-1"
             id="offcanvasCategoryMenu"
             aria-labelledby="offcanvasCategoryMenuLabel"
           >
             <div className="offcanvas-header position-relative">
-              <h5 className="offcanvas-title" id="offcanvasCategoryMenuLabel">
-              </h5>
+              <h5
+                className="offcanvas-title"
+                id="offcanvasCategoryMenuLabel"
+              ></h5>
               <button
                 type="button"
                 className="btn offcanvas-cancel-btn position-absolute top-0 end-0 mt-3 me-3"
@@ -330,7 +325,10 @@ export default function ProductsList() {
             </div>
             <div className="offcanvas-body">
               <div className="filterMenu-wrap">
-                <ProductAside isOffcanvas={true} toggleOffcanvas={toggleOffcanvas} />
+                <ProductAside
+                  isOffcanvas={true}
+                  toggleOffcanvas={toggleOffcanvas}
+                />
               </div>
               {/* 原有的"查看品項"按鈕由 ProductAside 組件內部提供，此處移除 */}
             </div>
@@ -338,16 +336,19 @@ export default function ProductsList() {
 
           {/* Backdrop for offcanvas */}
           <div
-            className={`offcanvas-backdrop fade ${showOffcanvas ? "show" : ""}`}
+            className={`offcanvas-backdrop fade ${showOffcanvas ? 'show' : ''}`}
             onClick={toggleOffcanvas}
           ></div>
         </div>
       </main>
-      <ScreenLoading isLoading={status === "loading" || status === "idle" && currentCategory}/>
+      <ScreenLoading
+        isLoading={
+          status === 'loading' || (status === 'idle' && currentCategory)
+        }
+      />
     </>
   );
 }
-
 
 // ---------------------
 // import { useEffect, useState, useCallback, useMemo } from "react";
@@ -487,7 +488,7 @@ export default function ProductsList() {
 //   useEffect(() => {
 //     // 在獲取新數據前先重置篩選條件，但保留頁碼
 //     dispatch(resetFilters());
-    
+
 //     // 如果 URL 中沒有 page 參數，重置頁碼到第 1 頁
 //     const pageParam = searchParams.get("page");
 //     if (!pageParam) {
