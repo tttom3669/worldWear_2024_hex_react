@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation, useSearchParams } from "react-router-dom";
 import {
   fetchProducts,
   sortProducts,
@@ -11,16 +11,16 @@ import {
 import FrontHeader from "../../components/front/FrontHeader";
 import Pagination from "../../components/layouts/Pagination";
 import ProductCard from "../../components/front/ProductCard";
-import {
-  FilterMenu,
+import ProductAside, {
   FilterSortButton,
   SortFilter,
-} from "../../components/front/FilterMenu";
+} from "../../components/front/ProductAside";
 
 export default function ProductsList() {
   const dispatch = useDispatch();
-  const { category, gender } = useParams(); // 從 URL 獲取性別和分類參數
+  const { category, gender, subcategory } = useParams(); // 從 URL 獲取性別和分類參數
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [showOffcanvas, setShowOffcanvas] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
 
@@ -41,42 +41,45 @@ export default function ProductsList() {
 
   // 處理來自不同路由格式的分類參數
   const getActualCategory = useCallback(() => {
-    // 處理 /products/:gender/:category 格式的路由
-    if (gender && category) {
-      return `${gender}/${category}`;
-    }
-    
-    // 處理 /products/:gender 格式的路由
-    if (gender && !category) {
-      return gender;
-    }
-    
-    // 處理 /products/:category 格式的路由 (如果有)
-    if (category && !gender) {
-      return category;
-    }
-    
-    // 處理 hash 路由格式 (例如 /#/products/women/top)
+    // 處理 hash 路由格式 (例如 /#/products/women/dress/long-dress)
     const hashPath = location.hash;
     if (hashPath) {
-      // 移除 # 符號並解析路徑
       const path = hashPath.replace('#', '');
       const pathSegments = path.split('/').filter(Boolean);
-      
-      // 檢查路徑是否包含 products 和分類信息
+
       if (pathSegments.length >= 2 && pathSegments[0] === 'products') {
-        if (pathSegments.length >= 3) {
-          // 返回 gender/category 格式 (例如 'women/top')
+        // 處理三層結構: /products/women/jacket/long-jacket
+        if (pathSegments.length >= 4) {
+          return `${pathSegments[1]}/${pathSegments[2]}/${pathSegments[3]}`;
+        }
+        // 處理兩層結構: /products/women/jacket
+        else if (pathSegments.length >= 3) {
           return `${pathSegments[1]}/${pathSegments[2]}`;
-        } else if (pathSegments.length === 2) {
-          // 只有主分類 (例如 'women')
+        }
+        // 處理單層結構: /products/women
+        else if (pathSegments.length === 2) {
           return pathSegments[1];
         }
       }
     }
-    
+
+    // 處理 /products/:gender/:category/:subcategory 格式的路由
+    if (gender && category && subcategory) {
+      return `${gender}/${category}/${subcategory}`;
+    }
+
+    // 處理 /products/:gender/:category 格式的路由
+    if (gender && category) {
+      return `${gender}/${category}`;
+    }
+
+    // 處理 /products/:gender 格式的路由
+    if (gender && !category) {
+      return gender;
+    }
+
     return null;
-  }, [gender, category, location.hash]);
+  }, [gender, category, subcategory, location.hash]);
 
   // 處理頁面標題顯示
   const getPageTitle = useMemo(() => {
@@ -103,35 +106,51 @@ export default function ProductsList() {
   useEffect(() => {
     // 獲取實際分類（從各種可能的路由格式）
     const actualCategory = getActualCategory();
-    
+
     if (actualCategory) {
       dispatch(setCurrentCategory(actualCategory));
     } else {
       // 如果沒有分類參數，設置為 null 顯示所有商品
       dispatch(setCurrentCategory(null));
     }
-    
+
     // 調試日誌
     console.log("路由參數:", { gender, category });
     console.log("hash 路徑:", location.hash);
     console.log("提取的實際分類:", actualCategory);
   }, [gender, category, location.hash, dispatch, getActualCategory]);
 
+  // 在組件初始化時，從 URL 查詢參數讀取頁碼
+  useEffect(() => {
+    const pageParam = searchParams.get("page");
+    if (pageParam) {
+      const pageNumber = parseInt(pageParam, 10);
+      if (!isNaN(pageNumber) && pageNumber >= 1) {
+        dispatch(setCurrentPage(pageNumber));
+      }
+    }
+  }, [searchParams, dispatch]);
+
   // 當 currentCategory 改變時，重新獲取產品數據
   useEffect(() => {
-    // 在獲取新數據前先重置篩選條件和頁碼
+    // 在獲取新數據前先重置篩選條件，但保留頁碼
     dispatch(resetFilters());
-    dispatch(setCurrentPage(1));
     
+    // 如果 URL 中沒有 page 參數，重置頁碼到第 1 頁
+    const pageParam = searchParams.get("page");
+    if (!pageParam) {
+      dispatch(setCurrentPage(1));
+    }
+
     // 新增延遲，確保頁面顯示「載入中」狀態，避免閃現舊數據
     const timer = setTimeout(() => {
       if (currentCategory !== undefined) {
         dispatch(fetchProducts(currentCategory));
       }
     }, 50);
-    
+
     return () => clearTimeout(timer); // 清除計時器，避免記憶體洩漏
-  }, [currentCategory, dispatch]);
+  }, [currentCategory, dispatch, searchParams]);
 
   // 使用 useCallback 優化性能
   const handleSortChange = useCallback(
@@ -184,7 +203,7 @@ export default function ProductsList() {
 
   // 渲染內容
   const renderContent = () => {
-    if (status === "loading" || status === "idle" && currentCategory) {
+    if (status === "loading" || (status === "idle" && currentCategory)) {
       return (
         <div className="text-center py-5">
           <div className="spinner-border text-primary" role="status">
@@ -232,7 +251,7 @@ export default function ProductsList() {
               {/* 類別篩選選單 - 桌面版 */}
               <div className="col-md-3 d-none d-md-block ps-3 mb-20">
                 <div className="filterMenu-wrap">
-                  <FilterMenu isOffcanvas={false} />
+                  <ProductAside isOffcanvas={false} />
                 </div>
               </div>
               <div className="col-12 col-md-9 d-block infoTitle">
@@ -285,18 +304,9 @@ export default function ProductsList() {
             </div>
             <div className="offcanvas-body">
               <div className="filterMenu-wrap">
-                <FilterMenu isOffcanvas={true} />
+                <ProductAside isOffcanvas={true} toggleOffcanvas={toggleOffcanvas} />
               </div>
-              <div>
-                <button className="checkItem" onClick={toggleOffcanvas}>
-                  <h6>
-                    查看品項{" "}
-                    {filteredItems.length > 0 || !filteredItems.length
-                      ? `(${totalFilterCount})`
-                      : ""}
-                  </h6>
-                </button>
-              </div>
+              {/* 原有的"查看品項"按鈕由 ProductAside 組件內部提供，此處移除 */}
             </div>
           </div>
 

@@ -45,7 +45,7 @@ const createSortingStrategies = () => ({
     }),
 });
 
-// 篩選函數
+// 篩選函數 - 修正過濾邏輯
 const filterProductsByCategories = (products, filters) => {
   // 沒有篩選條件，返回所有產品
   if (Object.keys(filters).length === 0) {
@@ -56,8 +56,8 @@ const filterProductsByCategories = (products, filters) => {
     Object.entries(filters).every(([category, selectedLabels]) => {
       const isSelectAll = selectedLabels.includes("全部");
 
-      // 特殊處理狀態篩選
-      if (category === "狀態") {
+      // 特殊處理狀態篩選 - 修正為使用 productStatus
+      if (category === "productStatus") {
         return isSelectAll || selectedLabels.includes(product.status);
       }
 
@@ -89,54 +89,63 @@ const sortProductsBy = (products, sortOption) => {
   return sorter(products);
 };
 
-// 定義類別對應表
-const categoryMappings = {
-  'women': {
-    'top': '上衣',
-    'jacket': '外套',
-    'dress': '洋裝',
-    'pants': '褲子',
-    'skirts': '裙子',
-    'accessories': '服飾配件'
-  },
-  'men': {
-    'top': '上衣',
-    'jacket': '外套',
-    'pants': '褲子',
-    'accessories': '服飾配件'
-  }
-};
-
-// 特殊類別處理映射
-const specialCategoryMappings = {
-  'accessories': '配件' // accessories 在 API 中對應的是 "配件"
-};
-
 // 異步獲取產品 Thunk
 export const fetchProducts = createAsyncThunk(
   "productsList/fetchProducts",
-  async (categoryParams, { rejectWithValue }) => {
+  async (categoryParams, { rejectWithValue, getState }) => {
     try {
       const params = new URLSearchParams();
       
       // 如果有傳入分類參數
       if (categoryParams) {
-        // 檢查是否是複合路徑 (例如: men/top)
-        if (categoryParams.includes('/')) {
-          const [genderType, productType] = categoryParams.split('/');
-          // 將 men/women 轉換為對應的 "男裝"/"女裝"
-          const classValue = genderType === 'men' ? '男裝' : genderType === 'women' ? '女裝' : genderType;
+        console.log('傳入的分類參數:', categoryParams); // 輸出除錯用
+        
+        // 從 Redux 狀態中獲取分類數據
+        const productCategories = getState().products.productCategories;
+        
+        // 處理包含子類別的三層結構路徑 (如: women/top/shirt)
+        if (categoryParams.split('/').length === 3) {
+          const [genderType, categoryType, subCategoryType] = categoryParams.split('/');
+          
+          // 設定性別 class (男裝/女裝)
+          const classValue = genderType === 'men' ? '男裝' : '女裝';
           params.append('class', classValue);
           
-          // 處理特殊類別映射 (例如: accessories -> 配件)
-          if (productType === 'accessories') {
-            params.append('category', specialCategoryMappings['accessories']);
-          } 
-          // 一般類別映射
-          else if (categoryMappings[genderType] && categoryMappings[genderType][productType]) {
-            params.append('category', categoryMappings[genderType][productType]);
-          } else {
-            params.append('category', productType);
+          // 找到對應的產品類別
+          const genderCategory = productCategories.find(cat => cat.slug === genderType);
+          if (genderCategory) {
+            // 找到主類別
+            const mainCategory = genderCategory.categories.find(cat => cat.slug === categoryType);
+            if (mainCategory) {
+              // 設定主類別
+              params.append('category', mainCategory.title);
+              
+              // 找到子類別
+              const subCategory = mainCategory.subCategories.find(sub => sub.slug === subCategoryType);
+              if (subCategory) {
+                // 設定子類別
+                params.append('categoryItems', subCategory.title);
+              }
+            }
+          }
+        }
+        // 處理包含主類別的兩層結構 (如: women/top)
+        else if (categoryParams.includes('/')) {
+          const [genderType, categoryType] = categoryParams.split('/');
+          
+          // 設定性別 class (男裝/女裝)
+          const classValue = genderType === 'men' ? '男裝' : '女裝';
+          params.append('class', classValue);
+          
+          // 找到對應的產品類別
+          const genderCategory = productCategories.find(cat => cat.slug === genderType);
+          if (genderCategory) {
+            // 找到主類別
+            const mainCategory = genderCategory.categories.find(cat => cat.slug === categoryType);
+            if (mainCategory) {
+              // 設定主類別
+              params.append('category', mainCategory.title);
+            }
           }
         } 
         // 檢查是否為主分類 (men 或 women)
@@ -144,33 +153,12 @@ export const fetchProducts = createAsyncThunk(
           // 將 men/women 轉換為對應的 "男裝"/"女裝"
           const classValue = categoryParams === 'men' ? '男裝' : '女裝';
           params.append('class', classValue);
-        } 
-        // 檢查是否為特殊類別 (例如: accessories)
-        else if (Object.keys(specialCategoryMappings).includes(categoryParams)) {
-          params.append('category', specialCategoryMappings[categoryParams]);
-        }
-        // 否則當作商品分類處理，但需要檢查是否為已知的 slug
-        else {
-          // 嘗試在男裝和女裝中查找匹配的 slug
-          let found = false;
-          for (const gender in categoryMappings) {
-            if (categoryMappings[gender][categoryParams]) {
-              params.append('category', categoryMappings[gender][categoryParams]);
-              found = true;
-              break;
-            }
-          }
-          
-          // 如果沒有找到對應的映射，則直接使用原始參數
-          if (!found) {
-            params.append('category', categoryParams);
-          }
         }
       }
       
       // 構建完整 URL，使用環境變數
       const apiUrl = params.toString() ? `${API_PATH}/products?${params.toString()}` : `${API_PATH}/products`;
-      // console.log('API 請求 URL:', apiUrl);
+      console.log('API 請求 URL:', apiUrl); // 輸出除錯用
       
       const { data } = await axios.get(apiUrl);
       return data;
