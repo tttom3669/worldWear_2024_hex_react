@@ -7,6 +7,8 @@ import Login from "../views/Login.jsx";
 import Signup from "../views/Signup.jsx";
 import NotFound from "../views/NotFound.jsx";
 import Cart from "../views/front/Cart.jsx";
+import Checkout from '../views/front/Checkout.jsx';
+import CheckoutSuccess from '../views/front/CheckoutSuccess.jsx';
 import ProductsList from "../views/front/ProductsList.jsx";
 import FrontUserLayout from "../Layout/front/FrontUserLayout.jsx";
 import { element } from "prop-types";
@@ -59,6 +61,14 @@ const routes = [
       {
         path: "cart",
         element: <Cart />,
+      },
+      {
+        path: 'checkout',
+        element: <Checkout />,
+      },
+      {
+        path: 'checkout-success',
+        element: <CheckoutSuccess />,
       },
       {
         path: "user",

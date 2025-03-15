@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
+import { useSelector } from "react-redux";
 import axios from 'axios';
+import useSwal from '../../hooks/useSwal';
 
 import FrontHeader from '../../components/front/FrontHeader';
 import useImgUrl from '../../hooks/useImgUrl';
@@ -8,23 +10,20 @@ const { VITE_API_PATH: API_PATH } = import.meta.env;
 
 export default function Product() {
   const getImgUrl = useImgUrl();
+  const { toastAlert } = useSwal();
   const { id: productId } = useParams();
+  const user = useSelector(state => state.authSlice.user);
   const [product, setProduct] = useState({})
+  const [isPostCartLoding, setIsPostCartLoding] = useState(false)
+  const [isPostFavoritesLoding, setIsPostFavoritesLoding] = useState(false)
   const [cart, setCart] = useState({
-    userId: "",
     qty: 1,
     color: "",
     size: "",
-    total: 0,
-    final_total: 0,
     productId: ""
   })
 
-  useEffect(() => {
-    getProduct()
-  }, [productId])
-
-  const getProduct = async () => {
+  const getProduct = useCallback(async () => {
     try {
       const { data } = await axios.get(`${API_PATH}/products/${productId}`)
       console.log(data)
@@ -36,7 +35,7 @@ export default function Product() {
     } catch (error) {
       console.log(error)
     }
-  }
+  }, [productId])
 
   const handleColorSelect = (selectedColor) => {
     setCart((prevCart) => ({
@@ -60,14 +59,66 @@ export default function Product() {
         return;
     }
 
-    const maxQty = product.num?.[cart.color]?.[cart.size] || 1; // 確保數量不為 undefined
-    const newQty = Math.max(1, Math.min(cart.qty + change, maxQty)); // 限制範圍
+    const maxQty = product.num?.[cart.color]?.[cart.size] || 1;
+    const newQty = Math.max(1, Math.min(cart.qty + change, maxQty));
 
     setCart((prevCart) => ({
         ...prevCart,
         qty: newQty
     }));
   };
+
+  const postCarts = async () => {
+    try { 
+      setIsPostCartLoding(true)
+      if (!cart.color || !cart.size) {
+        toastAlert({ icon: 'error', title: '請先選取商品顏色和尺寸' })
+        setIsPostCartLoding(false)
+        return
+      }
+      const cartData = {
+        userId: user.id,
+        ...cart
+      }
+      await axios.post(`${API_PATH}/carts`, cartData)
+      toastAlert({ icon: 'success', title: '已將商品加入購物車' });
+      setIsPostCartLoding(false)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const postFavorites = async () => {
+    try { 
+      setIsPostFavoritesLoding(true)
+      if (!cart.color || !cart.size) {
+        toastAlert({ icon: 'error', title: '請先選取商品顏色和尺寸' })
+        setIsPostFavoritesLoding(false)
+        return
+      }
+      const cartData = {
+        userId: user.id,
+        ...cart
+      }
+      await axios.post(`${API_PATH}/favorites`, cartData)
+      toastAlert({ icon: 'success', title: '已將商品加入收藏' })
+      setIsPostFavoritesLoding(false)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    getProduct()
+  }, [getProduct])
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      console.log('有token:', token)
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
+  }, [])
 
   return (
     <>
@@ -159,15 +210,23 @@ export default function Product() {
               </button>
             </div>
     
-            <button className="d-flex justify-content-center align-items-center mb-3 p-4 fs-base fw-bold btn btn-warning w-100">
+            <button
+              onClick={postCarts}
+              className="d-flex justify-content-center align-items-center mb-3 p-4 fs-base fw-bold btn btn-warning w-100"
+              disabled={isPostCartLoding}
+            >
               <img className="product-icon me-2" src={getImgUrl('/images/product/icon-cart.png')} alt="icon-cart"/>
               加入購物車
             </button>
-            <button id="favorite-button" className="d-flex justify-content-center align-items-center mb-3 p-4 fs-base fw-bold btn btn-outline-primary w-100">
-              <img id="favorite-icon" className="product-icon me-2" src={getImgUrl('/images/product/icon-heart-outline.png')} alt="icon-heart-outline"/>
-              加入喜愛收藏
-            </button>
-    
+             <button
+                onClick={postFavorites}
+                id="favorite-button"
+                className="d-flex justify-content-center align-items-center mb-3 p-4 fs-base fw-bold btn btn-outline-primary w-100"
+                disabled={isPostFavoritesLoding}
+              >
+                  <img id="favorite-icon" className="product-icon me-2" src={getImgUrl('/images/product/icon-heart-outline.png')} alt="icon-heart-outline"/>
+                  加入喜愛收藏
+              </button>
             <div className="mb-10 px-2 py-1 fs-sm tag">
               商品適用優惠：新會員優惠10%off
             </div>
