@@ -13,7 +13,7 @@ import Pagination from "../../components/layouts/Pagination";
 import ProductCard from "../../components/front/ProductCard";
 import ProductAside, {
   FilterSortButton,
-  SortFilter,
+  SortFilter
 } from "../../components/front/ProductAside";
 
 export default function ProductsList() {
