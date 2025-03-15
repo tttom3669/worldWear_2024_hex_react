@@ -214,12 +214,20 @@ function FrontHeader({ defaultType }) {
                 >
                   <ul className="navbar-nav l-menu header--logout__item ">
                     <li>
-                      <Link className="l-menu__link" to="/login" state={{ activeTab: 'login' }} >
+                      <Link
+                        className="l-menu__link"
+                        to="/login"
+                        state={{ activeTab: "login" }}
+                      >
                         登入
                       </Link>
                     </li>
                     <li>
-                      <Link className="l-menu__link" to="/login" state={{ activeTab: 'register' }}>
+                      <Link
+                        className="l-menu__link"
+                        to="/login"
+                        state={{ activeTab: "register" }}
+                      >
                         註冊
                       </Link>
                     </li>
@@ -285,7 +293,7 @@ function FrontHeader({ defaultType }) {
                       所有商品
                     </Link>
                   </li>
-                  {gender.categories.map((category) => (
+                  {/* {gender.categories.map((category) => (
                     <li key={category.slug}>
                       <Link
                         className="l-menu__dropdown-link"
@@ -294,7 +302,19 @@ function FrontHeader({ defaultType }) {
                         {category.title}
                       </Link>
                     </li>
-                  ))}
+                  ))} */}
+                  {gender.categories
+                    .filter((category) => category.slug !== "product-status")
+                    .map((category) => (
+                      <li key={category.slug}>
+                        <Link
+                          className="l-menu__dropdown-link"
+                          to={`/products/${gender.slug}/${category.slug}`}
+                        >
+                          {category.title}
+                        </Link>
+                      </li>
+                    ))}
                 </ul>
               </div>
             </div>
