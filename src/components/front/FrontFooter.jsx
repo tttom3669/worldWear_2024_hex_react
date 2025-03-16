@@ -39,7 +39,8 @@ export default function FrontFooter() {
         className="c-topBtn opacity-0 pe-none"
         to="#"
         ref={topBtnRef}
-        onClick={() => {
+        onClick={(e) => {
+          e.preventDefault();
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
       >
