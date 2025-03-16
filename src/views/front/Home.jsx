@@ -44,6 +44,7 @@ export default function Home() {
 
   return (
     <>
+      <title>首頁 - WorldWear</title>
       <FrontHeader defaultType={'dark'} />
       <main className="site-index">
         <div className="site-index__banner">
@@ -202,39 +203,43 @@ export default function Home() {
                         swiperRefs.current[gender.slug] = swiper;
                       }}
                     >
-                      {gender.categories.map((category) => (
-                        <SwiperSlide key={category.slug}>
-                          <div
-                            className="swiper__productCategories-item swiper__productCategories-item--dark "
-                            style={{
-                              backgroundImage: `url(${getImgUrl(
-                                category.imageUrl
-                              )})`,
-                            }}
-                          >
-                            <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                              <Link
-                                to={`/products/${category.slug}`}
-                                className="text-reset stretched-link"
-                              >
-                                <h2 className="fs-sm fs-md-h6 fw-bold">
-                                  {category.title}
-                                </h2>
-                              </Link>
-                              <h3
-                                className={`${
-                                  category.slug !== 'accessories'
-                                    ? 'fs-dh2 fs-md-dh1'
-                                    : 'fs-h2 fs-md-h1'
-                                } fst-italic fw-normal font-dm-serif`}
-                              >
-                                {category.slug[0].toUpperCase() +
-                                  category.slug.slice(1)}
-                              </h3>
+                      {gender.categories.map((category) =>
+                        category.slug !== 'product-status' ? (
+                          <SwiperSlide key={category.slug}>
+                            <div
+                              className="swiper__productCategories-item swiper__productCategories-item--dark "
+                              style={{
+                                backgroundImage: `url(${getImgUrl(
+                                  category.imageUrl
+                                )})`,
+                              }}
+                            >
+                              <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
+                                <Link
+                                  to={`/products/${category.slug}`}
+                                  className="text-reset stretched-link"
+                                >
+                                  <h2 className="fs-sm fs-md-h6 fw-bold">
+                                    {category.title}
+                                  </h2>
+                                </Link>
+                                <h3
+                                  className={`${
+                                    category.slug !== 'accessories'
+                                      ? 'fs-dh2 fs-md-dh1'
+                                      : 'fs-h2 fs-md-h1'
+                                  } fst-italic fw-normal font-dm-serif`}
+                                >
+                                  {category.slug[0].toUpperCase() +
+                                    category.slug.slice(1)}
+                                </h3>
+                              </div>
                             </div>
-                          </div>
-                        </SwiperSlide>
-                      ))}
+                          </SwiperSlide>
+                        ) : (
+                          ''
+                        )
+                      )}
                     </Swiper>
                     <div
                       className="swiper-button-prev"

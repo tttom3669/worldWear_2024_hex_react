@@ -11,7 +11,6 @@ import Checkout from '../views/front/Checkout.jsx';
 import CheckoutSuccess from '../views/front/CheckoutSuccess.jsx';
 import ProductsList from "../views/front/ProductsList.jsx";
 import FrontUserLayout from "../Layout/front/FrontUserLayout.jsx";
-import { element } from "prop-types";
 import UserOrder from "../views/front/user/UserOrder.jsx";
 import Product from "../views/front/Product.jsx";
 import UserFavorites from "../views/front/user/UserFavorites.jsx";
@@ -25,6 +24,7 @@ const routes = [
       {
         index: true,
         element: <Home />,
+        title: "首頁 | 我的網站",
       },
       {
         path: "products",  //顯示所有產品
