@@ -17,13 +17,13 @@ import cookieUtils, {
   getJWTToken,
   getUserIdFromCookie,
 } from "../../../components/tools/cookieUtils";
+import ScreenLoading from '../../../components/front/ScreenLoading';
 
 export default function UserFavorites() {
   const getImgUrl = useImgUrl();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { toastAlert } = useSwal();
-  const hasNavigated = useRef(false);
   const hasFetchedFavorites = useRef(false);
 
   // 從 Redux store 中獲取收藏數據
@@ -209,6 +209,7 @@ export default function UserFavorites() {
   // 組件初始化時檢查登入狀態並獲取收藏列表
   useEffect(() => {
     console.log("UserFavorites 組件初始化");
+    setIsLoading(true);
 
     try {
       // 調試 token 信息
@@ -358,14 +359,7 @@ export default function UserFavorites() {
                   <h1 className="fs-h5 fw-bold m-0">收藏列表</h1>
                 </div>
 
-                {isLoading ? (
-                  <div className="bg-white p-5 text-center">
-                    <div className="spinner-border text-primary" role="status">
-                      <span className="visually-hidden">Loading...</span>
-                    </div>
-                    <p className="mt-2">載入中...</p>
-                  </div>
-                ) : !isAuthenticated ? (
+                {!isAuthenticated ? (
                   <div className="bg-white p-5 text-center">
                     <div className="alert alert-warning">
                       請先登入以查看您的收藏列表
@@ -564,6 +558,7 @@ export default function UserFavorites() {
           </div>
         </div>
       </main>
+      <ScreenLoading isLoading={isLoading} />
     </>
   );
 }
