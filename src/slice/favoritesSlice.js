@@ -339,31 +339,64 @@ const favoritesSlice = createSlice({
       .addCase(removeFromFavorites.pending, (state) => {
         state.status = "loading";
       })
+      // .addCase(removeFromFavorites.fulfilled, (state, action) => {
+      //   const { id } = action.payload;
+
+      //   // 從收藏列表移除
+      //   state.favoritesData.products = state.favoritesData.products.filter(
+      //     (product) => product.id !== id
+      //   );
+      //   state.favoritesData.total = state.favoritesData.products.length;
+
+      //   // 更新產品收藏狀態
+      //   const removedProduct = state.favoritesData.products.find(
+      //     (product) => product.id === id
+      //   );
+      //   if (removedProduct && removedProduct.productId) {
+      //     state.productFavoriteStatus[removedProduct.productId] = {
+      //       isInFavorites: false,
+      //       favoriteItem: null,
+      //     };
+
+      //     // 從最近添加的列表移除
+      //     state.recentlyAddedProductIds = state.recentlyAddedProductIds.filter(
+      //       (productId) => productId !== removedProduct.productId
+      //     );
+      //   }
+
+      //   state.status = "succeeded";
+      //   state.error = null;
+      // })
       .addCase(removeFromFavorites.fulfilled, (state, action) => {
         const { id } = action.payload;
-
+        
+        // 先找到要移除的項目，以獲取 productId
+        const removedProduct = state.favoritesData.products.find(
+          (product) => product.id === id
+        );
+        
+        // 保存 productId 供後續使用
+        const productId = removedProduct ? removedProduct.productId : null;
+        
         // 從收藏列表移除
         state.favoritesData.products = state.favoritesData.products.filter(
           (product) => product.id !== id
         );
         state.favoritesData.total = state.favoritesData.products.length;
-
-        // 更新產品收藏狀態
-        const removedProduct = state.favoritesData.products.find(
-          (product) => product.id === id
-        );
-        if (removedProduct && removedProduct.productId) {
-          state.productFavoriteStatus[removedProduct.productId] = {
+      
+        // 如果有獲取到 productId，更新收藏狀態
+        if (productId) {
+          state.productFavoriteStatus[productId] = {
             isInFavorites: false,
             favoriteItem: null,
           };
-
+      
           // 從最近添加的列表移除
           state.recentlyAddedProductIds = state.recentlyAddedProductIds.filter(
-            (productId) => productId !== removedProduct.productId
+            (pid) => pid !== productId
           );
         }
-
+      
         state.status = "succeeded";
         state.error = null;
       })
