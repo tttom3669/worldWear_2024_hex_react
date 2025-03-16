@@ -237,6 +237,7 @@ $utilities: map-merge(
           //cus*
           24px: 24px,
           40px: 40px,
+          vw: 100vw,
         ),
       ),
     'max-width': (
@@ -274,6 +275,7 @@ $utilities: map-merge(
         // cus*
         24px: 24px,
         40px: 40px,
+        dvh: 100dvh,
       ),
     ),
     'max-height': (

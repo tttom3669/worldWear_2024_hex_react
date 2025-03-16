@@ -83,13 +83,15 @@ export default function Home() {
           <div className="container position-relative z-1 text-center">
             <div className="d-flex gap-3 flex-column">
               <h2 className="text-secondary-60  fs-h6 fw-bold text-md-secondary-40 fs-md-h4">
-                全館三件免運
+                {/* 全館三件免運 */}
+                新會員優惠 10% off
               </h2>
               <h3 className="fs-h1 fst-italic font-dm-serif fw-normal  fs-md-dh2">
-                Free Shipping
+                {/* Free Shipping */}
+                worldWear
               </h3>
-              <p>2024/8/14-2024/9/14</p>
-              <p className="fs-sm">(不含部份商品)</p>
+              <p>2025/01/01-2025/12/31</p>
+              {/* <p className="fs-sm">(不含部份商品)</p> */}
             </div>
           </div>
         </section>

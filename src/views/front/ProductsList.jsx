@@ -11,6 +11,8 @@ import {
 import FrontHeader from "../../components/front/FrontHeader";
 import Pagination from "../../components/layouts/Pagination";
 import ProductCard from "../../components/front/ProductCard";
+import ScreenLoading from "../../components/front/ScreenLoading";
+
 import ProductAside, {
   FilterSortButton,
   SortFilter,
@@ -44,10 +46,10 @@ export default function ProductsList() {
     // 處理 hash 路由格式 (例如 /#/products/women/dress/long-dress)
     const hashPath = location.hash;
     if (hashPath) {
-      const path = hashPath.replace('#', '');
-      const pathSegments = path.split('/').filter(Boolean);
+      const path = hashPath.replace("#", "");
+      const pathSegments = path.split("/").filter(Boolean);
 
-      if (pathSegments.length >= 2 && pathSegments[0] === 'products') {
+      if (pathSegments.length >= 2 && pathSegments[0] === "products") {
         // 處理三層結構: /products/women/jacket/long-jacket
         if (pathSegments.length >= 4) {
           return `${pathSegments[1]}/${pathSegments[2]}/${pathSegments[3]}`;
@@ -84,20 +86,28 @@ export default function ProductsList() {
   // 處理頁面標題顯示
   const getPageTitle = useMemo(() => {
     // 使用 currentCategory 來決定標題
-    if (currentCategory === 'men') {
-      return "男裝 商品一覽";
-    } else if (currentCategory === 'women') {
-      return "女裝 商品一覽";
-    } else if (currentCategory) {
-      // 處理子分類
-      const pathParts = currentCategory.split('/');
-      if (pathParts.length > 1) {
-        // 只顯示性別類別，不顯示子類別
-        const gender = pathParts[0] === 'men' ? '男裝' : '女裝';
+    if (currentCategory) {
+      // 檢查是否為頂層性別類別
+      if (currentCategory === "men") {
+        return "男裝 商品一覽";
+      } else if (currentCategory === "women") {
+        return "女裝 商品一覽";
+      }
+
+      // 處理包含路徑的類別
+      const pathParts = currentCategory.split("/");
+      if (pathParts.length > 0) {
+        // 顯示性別類別
+        const gender = pathParts[0] === "men" ? "男裝" : "女裝";
+
+        if (pathParts.length > 1) {
+          // 有子類別，但仍只顯示主類別
+          return `${gender} 商品一覽`;
+        }
         return `${gender} 商品一覽`;
       }
-      return `${currentCategory} 商品一覽`;
     }
+
     // 預設顯示
     return "商品一覽";
   }, [currentCategory]);
@@ -115,10 +125,17 @@ export default function ProductsList() {
     }
 
     // 調試日誌
-    console.log("路由參數:", { gender, category });
+    console.log("路由參數:", { gender, category, subcategory });
     console.log("hash 路徑:", location.hash);
     console.log("提取的實際分類:", actualCategory);
-  }, [gender, category, location.hash, dispatch, getActualCategory]);
+  }, [
+    gender,
+    category,
+    subcategory,
+    location.hash,
+    dispatch,
+    getActualCategory,
+  ]);
 
   // 在組件初始化時，從 URL 查詢參數讀取頁碼
   useEffect(() => {
@@ -135,7 +152,7 @@ export default function ProductsList() {
   useEffect(() => {
     // 在獲取新數據前先重置篩選條件，但保留頁碼
     dispatch(resetFilters());
-    
+
     // 如果 URL 中沒有 page 參數，重置頁碼到第 1 頁
     const pageParam = searchParams.get("page");
     if (!pageParam) {
@@ -182,11 +199,13 @@ export default function ProductsList() {
   }, [showOffcanvas]);
 
   // 計算總篩選數量
-  const totalFilterCount = useMemo(() =>
-    Object.values(filters).reduce(
-      (count, labels) => count + (labels.includes("全部") ? 0 : labels.length),
-      0
-    ),
+  const totalFilterCount = useMemo(
+    () =>
+      Object.values(filters).reduce(
+        (count, labels) =>
+          count + (labels.includes("全部") ? 0 : labels.length),
+        0
+      ),
     [filters]
   );
 
@@ -203,16 +222,6 @@ export default function ProductsList() {
 
   // 渲染內容
   const renderContent = () => {
-    if (status === "loading" || (status === "idle" && currentCategory)) {
-      return (
-        <div className="text-center py-5">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">載入中...</span>
-          </div>
-        </div>
-      );
-    }
-
     if (status === "failed") {
       return (
         <div className="alert alert-danger" role="alert">
@@ -291,8 +300,10 @@ export default function ProductsList() {
             aria-labelledby="offcanvasCategoryMenuLabel"
           >
             <div className="offcanvas-header position-relative">
-              <h5 className="offcanvas-title" id="offcanvasCategoryMenuLabel">
-              </h5>
+              <h5
+                className="offcanvas-title"
+                id="offcanvasCategoryMenuLabel"
+              ></h5>
               <button
                 type="button"
                 className="btn offcanvas-cancel-btn position-absolute top-0 end-0 mt-3 me-3"
@@ -304,7 +315,10 @@ export default function ProductsList() {
             </div>
             <div className="offcanvas-body">
               <div className="filterMenu-wrap">
-                <ProductAside isOffcanvas={true} toggleOffcanvas={toggleOffcanvas} />
+                <ProductAside
+                  isOffcanvas={true}
+                  toggleOffcanvas={toggleOffcanvas}
+                />
               </div>
               {/* 原有的"查看品項"按鈕由 ProductAside 組件內部提供，此處移除 */}
             </div>
@@ -317,6 +331,11 @@ export default function ProductsList() {
           ></div>
         </div>
       </main>
+      <ScreenLoading
+        isLoading={
+          status === "loading" || (status === "idle" && currentCategory)
+        }
+      />
     </>
   );
 }
