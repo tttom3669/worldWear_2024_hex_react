@@ -140,7 +140,7 @@ export default function UserOrder() {
                                         </div>
                                       </div>
                                       <div className="d-none d-lg-block text-nowrap">
-                                        {productItem.num} 件
+                                        {productItem.qty} 件
                                       </div>
                                     </li>
                                   ))}

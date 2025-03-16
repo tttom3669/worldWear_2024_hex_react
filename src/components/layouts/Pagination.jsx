@@ -1,14 +1,23 @@
-import { useEffect, useMemo, useState } from "react";
-import { Row } from "react-bootstrap";
-import { useSearchParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from 'react';
+import { Row } from 'react-bootstrap';
+import { useSearchParams } from 'react-router-dom';
+import useImgUrl from '../../hooks/useImgUrl';
 
-const Pagination = ({ data, RenderComponent, pageLimit, dataLimit, currentPage, setCurrentPage }) => {
+const Pagination = ({
+  data,
+  RenderComponent,
+  pageLimit,
+  dataLimit,
+  currentPage,
+  setCurrentPage,
+}) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const pages = Math.ceil(data.length / dataLimit);
-  
+  const getImgUrl = useImgUrl();
+
   // 新增：使用本地狀態追蹤當前頁碼
   const [localCurrentPage, setLocalCurrentPage] = useState(currentPage);
-  
+
   // 當 props 中的 currentPage 改變時，同步本地狀態
   useEffect(() => {
     setLocalCurrentPage(currentPage);
@@ -16,10 +25,15 @@ const Pagination = ({ data, RenderComponent, pageLimit, dataLimit, currentPage, 
 
   // 當 URL 參數變化時更新頁碼
   useEffect(() => {
-    const pageParam = searchParams.get("page");
+    const pageParam = searchParams.get('page');
     if (pageParam) {
       const pageNumber = parseInt(pageParam, 10);
-      if (!isNaN(pageNumber) && pageNumber >= 1 && pageNumber <= pages && pageNumber !== localCurrentPage) {
+      if (
+        !isNaN(pageNumber) &&
+        pageNumber >= 1 &&
+        pageNumber <= pages &&
+        pageNumber !== localCurrentPage
+      ) {
         setLocalCurrentPage(pageNumber);
         // 只有當值真的不同時才觸發父元件更新
         if (pageNumber !== currentPage) {
@@ -34,7 +48,7 @@ const Pagination = ({ data, RenderComponent, pageLimit, dataLimit, currentPage, 
 
   // 更新 URL 中的頁碼
   const updateURLPage = (page) => {
-    searchParams.set("page", page);
+    searchParams.set('page', page);
     setSearchParams(searchParams);
   };
 
@@ -63,7 +77,11 @@ const Pagination = ({ data, RenderComponent, pageLimit, dataLimit, currentPage, 
   };
 
   const changePage = (pageNumber) => {
-    if (pageNumber >= 1 && pageNumber <= pages && pageNumber !== localCurrentPage) {
+    if (
+      pageNumber >= 1 &&
+      pageNumber <= pages &&
+      pageNumber !== localCurrentPage
+    ) {
       // 立即更新本地狀態以響應 UI
       setLocalCurrentPage(pageNumber);
       // 更新父元件狀態 (可能是 Redux)
@@ -101,7 +119,7 @@ const Pagination = ({ data, RenderComponent, pageLimit, dataLimit, currentPage, 
             aria-label="前一頁"
           >
             <svg width="10" height="19">
-              <use href="/icons/prev.svg#prev"></use>
+              <use href={getImgUrl('/icons/prev.svg#prev')}></use>
             </svg>
           </button>
 
@@ -110,9 +128,11 @@ const Pagination = ({ data, RenderComponent, pageLimit, dataLimit, currentPage, 
               key={item}
               onClick={() => changePage(item)}
               className={`btn mx-1 ${
-                localCurrentPage === item ? "btn-primary" : "btn-outline-primary"
+                localCurrentPage === item
+                  ? 'btn-primary'
+                  : 'btn-outline-primary'
               }`}
-              aria-current={localCurrentPage === item ? "page" : undefined}
+              aria-current={localCurrentPage === item ? 'page' : undefined}
               aria-label={`第 ${item} 頁`}
             >
               {item}
@@ -126,7 +146,7 @@ const Pagination = ({ data, RenderComponent, pageLimit, dataLimit, currentPage, 
             aria-label="下一頁"
           >
             <svg width="10" height="19">
-              <use href="/icons/next.svg#next"></use>
+              <use href={getImgUrl('/icons/next.svg#next')}></use>
             </svg>
           </button>
         </div>

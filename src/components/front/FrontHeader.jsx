@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { productCategories as productCategoriesData } from '../../slice/productsSlice';
 import useImgUrl from '../../hooks/useImgUrl';
 import { useEffect, useRef, useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { checkLogin } from '../../slice/authSlice';
 import {
   asyncGetCarts,
@@ -21,6 +21,7 @@ function FrontHeader({ defaultType }) {
   const [isHeaderScroll, setIsHeaderScroll] = useState(false);
   const [menuData, setMenuData] = useState({ isOpen: false });
   const [isLogin, setIsLogin] = useState(false);
+  const navigate = useNavigate();
   const headerRef = useRef(null);
   const productCategories = useSelector(productCategoriesData);
   const cartsData = useSelector(sliceCartsData);
@@ -29,7 +30,6 @@ function FrontHeader({ defaultType }) {
   gsap.registerPlugin(useGSAP);
 
   const [isInitialized, setIsInitialized] = useState(false);
-
   const auth = useSelector((state) => state.authSlice);
 
   // 初始化認證狀態 - 使用 checkLogin action
@@ -150,6 +150,11 @@ function FrontHeader({ defaultType }) {
                           type="search"
                           placeholder="Search"
                           aria-label="Search"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              navigate(`/search/?s=${e.target.value}`);
+                            }
+                          }}
                         />
                       </form>
                     </div>
