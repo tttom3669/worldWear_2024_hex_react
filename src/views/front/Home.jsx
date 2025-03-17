@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 // Import Swiper React components
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -27,6 +29,30 @@ export default function Home() {
   useEffect(() => {
     new Tab(tabRef.current);
     getPopularProducts();
+    AOS.init();
+
+    // You can also pass an optional settings object
+    // below listed default settings
+    AOS.init({
+      // Global settings:
+      disable: false, // accepts following values: 'phone', 'tablet', 'mobile', boolean, expression or function
+      startEvent: 'DOMContentLoaded', // name of the event dispatched on the document, that AOS should initialize on
+      initClassName: 'aos-init', // class applied after initialization
+      animatedClassName: 'aos-animate', // class applied on animation
+      useClassNames: false, // if true, will add content of `data-aos` as classes on scroll
+      disableMutationObserver: false, // disables automatic mutations' detections (advanced)
+      debounceDelay: 50, // the delay on debounce used while resizing window (advanced)
+      throttleDelay: 99, // the delay on throttle used while scrolling the page (advanced)
+
+      // Settings that can be overridden on per-element basis, by `data-aos-*` attributes:
+      offset: 300, // offset (in px) from the original trigger point
+      delay: 0, // values from 0 to 3000, with step 50ms
+      duration: 700, // values from 0 to 3000, with step 50ms
+      easing: 'ease', // default easing for AOS animations
+      once: true, // whether animation should happen only once - while scrolling down
+      mirror: false, // whether elements should animate out while scrolling past them
+      anchorPlacement: 'top-bottom', // defines which position of the element regarding to window should trigger the animation
+    });
   }, []);
 
   const handleNextSlide = (swiperSlug) => {
@@ -81,7 +107,10 @@ export default function Home() {
         </div>
 
         <section className="py-8 py-md-10 section__activity">
-          <div className="container position-relative z-1 text-center">
+          <div
+            className="container position-relative z-1 text-center"
+            data-aos="fade-up"
+          >
             <div className="d-flex gap-3 flex-column">
               <h2 className="text-secondary-60  fs-h6 fw-bold text-md-secondary-40 fs-md-h4">
                 {/* 全館三件免運 */}
@@ -97,21 +126,18 @@ export default function Home() {
           </div>
         </section>
 
-        <section
-          className="section__slogan py-10 overflow-hidden py-md-20"
-          data-aos="fade-up"
-        >
+        <section className="section__slogan py-10 overflow-hidden py-md-20">
           <div className="container">
             <div className="d-flex justify-content-between align-items-xl-start flex-column flex-xl-row">
               <div className="position-relative">
                 <div className="position-relative z-1">
                   <div className="bg-primary-50 mb-3 w-24px h-24px">&nbsp;</div>
                   <h2 className="d-flex flex-column fw-bold fs-h3 fs-md-dh1">
-                    <span>穿出你的風格</span>
-                    <span>展現你的自信</span>
+                    <span data-aos="fade-left">穿出你的風格</span>
+                    <span data-aos="fade-right">展現你的自信</span>
                   </h2>
                 </div>
-                <div className="section__slogan-text">
+                <div className="section__slogan-text" data-aos="fade-up">
                   <p>Style&Confidante</p>
                   <p>Style&Confidante</p>
                   <p>Style&Confidante</p>
@@ -119,11 +145,13 @@ export default function Home() {
               </div>
               <div className="section__slogan-img">
                 <img
+                  data-aos="fade-left"
                   className="section__slogan-img--1"
                   src={getImgUrl('/images/home/section-slogan-1.png')}
                   alt="Style&Confidante"
                 />
                 <img
+                  data-aos="fade-right"
                   className="section__slogan-img--2"
                   src={getImgUrl('/images/home/section-slogan-2.png')}
                   alt="Style&Confidante"
@@ -267,6 +295,7 @@ export default function Home() {
         <section
           className="py-10 py-md-20 bg-nature-95 bg-md-nature-99"
           data-aos="fade-up"
+          data-aos-delay="500"
         >
           <div className="container-sm">
             <h2 className="fs-h5 fs-md-h2 fw-bold mb-6">熱門商品</h2>
@@ -334,6 +363,7 @@ export default function Home() {
         <section
           className="section__features py-10 py-md-20"
           data-aos="fade-up"
+          data-aos-delay="500"
         >
           <div className="container">
             <div className="row">
@@ -404,6 +434,7 @@ export default function Home() {
         <section
           className="section__comment pt-6  pb-25 pt-md-10 pb-md-30"
           data-aos="fade-up"
+          data-aos-delay="500"
         >
           <div className="container">
             <h2 className="fs-h5 fs-md-h2 fw-bold mb-6">熱門好評</h2>
