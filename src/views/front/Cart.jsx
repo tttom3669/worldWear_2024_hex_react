@@ -94,7 +94,7 @@ export default function Cart() {
     if (type === 'plus') {
       return (
         (updateCartData.isLoading && updateCartData.cartId === cart.id) ||
-        cart.qty >= cart.product.num[cart.color][cart.size]
+        cart.qty >= cart?.product?.num?.[cart.color]?.[cart.size]
       );
     } else {
       return updateCartData.isLoading && updateCartData.cartId === cart.id;
