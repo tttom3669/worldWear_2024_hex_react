@@ -22,7 +22,7 @@ const ProductCard = ({ data }) => {
   // 使用自定義的 SweetAlert2 提示
   const { toastAlert } = useSwal();
   
-  // 從 Redux store 中獲取收藏狀態
+  // 獲取該商品的收藏狀態
   const favoriteStatus = useSelector((state) =>
     state.favorites?.favoritesData?.products?.find(
       (item) => item.productId === data.id
@@ -222,9 +222,7 @@ const ProductCard = ({ data }) => {
           <div className="mobile-favorite-container">
             <button
               type="button"
-              className={`btn favorite-button ${
-                isFavorite ? "isLike" : ""
-              }`}
+              className={`btn favorite ${isFavorite ? "isLike" : ""}`}
               onClick={handleToggleFavorite} // 這裡已包含 preventDefault 和 stopPropagation
             >
               <svg
@@ -232,7 +230,7 @@ const ProductCard = ({ data }) => {
                 width="17"
                 height="17"
                 fill="currentColor"
-                className="bi bi-heart heartIcon-button"
+                className="bi bi-heart heartIcon"
                 viewBox="0 0 16 16"
               >
                 <path
@@ -249,7 +247,7 @@ const ProductCard = ({ data }) => {
             <button
               type="button"
               className={`btn favorite ${isFavorite ? "isLike" : ""}`}
-              onClick={handleToggleFavorite} // 這裡已包含 preventDefault 和 stopPropagation
+              onClick={handleToggleFavorite}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
