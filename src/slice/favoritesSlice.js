@@ -237,6 +237,56 @@ export const addFavoriteToCart = createAsyncThunk(
   }
 );
 
+// 更新收藏項目顏色
+export const updateFavoriteItemColor = createAsyncThunk(
+  "favorites/updateFavoriteItemColor",
+  async ({ id, color }, { rejectWithValue }) => {
+    try {
+      // 發送 API 請求更新顏色
+      const response = await axios.patch(`${API_PATH}/favorites/${id}`, { 
+        color: color 
+      });
+
+      return { 
+        id, 
+        color,
+        ...response.data 
+      };
+    } catch (error) {
+      console.error("更新收藏項目顏色失敗:", error);
+      return rejectWithValue({
+        message: "更新收藏項目顏色失敗，請稍後再試",
+        details: error.message,
+      });
+    }
+  }
+);
+
+// 更新收藏項目尺寸
+export const updateFavoriteItemSize = createAsyncThunk(
+  "favorites/updateFavoriteItemSize",
+  async ({ id, size }, { rejectWithValue }) => {
+    try {
+      // 發送 API 請求更新尺寸
+      const response = await axios.patch(`${API_PATH}/favorites/${id}`, { 
+        size: size 
+      });
+
+      return { 
+        id, 
+        size,
+        ...response.data 
+      };
+    } catch (error) {
+      console.error("更新收藏項目尺寸失敗:", error);
+      return rejectWithValue({
+        message: "更新收藏項目尺寸失敗，請稍後再試",
+        details: error.message,
+      });
+    }
+  }
+);
+
 // 初始狀態
 const initialState = {
   favoritesData: {
@@ -449,6 +499,72 @@ const favoritesSlice = createSlice({
       .addCase(addFavoriteToCart.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload || { message: "加入購物車失敗" };
+      })
+
+      // 更新收藏顏色
+      .addCase(updateFavoriteItemColor.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(updateFavoriteItemColor.fulfilled, (state, action) => {
+        const { id, color } = action.payload;
+
+        // 更新收藏列表中的顏色
+        const productIndex = state.favoritesData.products.findIndex(
+          (product) => product.id === id
+        );
+
+        if (productIndex !== -1) {
+          state.favoritesData.products[productIndex].color = color;
+
+          // 更新 productFavoriteStatus 中的數據
+          const product = state.favoritesData.products[productIndex];
+          if (product.productId && state.productFavoriteStatus[product.productId]) {
+            state.productFavoriteStatus[product.productId].favoriteItem = {
+              ...state.productFavoriteStatus[product.productId].favoriteItem,
+              color,
+            };
+          }
+        }
+
+        state.status = "succeeded";
+        state.error = null;
+      })
+      .addCase(updateFavoriteItemColor.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload || { message: "更新收藏顏色失敗" };
+      })
+
+      // 更新收藏尺寸
+      .addCase(updateFavoriteItemSize.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(updateFavoriteItemSize.fulfilled, (state, action) => {
+        const { id, size } = action.payload;
+
+        // 更新收藏列表中的尺寸
+        const productIndex = state.favoritesData.products.findIndex(
+          (product) => product.id === id
+        );
+
+        if (productIndex !== -1) {
+          state.favoritesData.products[productIndex].size = size;
+
+          // 更新 productFavoriteStatus 中的數據
+          const product = state.favoritesData.products[productIndex];
+          if (product.productId && state.productFavoriteStatus[product.productId]) {
+            state.productFavoriteStatus[product.productId].favoriteItem = {
+              ...state.productFavoriteStatus[product.productId].favoriteItem,
+              size,
+            };
+          }
+        }
+
+        state.status = "succeeded";
+        state.error = null;
+      })
+      .addCase(updateFavoriteItemSize.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload || { message: "更新收藏尺寸失敗" };
       });
   },
 });
