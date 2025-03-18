@@ -444,6 +444,7 @@ export default function UserFavorites() {
 
   return (
     <>
+      <title>收藏列表 - WorldWear</title>
       <main>
         <div className="pt-3 pb-3 pt-md-10 pb-md-25">
           <div className="container px-0 px-sm-3">

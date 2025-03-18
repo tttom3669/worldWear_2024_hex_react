@@ -252,6 +252,9 @@ export default function ProductsList() {
 
   return (
     <>
+      <title>
+        {`${gender === "women" ? "女裝" : "男裝"}  商品一覽 - WorldWear`}
+      </title>
       {showHeader && <FrontHeader defaultType="light" />}
       <main className="mt-17 bg-nature-99">
         <section className="productList-section bg-nature-99">
