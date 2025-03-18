@@ -22,11 +22,15 @@ const ProductCard = ({ data }) => {
   // 使用自定義的 SweetAlert2 提示
   const { toastAlert } = useSwal();
   
-  // 獲取該商品的收藏狀態
+  // 從 Redux store 中獲取收藏狀態
   const favoriteStatus = useSelector((state) =>
-    selectProductFavoriteStatus(state, data.id)
+    state.favorites?.favoritesData?.products?.find(
+      (item) => item.productId === data.id
+    )
   );
-  const isFavorite = favoriteStatus.isInFavorites;
+
+  // 判斷是否已收藏
+  const isFavorite = favoriteStatus !== undefined;
 
   // 組件加載時檢查產品的收藏狀態
   useEffect(() => {
