@@ -319,7 +319,6 @@ export default function Login() {
             <div className="row justify-content-center">
               <div
                 className="col-md-6"
-                style={{ width: "100%", maxWidth: "470px" }}
               >
                 <div className="card bg-white">
                   {/* 頁籤導航 */}
