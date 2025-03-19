@@ -236,7 +236,7 @@ const authSlice = createSlice({
     resetPasswordRequestStatus: 'idle',
     emailCheckStatus: 'idle',
     emailExists: false,
-    checkedEmail: null
+    checkedEmail: null,
   },
   reducers: {
     clearError: (state) => {

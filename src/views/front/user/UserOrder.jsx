@@ -27,7 +27,6 @@ export default function UserOrder() {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log(res);
       setOrderData(res.data);
     } catch (error) {
       console.log(error);
@@ -117,7 +116,7 @@ export default function UserOrder() {
                                           <h3 className="fs-base fw-normal">
                                             {productItem.product.title}
                                           </h3>
-                                          <p>EU27帆布皮帶側開叉牛仔長裙</p>
+    
                                           <div className="d-flex flex-row flex-fill justify-content-between flex-lg-column">
                                             <p>
                                               規格:{productItem.color}/
@@ -133,7 +132,7 @@ export default function UserOrder() {
                                               NT$
                                               {(
                                                 productItem.product.price *
-                                                productItem.num
+                                                productItem.qty
                                               ).toLocaleString('zh-TW')}
                                             </p>
                                           </div>
