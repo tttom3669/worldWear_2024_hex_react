@@ -7,13 +7,11 @@ import { productCategories as productCategoriesData } from '../../slice/products
 import useImgUrl from '../../hooks/useImgUrl';
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { checkLogin } from '../../slice/authSlice';
+import { checkLogin, logoutUser } from '../../slice/authSlice';
 import {
   asyncGetCarts,
   cartsData as sliceCartsData,
 } from '../../slice/cartsSlice';
-// 搜尋功能。 等產品頁面，才來實作
-
 function FrontHeader({ defaultType }) {
   const getImgUrl = useImgUrl();
   const dispatch = useDispatch();
@@ -23,8 +21,10 @@ function FrontHeader({ defaultType }) {
   const [isLogin, setIsLogin] = useState(false);
   const navigate = useNavigate();
   const headerRef = useRef(null);
+  const [isSubmenuActive, setIsSubmenuActive] = useState(false);
   const productCategories = useSelector(productCategoriesData);
   const cartsData = useSelector(sliceCartsData);
+  const userData = useSelector((state) => state.authSlice.user);
 
   gsap.registerPlugin(ScrollTrigger);
   gsap.registerPlugin(useGSAP);
@@ -85,6 +85,25 @@ function FrontHeader({ defaultType }) {
       isOpen: name !== menuData.type ? true : !menuData.isOpen,
     });
   }
+
+  // 處理登出功能 - 使用 logoutUser action
+  const handleLogout = async () => {
+    try {
+      console.log('登出按鈕被點擊'); // 添加除錯訊息
+
+      // 執行登出 action 並等待完成
+      await dispatch(logoutUser()).unwrap();
+
+      console.log('登出成功，準備導航回首頁');
+
+      // 登出成功後導航回首頁
+      navigate('/');
+    } catch (error) {
+      console.error('登出失敗:', error);
+      // 即使登出失敗，也嘗試導航回首頁
+      navigate('/');
+    }
+  };
 
   return (
     <>
@@ -249,14 +268,91 @@ function FrontHeader({ defaultType }) {
                       </Link>
                     </li>
                     <li>
-                      <Link className="nav-link l-menu__link" to="/favorites">
+                      <Link
+                        className="nav-link l-menu__link"
+                        to="/user/favorites"
+                      >
                         收藏清單
                       </Link>
                     </li>
-                    <li>
-                      <Link className="nav-link l-menu__link" to="/user">
-                        會員中心
+                    <li className="d-flex flex-column">
+                      <Link
+                        className="nav-link l-menu__link"
+                        onClick={() => {
+                          setIsSubmenuActive(!isSubmenuActive);
+                        }}
+                      >
+                        <div className="d-flex justify-content-between align-items-center">
+                          會員中心
+                          <img
+                            style={{ transition: 'all .3s' }}
+                            className={`${isSubmenuActive ? 'rotate-180' : ''}`}
+                            src={getImgUrl('/icons/dropdown_up.svg')}
+                            alt=""
+                          />
+                        </div>
                       </Link>
+                      <div
+                        className={`l-menu__submenu ${
+                          isSubmenuActive ? 'active' : ''
+                        }`}
+                      >
+                        <ul>
+                          <li>
+                            <Link
+                              className="nav-link l-menu__link fw-normal"
+                              to="/user/userInfo"
+                              onClick={() => {
+                                setMenuData({ ...menuData, isOpen: false });
+                              }}
+                            >
+                              會員資料維護
+                            </Link>
+                          </li>
+
+                          <li>
+                            <Link
+                              className="nav-link l-menu__link fw-normal"
+                              to="/user/favorites"
+                              onClick={() => {
+                                setMenuData({ ...menuData, isOpen: false });
+                              }}
+                            >
+                              收藏列表
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              className="nav-link l-menu__link fw-normal"
+                              to="/user/order"
+                              onClick={() => {
+                                setMenuData({ ...menuData, isOpen: false });
+                              }}
+                            >
+                              查詢訂單
+                            </Link>
+                          </li>
+
+                          {userData?.role === 'admin' && (
+                            <li>
+                              <Link
+                                className="nav-link l-menu__link fw-normal"
+                                to="/admin"
+                              >
+                                進入後台
+                              </Link>
+                            </li>
+                          )}
+                          <li>
+                            <Link
+                              className="nav-link l-menu__link fw-normal"
+                              onClick={handleLogout}
+                            >
+                              登出
+                            </Link>
+                          </li>
+                        </ul>
+                      </div>
                     </li>
                   </ul>
                 </div>
