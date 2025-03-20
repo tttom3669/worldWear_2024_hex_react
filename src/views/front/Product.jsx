@@ -136,6 +136,7 @@ export default function Product() {
 
   return (
     <>
+      <title>{product.title}</title>
       <FrontHeader defaultType={'light'} />
       <main className="mb-20 product container">
         <div className="row justify-content-center">
