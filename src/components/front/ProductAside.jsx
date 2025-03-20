@@ -11,6 +11,7 @@ import {
 import useImgUrl from "../../hooks/useImgUrl";
 import useSwal from "../../hooks/useSwal";
 import { FiChevronUp, FiChevronDown } from "react-icons/fi";
+import axios from "axios";
 
 // 在組件內部定義常量，避免多餘的渲染
 const STATUS_MAP = {
@@ -144,7 +145,10 @@ export const FilterSortButton = memo(
               {totalCount > 0 && <span className="ms-1">({totalCount})</span>}
             </h6>
             <span className="dropdown-icon ms-2">
-              <img src={getImgUrl('/icons/dropdownIcon.svg')} alt="dropdown-Icon" />
+              <img
+                src={getImgUrl("/icons/dropdownIcon.svg")}
+                alt="dropdown-Icon"
+              />
             </span>
           </button>
 
@@ -692,7 +696,9 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_PATH}/products/categories`);
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_PATH}/products/categories`
+        );
         if (response.data.success) {
           setCategories(response.data.categories);
         }
@@ -704,74 +710,57 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
     fetchCategories();
   }, []);
 
-  // 處理分類選擇
-  const handleCategorySelect = (category) => {
-    setSelectedCategory(category);
-    dispatch(setCategory(category));
-    updateURL({ category });
-  };
-
-  // 處理價格範圍選擇
-  const handlePriceRangeSelect = (range) => {
-    setSelectedPriceRange(range);
-    dispatch(setPriceRange(range));
-    updateURL({ priceRange: range });
-  };
-
-  // 處理排序選擇
-  const handleSortSelect = (sortOption) => {
-    setSelectedSort(sortOption);
-    dispatch(setSort(sortOption));
-    updateURL({ sort: sortOption });
-  };
-
-  // 更新 URL 參數
-  const updateURL = (params) => {
-    const currentParams = new URLSearchParams(location.search);
-    Object.entries(params).forEach(([key, value]) => {
-      if (value) {
-        currentParams.set(key, value);
-      } else {
-        currentParams.delete(key);
-      }
-    });
-    navigate(`${location.pathname}?${currentParams.toString()}`);
-  };
-
-  // 獲取商品列表
-  const fetchProducts = async () => {
+  const fetchProductsData = async () => {
     setIsLoading(true);
-    try {
-      const response = await axios.get(`${import.meta.env.VITE_API_PATH}/products`, {
-        params: {
-          category: selectedCategory !== "全部商品" ? selectedCategory : undefined,
-          priceRange: selectedPriceRange !== "全部價格" ? selectedPriceRange : undefined,
-          sort: selectedSort !== "預設排序" ? selectedSort : undefined,
-        },
-      });
 
-      if (response.data.success) {
-        dispatch(setProducts(response.data.products));
-      } else {
-        toastAlert({
-          icon: "error",
-          title: response.data.message || "獲取商品列表失敗",
-        });
-      }
+    try {
+      // 使用 setTimeout 延長載入時間，等待 3 秒後再執行請求
+      setTimeout(async () => {
+        try {
+          const response = await axios.get(
+            `${import.meta.env.VITE_API_PATH}/products`,
+            {
+              params: {
+                category:
+                  selectedCategory !== "全部商品"
+                    ? selectedCategory
+                    : undefined,
+                priceRange:
+                  selectedPriceRange !== "全部價格"
+                    ? selectedPriceRange
+                    : undefined,
+                sort: selectedSort !== "預設排序" ? selectedSort : undefined,
+              },
+            }
+          );
+
+          if (response.data.success) {
+            dispatch(setProducts(response.data.products));
+          } else {
+            toastAlert({
+              icon: "error",
+              title: response.data.message || "獲取商品列表失敗",
+            });
+          }
+        } catch (error) {
+          console.error("獲取商品列表失敗:", error);
+          toastAlert({
+            icon: "error",
+            title: "獲取商品列表失敗，請稍後再試",
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      }, 3000); // 延長 3 秒
     } catch (error) {
       console.error("獲取商品列表失敗:", error);
-      toastAlert({
-        icon: "error",
-        title: "獲取商品列表失敗，請稍後再試",
-      });
-    } finally {
       setIsLoading(false);
     }
   };
 
   // 當過濾條件改變時重新獲取商品列表
   useEffect(() => {
-    fetchProducts();
+    fetchProductsData();
   }, [selectedCategory, selectedPriceRange, selectedSort]);
 
   return (

@@ -317,9 +317,7 @@ export default function Login() {
         <main className="bg-nature-99">
           <div className="container py-5 mt-10 mb-10">
             <div className="row justify-content-center">
-              <div
-                className="col-md-6 login_col"
-              >
+              <div className="col-md-6 login_col">
                 <div className="card Login__card">
                   <div className="card-header p-0">
                     <ul className="nav nav-tabs w-100">

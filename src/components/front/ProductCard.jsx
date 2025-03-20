@@ -10,7 +10,6 @@ import {
 } from "../../slice/favoritesSlice";
 import useSwal from "../../hooks/useSwal";
 import cookieUtils from "../../components/tools/cookieUtils";
-import axios from "axios";
 import { store } from "../../store";
 
 const ProductCard = ({ data }) => {

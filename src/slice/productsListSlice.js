@@ -14,7 +14,7 @@ const STATUS_PRIORITY = {
 const STATUS_SLUG_TO_DB = {
   "in-stock": "現貨",
   "pre-order": "預購",
-  "restocking": "補貨中"
+  restocking: "補貨中",
 };
 
 // 通用的狀態優先排序比較器
@@ -69,10 +69,12 @@ const filterProductsByCategories = (products, filters) => {
         if (isSelectAll || selectedLabels.length === 0) {
           return true;
         }
-        
+
         // 將 slug 轉換為資料庫值再進行比較
-        const dbValues = selectedLabels.map(slug => STATUS_SLUG_TO_DB[slug] || slug);
-        
+        const dbValues = selectedLabels.map(
+          (slug) => STATUS_SLUG_TO_DB[slug] || slug
+        );
+
         // 檢查產品狀態是否在所選狀態中
         return dbValues.includes(product.status);
       }
@@ -83,7 +85,7 @@ const filterProductsByCategories = (products, filters) => {
         if (isSelectAll || selectedLabels.length === 0) {
           return true;
         }
-        
+
         // 檢查產品的類別項目是否在所選類別項目中
         return selectedLabels.includes(product.categoryItems);
       }
@@ -118,59 +120,68 @@ const sortProductsBy = (products, sortOption) => {
 
 // 解析類別路徑，支持多選細項類別
 const parseCategoryPath = (categoryPath, productCategories) => {
-  if (!categoryPath || !categoryPath.includes('/')) {
+  if (!categoryPath || !categoryPath.includes("/")) {
     return null;
   }
-  
-  const pathParts = categoryPath.split('/');
+
+  const pathParts = categoryPath.split("/");
   const params = new URLSearchParams();
-  
+
   // 處理性別 (men/women)
-  if (pathParts[0] === 'men' || pathParts[0] === 'women') {
+  if (pathParts[0] === "men" || pathParts[0] === "women") {
     const genderType = pathParts[0];
-    const classValue = genderType === 'men' ? '男裝' : '女裝';
-    params.append('class', classValue);
-    
+    const classValue = genderType === "men" ? "男裝" : "女裝";
+    params.append("class", classValue);
+
     // 處理主類別
     if (pathParts.length >= 2) {
       const categoryType = pathParts[1];
-      const genderCategory = productCategories.find(cat => cat.slug === genderType);
-      
+      const genderCategory = productCategories.find(
+        (cat) => cat.slug === genderType
+      );
+
       if (genderCategory) {
-        const mainCategory = genderCategory.categories.find(cat => cat.slug === categoryType);
-        
+        const mainCategory = genderCategory.categories.find(
+          (cat) => cat.slug === categoryType
+        );
+
         if (mainCategory) {
-          params.append('category', mainCategory.title);
-          
+          params.append("category", mainCategory.title);
+
           // 處理子類別 (可能有多個，用逗號分隔)
           if (pathParts.length >= 3) {
-            const subCategoryTypes = pathParts[2].split(',');
-            
+            const subCategoryTypes = pathParts[2].split(",");
+
             // 如果只有一個子類別，直接添加
             if (subCategoryTypes.length === 1) {
               const subCategory = mainCategory.subCategories.find(
-                sub => sub.slug === subCategoryTypes[0]
+                (sub) => sub.slug === subCategoryTypes[0]
               );
-              
+
               if (subCategory) {
-                params.append('categoryItems', subCategory.title);
+                params.append("categoryItems", subCategory.title);
               }
-            } 
+            }
             // 如果有多個子類別，將它們作為過濾條件添加
             else if (subCategoryTypes.length > 1) {
               // 找出所有子類別的標題
               const subCategoryTitles = subCategoryTypes
-                .map(slug => {
-                  const subCat = mainCategory.subCategories.find(sub => sub.slug === slug);
+                .map((slug) => {
+                  const subCat = mainCategory.subCategories.find(
+                    (sub) => sub.slug === slug
+                  );
                   return subCat ? subCat.title : null;
                 })
-                .filter(title => title !== null);
-              
+                .filter((title) => title !== null);
+
               // 先添加主類別，稍後在請求處理中處理多個子類別
               if (subCategoryTitles.length > 0) {
-                params.append('category', mainCategory.title);
+                params.append("category", mainCategory.title);
                 // 使用自定義參數傳遞多個子類別標題
-                params.append('multiSubCategories', JSON.stringify(subCategoryTitles));
+                params.append(
+                  "multiSubCategories",
+                  JSON.stringify(subCategoryTitles)
+                );
               }
             }
           }
@@ -178,7 +189,7 @@ const parseCategoryPath = (categoryPath, productCategories) => {
       }
     }
   }
-  
+
   return params;
 };
 
@@ -190,52 +201,56 @@ export const fetchProducts = createAsyncThunk(
       // 從 Redux 狀態中獲取分類數據
       const productCategories = getState().products.productCategories;
       let params = new URLSearchParams();
-      
+
       // 如果有傳入分類參數
       if (categoryParams) {
-        console.log('傳入的分類參數:', categoryParams); // 輸出除錯用
-        
+        console.log("傳入的分類參數:", categoryParams); // 輸出除錯用
+
         // 處理包含子類別的路徑，包括多選的情況
-        if (categoryParams.includes('/')) {
-          const parsedParams = parseCategoryPath(categoryParams, productCategories);
-          
+        if (categoryParams.includes("/")) {
+          const parsedParams = parseCategoryPath(
+            categoryParams,
+            productCategories
+          );
+
           if (parsedParams) {
             params = parsedParams;
           }
         }
         // 檢查是否為主分類 (men 或 women)
-        else if (categoryParams === 'men' || categoryParams === 'women') {
+        else if (categoryParams === "men" || categoryParams === "women") {
           // 將 men/women 轉換為對應的 "男裝"/"女裝"
-          const classValue = categoryParams === 'men' ? '男裝' : '女裝';
-          params.append('class', classValue);
+          const classValue = categoryParams === "men" ? "男裝" : "女裝";
+          params.append("class", classValue);
         }
       }
-      
+
       // 構建完整 URL，使用環境變數
-      const apiUrl = params.toString() ? `${API_PATH}/products?${params.toString()}` : `${API_PATH}/products`;
-      console.log('API 請求 URL:', apiUrl); // 輸出除錯用
-      
+      const apiUrl = params.toString()
+        ? `${API_PATH}/products?${params.toString()}`
+        : `${API_PATH}/products`;
+      console.log("API 請求 URL:", apiUrl); // 輸出除錯用
+
       // 發送請求獲取資料
       const { data } = await axios.get(apiUrl);
-      
+
       // 如果有多個子類別，在前端進行過濾
-      const multiSubCategories = params.get('multiSubCategories');
+      const multiSubCategories = params.get("multiSubCategories");
       if (multiSubCategories) {
         const subCategoryTitles = JSON.parse(multiSubCategories);
-        
+
         // 過濾出符合任一子類別的產品
-        return data.filter(product => 
+        return data.filter((product) =>
           subCategoryTitles.includes(product.categoryItems)
         );
       }
-      
+
       return data;
     } catch (error) {
       // 改進錯誤處理: 提供更詳細的錯誤信息
-      const errorMsg = error.response?.data?.message || 
-                        error.message || 
-                        "取得產品失敗";
-      console.error('取得產品錯誤:', errorMsg);
+      const errorMsg =
+        error.response?.data?.message || error.message || "取得產品失敗";
+      console.error("取得產品錯誤:", errorMsg);
       return rejectWithValue(errorMsg);
     }
   }
@@ -266,7 +281,7 @@ const productsListSlice = createSlice({
       state.filteredItems = [];
       state.status = "idle";
     },
-    
+
     // 排序 Action
     sortProducts: (state, action) => {
       state.sortOption = action.payload;
