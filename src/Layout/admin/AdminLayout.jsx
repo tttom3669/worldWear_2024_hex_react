@@ -1,16 +1,50 @@
 import { Link, NavLink } from 'react-router-dom';
 import useImgUrl from '../../hooks/useImgUrl';
 import { Outlet } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
 export default function AdminLayout() {
   const getImgUrl = useImgUrl();
+  const [isCollapse, setIsCollapse] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const mobileCloseMenu = () => {
+    if (!isMobile) {
+      return;
+    }
+    setIsCollapse(!isCollapse);
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // 清除事件監聽，避免記憶體洩漏
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   return (
     <>
-      <div className="l-admin__layout">
-        <aside className="l-admin__aside">
+      <div className={`l-admin__layout ${isCollapse ? 'active' : ''}`}>
+        <aside className={`l-admin__aside ${isCollapse ? '' : 'active'}`}>
+          <button
+            type="button"
+            className="position-absolute bg-transparent border-0 text-white d-block d-md-none"
+            onClick={() => setIsCollapse(!isCollapse)}
+            style={{ top: '0.75rem', right: '0.75rem' }}
+          >
+            <svg className="pe-none" width="24" height="24">
+              <use href={getImgUrl('/icons/close.svg#close')}></use>
+            </svg>
+          </button>
           <Link
             href="/admin"
-            className="d-flex justify-content-center text-white my-10"
+            className="d-flex justify-content-md-center text-white my-10"
+            onClick={() => mobileCloseMenu()}
           >
             <svg className="l-logo" width="120" height="72">
               <use href={getImgUrl('/icons/Logo.svg#logo')}></use>
@@ -18,7 +52,11 @@ export default function AdminLayout() {
           </Link>
           <ul>
             <li>
-              <NavLink className="l-admin__aside-link" to="/admin/products">
+              <NavLink
+                className="l-admin__aside-link"
+                to="/admin/products"
+                onClick={() => mobileCloseMenu()}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -33,7 +71,11 @@ export default function AdminLayout() {
               </NavLink>
             </li>
             <li>
-              <NavLink className="l-admin__aside-link" to="/admin/users">
+              <NavLink
+                className="l-admin__aside-link"
+                to="/admin/users"
+                onClick={() => mobileCloseMenu()}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -48,7 +90,11 @@ export default function AdminLayout() {
               </NavLink>
             </li>
             <li>
-              <NavLink className="l-admin__aside-link" to="/admin/orders">
+              <NavLink
+                className="l-admin__aside-link"
+                to="/admin/orders"
+                onClick={() => mobileCloseMenu()}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -64,7 +110,11 @@ export default function AdminLayout() {
               </NavLink>
             </li>
             <li>
-              <NavLink className="l-admin__aside-link" to="/admin/coupons">
+              <NavLink
+                className="l-admin__aside-link"
+                to="/admin/coupons"
+                onClick={() => mobileCloseMenu()}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -85,13 +135,45 @@ export default function AdminLayout() {
               </NavLink>
             </li>
           </ul>
-          <Link to="/" className="btn btn-primary w-100 py-4 mt-auto">
+          <Link
+            to="/"
+            className="btn btn-primary w-100 py-4 d-flex justify-content-center align-items-center gap-2 mt-auto"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              className="bi bi-house"
+              viewBox="0 0 16 16"
+            >
+              <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z" />
+            </svg>
             返回前台
           </Link>
         </aside>
         <header className="l-admin__header">
-          <div className="d-flex justify-content-end pe-10">
-            <div className="d-flex align-items-center gap-3 text-white py-4">
+          <div className="d-flex justify-content-between">
+            <button
+              type="button"
+              className="bg-transparent border-0 text-white"
+              onClick={() => setIsCollapse(!isCollapse)}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="currentColor"
+                className="bi bi-list"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"
+                />
+              </svg>
+            </button>
+            <div className="d-flex align-items-center gap-3 text-white py-4 pe-10">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -106,7 +188,7 @@ export default function AdminLayout() {
             </div>
           </div>
         </header>
-        <main>
+        <main className="l-admin__content">
           <Outlet />
         </main>
       </div>
