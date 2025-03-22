@@ -9,7 +9,6 @@ import { useEffect, useMemo, useState } from 'react';
 import ScreenLoading from '../../../components/front/ScreenLoading';
 import useSwal from '../../../hooks/useSwal';
 const { VITE_API_PATH: API_PATH } = import.meta.env;
-// import Swal from 'sweetalert2';
 
 export default function UserInfo() {
   const getImgUrl = useImgUrl();
@@ -167,7 +166,7 @@ export default function UserInfo() {
     <>
       <main className="userInfo">
         <div className="pt-3 pb-3 pt-md-10 pb-md-25">
-          <div className="container px-0 px-sm-3">
+          <div className="container">
             <div className="row mx-0 mx-sm-n3">
               <div className="d-none col-lg-2 d-lg-block">
                 <UserAside />
@@ -176,7 +175,7 @@ export default function UserInfo() {
                 <h1 className="fs-h5 fw-bold mb-3 px-3 px-sm-0 mb-md-5">
                   會員資料維護
                 </h1>
-                <div className="bg-white border-opacity-0 border-opacity-sm-100 border border-nature-95 py-8 px-5 mb-6">
+                <div className="bg-white border border-nature-95 py-8 px-5 mb-6">
                   <div className="d-flex align-items-center mb-5">
                     <div className="d-flex align-items-center bg-black gap-1 text-white px-2 py-1">
                       <img
@@ -204,7 +203,7 @@ export default function UserInfo() {
                     className="d-flex flex-column gap-5 bg-white py-8 px-5 border border-nature-95"
                     onSubmit={handleSubmitUserInfo(onSubmit)}
                   >
-                    <div className="d-flex align-items-center gap-6">
+                    <div className="d-flex flex-column align-items-start align-items-md-center gap-md-6 flex-md-row">
                       <label htmlFor="name" className="form-label">
                         會員姓名
                       </label>
@@ -225,7 +224,7 @@ export default function UserInfo() {
                         </p>
                       </div>
                     </div>
-                    <div className="d-flex align-items-center gap-6">
+                    <div className="d-flex flex-column align-items-start align-items-md-center gap-md-6 flex-md-row">
                       <label htmlFor="tel" className="form-label">
                         會員電話
                       </label>
@@ -257,7 +256,7 @@ export default function UserInfo() {
                         </p>
                       </div>
                     </div>
-                    <div className="d-flex align-items-center gap-6">
+                    <div className="d-flex flex-column align-items-start align-items-md-center gap-md-6 flex-md-row">
                       <label htmlFor="email" className="form-label">
                         電子郵件
                       </label>
@@ -288,7 +287,7 @@ export default function UserInfo() {
                         </p>
                       </div>
                     </div>
-                    <div className="d-flex align-items-center gap-6">
+                    <div className="d-flex flex-column align-items-start align-items-md-center gap-md-6 flex-md-row">
                       <label htmlFor="birthday" className="form-label">
                         生日
                       </label>
@@ -344,7 +343,7 @@ export default function UserInfo() {
                         className="form-control"
                       />
                     </div>
-                    <div className="d-flex  align-items-center gap-6">
+                    <div className="d-flex flex-column align-items-start align-items-md-center gap-md-6 flex-md-row">
                       <label htmlFor="oldPassword" className="form-label">
                         輸入舊密碼
                       </label>
@@ -369,7 +368,7 @@ export default function UserInfo() {
                         </p>
                       </div>
                     </div>
-                    <div className="d-flex align-items-center gap-6">
+                    <div className="d-flex flex-column align-items-start align-items-md-center gap-md-6 flex-md-row">
                       <label htmlFor="newPassword" className="form-label">
                         輸入新密碼
                       </label>
@@ -394,7 +393,7 @@ export default function UserInfo() {
                         </p>
                       </div>
                     </div>
-                    <div className="d-flex align-items-center gap-6">
+                    <div className="d-flex flex-column align-items-start align-items-md-center gap-md-6 flex-md-row">
                       <label
                         htmlFor="confirmNewPassword"
                         className="form-label"
