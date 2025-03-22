@@ -56,11 +56,11 @@ const AddressForm = ({ register, errors, defaultRegion, defaultCounty }) => {
 
   return (
     <>
-      <div className="d-flex align-items-start gap-6">
-        <label htmlFor="exampleFormControlInput1" className="form-label">
+      <div className="d-flex flex-column align-items-start align-items-md-center gap-md-6 flex-md-row">
+        <label htmlFor="address" className="form-label">
           宅配地址
         </label>
-        <div className="d-flex flex-column gap-2">
+        <div className="userInfo__col d-flex flex-column gap-2">
           <div className="userInfo__col d-flex gap-3">
             <select
               className="form-select"
