@@ -7,13 +7,15 @@ const { VITE_API_PATH: API_PATH } = import.meta.env;
 // Cookie 名稱常量
 export const COOKIE_NAMES = {
   TOKEN: 'worldWearToken',
-  USER_ID: 'worldWearUserId'
+  USER_ID: 'worldWearUserId',
 };
 
 // 安全地獲取 Cookie
 export const getCookie = (name) => {
   try {
-    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    const match = document.cookie.match(
+      new RegExp('(^| )' + name + '=([^;]+)')
+    );
     return match ? decodeURIComponent(match[2]) : '';
   } catch (error) {
     console.error(`獲取 Cookie ${name} 時發生錯誤:`, error);
@@ -31,21 +33,23 @@ export const setCookie = (name, value, days = 7, options = {}) => {
   try {
     const date = new Date();
     date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-    
+
     const cookieOptions = {
       expires: date.toUTCString(),
       path: '/',
       secure: window.location.protocol === 'https:', // 只在HTTPS下設置secure
-      sameSite: 'Strict',  // 防止 CSRF 攻擊
-      ...options
+      sameSite: 'Strict', // 防止 CSRF 攻擊
+      ...options,
     };
 
     const cookieString = Object.entries(cookieOptions)
       .filter(([key, value]) => value !== false)
-      .map(([key, value]) => 
-        key === 'expires' ? `Expires=${value}` : 
-        key === 'path' ? `Path=${value}` : 
-        `${key.charAt(0).toUpperCase() + key.slice(1)}=${value}`
+      .map(([key, value]) =>
+        key === 'expires'
+          ? `Expires=${value}`
+          : key === 'path'
+          ? `Path=${value}`
+          : `${key.charAt(0).toUpperCase() + key.slice(1)}=${value}`
       )
       .join('; ');
 
@@ -65,9 +69,11 @@ export const setUserIdCookie = (userId, days = 7) => {
 // 設置 Token Cookie
 export const setTokenCookie = (token, days = 7) => {
   // 確保移除可能存在的 Bearer 前綴
-  const rawToken = token.startsWith('Bearer ') ? token.substring(7).trim() : token.trim();
+  const rawToken = token.startsWith('Bearer ')
+    ? token.substring(7).trim()
+    : token.trim();
   console.log('設置 token cookie, 值:', rawToken.substring(0, 10) + '...');
-  
+
   // 直接存儲純 token，不添加 Bearer 前綴
   return setCookie(COOKIE_NAMES.TOKEN, rawToken, days);
 };
@@ -99,43 +105,45 @@ export const getJWTToken = () => {
     const tokenFromLocalStorage = localStorage.getItem('token');
     const tokenFromCookie = getCookie(COOKIE_NAMES.TOKEN);
     const directTokenFromCookie = getCookie('worldWearToken');
-    
+
     console.log('可用的 token 來源:', {
       localStorage: tokenFromLocalStorage ? '有值' : '無',
       cookieConstant: tokenFromCookie ? '有值' : '無',
-      directCookie: directTokenFromCookie ? '有值' : '無'
+      directCookie: directTokenFromCookie ? '有值' : '無',
     });
-    
+
     // 移除可能存在的 Bearer 前綴，獲取純 token
     let rawToken = null;
-    
+
     if (tokenFromLocalStorage) {
-      rawToken = tokenFromLocalStorage.startsWith('Bearer ') 
-        ? tokenFromLocalStorage.substring(7).trim() 
+      rawToken = tokenFromLocalStorage.startsWith('Bearer ')
+        ? tokenFromLocalStorage.substring(7).trim()
         : tokenFromLocalStorage.trim();
     } else if (tokenFromCookie) {
-      rawToken = tokenFromCookie.startsWith('Bearer ') 
-        ? tokenFromCookie.substring(7).trim() 
+      rawToken = tokenFromCookie.startsWith('Bearer ')
+        ? tokenFromCookie.substring(7).trim()
         : tokenFromCookie.trim();
     } else if (directTokenFromCookie) {
-      rawToken = directTokenFromCookie.startsWith('Bearer ') 
-        ? directTokenFromCookie.substring(7).trim() 
+      rawToken = directTokenFromCookie.startsWith('Bearer ')
+        ? directTokenFromCookie.substring(7).trim()
         : directTokenFromCookie.trim();
     }
-    
+
     // 如果找不到 token，返回 null
     if (!rawToken) {
       console.log('未找到有效的 token');
       return null;
     }
-    
+
     console.log('找到原始 token:', rawToken.substring(0, 10) + '...');
-    
+
     // 驗證 token 格式
     if (rawToken.split('.').length !== 3) {
-      console.warn('獲取到的 token 不是標準的 JWT 格式（應該有三個部分以點分隔）');
+      console.warn(
+        '獲取到的 token 不是標準的 JWT 格式（應該有三個部分以點分隔）'
+      );
     }
-    
+
     // 返回 Bearer + token 格式
     return `Bearer ${rawToken}`;
   } catch (error) {
@@ -172,32 +180,37 @@ export const createAuthAxios = () => {
     baseURL: API_PATH,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': token || ''
-    }
+      Authorization: token || '',
+    },
   });
 };
 
 // 儲存登入資訊，一次性設置所有相關的 Cookie 和 localStorage
-export const saveLoginInfo = (userData, token, rememberDays = 7, refreshToken = null) => {
+export const saveLoginInfo = (
+  userData,
+  token,
+  rememberDays = 7,
+  refreshToken = null
+) => {
   try {
     console.log('保存登入信息，原始 token:', token);
-    
+
     // 確保移除可能存在的 Bearer 前綴，獲取純 token
     let rawToken = token;
     if (token && token.startsWith('Bearer ')) {
       rawToken = token.substring(7).trim();
     }
-    
+
     console.log('處理後的純 token:', rawToken);
-    
+
     // 設置 Cookie - 直接存儲純 token，不添加 Bearer 前綴
     setTokenCookie(rawToken, rememberDays);
     setUserIdCookie(userData.id, rememberDays);
-    
+
     // 設置 localStorage - 也存儲純 token
     localStorage.setItem('token', rawToken);
     localStorage.setItem('user', JSON.stringify(userData));
-    
+
     if (refreshToken) {
       let rawRefreshToken = refreshToken;
       if (refreshToken.startsWith('Bearer ')) {
@@ -205,7 +218,7 @@ export const saveLoginInfo = (userData, token, rememberDays = 7, refreshToken = 
       }
       localStorage.setItem('refreshToken', rawRefreshToken);
     }
-    
+
     console.log('登入信息保存成功');
     return true;
   } catch (error) {
@@ -237,13 +250,13 @@ export const getCurrentUser = () => {
     if (userStr) {
       return JSON.parse(userStr);
     }
-    
+
     // 嘗試從其他可能的來源獲取
     const userDataStr = localStorage.getItem('user_data');
     if (userDataStr) {
       return JSON.parse(userDataStr);
     }
-    
+
     return null;
   } catch (error) {
     console.error('獲取當前用戶資訊失敗:', error);
@@ -258,18 +271,21 @@ export const getUserDetails = async (userId) => {
     if (!token || !userId) {
       throw new Error('缺少令牌或用戶ID');
     }
-    
+
     // 使用授權令牌發送請求
-    const response = await axios.get(`${API_PATH}/users/${userId}?_embed=favorites&_embed=orders&_embed=carts`, {
-      headers: {
-        'Authorization': token
+    const response = await axios.get(
+      `${API_PATH}/users/${userId}?_embed=favorites&_embed=orders&_embed=carts`,
+      {
+        headers: {
+          Authorization: token,
+        },
       }
-    });
-    
+    );
+
     if (response.data) {
       return response.data;
     }
-    
+
     throw new Error('獲取用戶詳細資料失敗');
   } catch (error) {
     console.error('獲取用戶詳細資料時出錯:', error);
@@ -282,28 +298,28 @@ export const handleLogin = async (email, password, rememberMe = false) => {
   try {
     // 設定 cookie 過期時間（天數）- 根據"記住我"選項
     const cookieExpireDays = rememberMe ? 30 : 1;
-    
+
     // 發送登入請求
     const response = await axios.post(`${API_PATH}/login`, {
       email,
-      password
+      password,
     });
-    
+
     if (response.data && response.data.accessToken) {
       // 處理成功的登入響應
       const { user, accessToken } = response.data;
-      
+
       // 儲存用戶資訊
       const userData = {
         id: user.id,
         email: user.email,
         username: user.username || user.name,
-        role: user.role || 'user'
+        role: user.role || 'user',
       };
-      
+
       // 儲存登入資訊
       saveLoginInfo(userData, accessToken, cookieExpireDays);
-      
+
       // 獲取用戶詳細資訊
       try {
         const userDetails = await getUserDetails(user.id);
@@ -311,25 +327,28 @@ export const handleLogin = async (email, password, rememberMe = false) => {
           // 將詳細資訊與基本資訊合併
           const completeUserData = {
             ...userData,
-            details: userDetails
+            details: userDetails,
           };
-          localStorage.setItem('user_complete_data', JSON.stringify(completeUserData));
+          localStorage.setItem(
+            'user_complete_data',
+            JSON.stringify(completeUserData)
+          );
         }
       } catch (detailsError) {
         console.warn('獲取用戶詳細資訊失敗，但不影響登入過程', detailsError);
       }
-      
+
       return {
         success: true,
         user: userData,
-        token: accessToken
+        token: accessToken,
       };
     } else {
       throw new Error('登入失敗：未收到有效的令牌');
     }
   } catch (error) {
     console.error('登入請求失敗:', error);
-    
+
     let errorMsg = '登入失敗，請檢查您的憑據';
     if (error.response) {
       // 伺服器回應了錯誤訊息
@@ -337,43 +356,46 @@ export const handleLogin = async (email, password, rememberMe = false) => {
     } else if (error.message) {
       errorMsg = error.message;
     }
-    
+
     throw new Error(errorMsg);
   }
 };
 
 // 處理註冊請求
 export const handleRegister = async (userData) => {
+  // // 檢查郵件是否已存在
+  // const emailCheckResponse = await axios.get(
+  //   `${API_PATH}/users?email=${userData.email}`
+  // );
+
+  // if (emailCheckResponse.data && emailCheckResponse.data.length > 0) {
+  //   throw new Error('此郵件已被註冊，請使用其他郵件或直接登入');
+  // } else {
+
+  // }
   try {
-    // 檢查郵件是否已存在
-    const emailCheckResponse = await axios.get(`${API_PATH}/users?email=${userData.email}`);
-    
-    if (emailCheckResponse.data && emailCheckResponse.data.length > 0) {
-      throw new Error('此郵件已被註冊，請使用其他郵件或直接登入');
-    }
-    
     // 發送註冊請求
     const registerData = {
       email: userData.email,
       password: userData.password,
       username: userData.username,
-      role: 'user' // 預設角色
+      role: 'user', // 預設角色
     };
-    
+
     const response = await axios.post(`${API_PATH}/signup`, registerData);
-    
+
     if (response.data) {
       return {
         success: true,
         message: '註冊成功，請使用您的帳號密碼登入',
-        user: response.data.user
+        user: response.data.user,
       };
     } else {
       throw new Error('註冊失敗：伺服器未返回有效響應');
     }
   } catch (error) {
     console.error('註冊請求失敗:', error);
-    
+
     let errorMsg = '註冊失敗，請檢查您的資料或稍後再試';
     if (error.response) {
       // 伺服器回應了錯誤訊息
@@ -381,7 +403,7 @@ export const handleRegister = async (userData) => {
     } else if (error.message) {
       errorMsg = error.message;
     }
-    
+
     throw new Error(errorMsg);
   }
 };
@@ -412,13 +434,10 @@ const cookieUtils = {
   getUserDetails,
   handleLogin,
   handleRegister,
-  logout
+  logout,
 };
 
 export default cookieUtils;
-
-
-
 
 // // Cookie 名稱常量
 // export const COOKIE_NAMES = {
@@ -447,7 +466,7 @@ export default cookieUtils;
 //   try {
 //     const date = new Date();
 //     date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-    
+
 //     const cookieOptions = {
 //       expires: date.toUTCString(),
 //       path: '/',
@@ -458,9 +477,9 @@ export default cookieUtils;
 
 //     const cookieString = Object.entries(cookieOptions)
 //       .filter(([key, value]) => value !== false)
-//       .map(([key, value]) => 
-//         key === 'expires' ? `Expires=${value}` : 
-//         key === 'path' ? `Path=${value}` : 
+//       .map(([key, value]) =>
+//         key === 'expires' ? `Expires=${value}` :
+//         key === 'path' ? `Path=${value}` :
 //         `${key.charAt(0).toUpperCase() + key.slice(1)}=${value}`
 //       )
 //       .join('; ');
@@ -483,7 +502,7 @@ export default cookieUtils;
 //   // 確保移除可能存在的 Bearer 前綴
 //   const rawToken = token.startsWith('Bearer ') ? token.substring(7).trim() : token.trim();
 //   console.log('設置 token cookie, 值:', rawToken.substring(0, 10) + '...');
-  
+
 //   // 直接存儲純 token，不添加 Bearer 前綴
 //   return setCookie(COOKIE_NAMES.TOKEN, rawToken, days);
 // };
@@ -515,43 +534,43 @@ export default cookieUtils;
 //     const tokenFromLocalStorage = localStorage.getItem('token');
 //     const tokenFromCookie = getCookie(COOKIE_NAMES.TOKEN);
 //     const directTokenFromCookie = getCookie('worldWearToken');
-    
+
 //     console.log('可用的 token 來源:', {
 //       localStorage: tokenFromLocalStorage ? '有值' : '無',
 //       cookieConstant: tokenFromCookie ? '有值' : '無',
 //       directCookie: directTokenFromCookie ? '有值' : '無'
 //     });
-    
+
 //     // 移除可能存在的 Bearer 前綴，獲取純 token
 //     let rawToken = null;
-    
+
 //     if (tokenFromLocalStorage) {
-//       rawToken = tokenFromLocalStorage.startsWith('Bearer ') 
-//         ? tokenFromLocalStorage.substring(7).trim() 
+//       rawToken = tokenFromLocalStorage.startsWith('Bearer ')
+//         ? tokenFromLocalStorage.substring(7).trim()
 //         : tokenFromLocalStorage.trim();
 //     } else if (tokenFromCookie) {
-//       rawToken = tokenFromCookie.startsWith('Bearer ') 
-//         ? tokenFromCookie.substring(7).trim() 
+//       rawToken = tokenFromCookie.startsWith('Bearer ')
+//         ? tokenFromCookie.substring(7).trim()
 //         : tokenFromCookie.trim();
 //     } else if (directTokenFromCookie) {
-//       rawToken = directTokenFromCookie.startsWith('Bearer ') 
-//         ? directTokenFromCookie.substring(7).trim() 
+//       rawToken = directTokenFromCookie.startsWith('Bearer ')
+//         ? directTokenFromCookie.substring(7).trim()
 //         : directTokenFromCookie.trim();
 //     }
-    
+
 //     // 如果找不到 token，返回 null
 //     if (!rawToken) {
 //       console.log('未找到有效的 token');
 //       return null;
 //     }
-    
+
 //     console.log('找到原始 token:', rawToken.substring(0, 10) + '...');
-    
+
 //     // 驗證 token 格式
 //     if (rawToken.split('.').length !== 3) {
 //       console.warn('獲取到的 token 不是標準的 JWT 格式（應該有三個部分以點分隔）');
 //     }
-    
+
 //     // 返回 Bearer + token 格式
 //     return `Bearer ${rawToken}`;
 //   } catch (error) {
@@ -585,23 +604,23 @@ export default cookieUtils;
 // export const saveLoginInfo = (userData, token, refreshToken = null) => {
 //   try {
 //     console.log('保存登入信息，原始 token:', token);
-    
+
 //     // 確保移除可能存在的 Bearer 前綴，獲取純 token
 //     let rawToken = token;
 //     if (token && token.startsWith('Bearer ')) {
 //       rawToken = token.substring(7).trim();
 //     }
-    
+
 //     console.log('處理後的純 token:', rawToken);
-    
+
 //     // 設置 Cookie - 直接存儲純 token，不添加 Bearer 前綴
 //     setTokenCookie(rawToken);
 //     setUserIdCookie(userData.id);
-    
+
 //     // 設置 localStorage - 也存儲純 token
 //     localStorage.setItem('token', rawToken);
 //     localStorage.setItem('user', JSON.stringify(userData));
-    
+
 //     if (refreshToken) {
 //       let rawRefreshToken = refreshToken;
 //       if (refreshToken.startsWith('Bearer ')) {
@@ -609,7 +628,7 @@ export default cookieUtils;
 //       }
 //       localStorage.setItem('refreshToken', rawRefreshToken);
 //     }
-    
+
 //     console.log('登入信息保存成功');
 //     return true;
 //   } catch (error) {
@@ -663,13 +682,6 @@ export default cookieUtils;
 
 // export default cookieUtils;
 
-
-
-
-
-
-
-
 // // Cookie 名稱常量
 // export const COOKIE_NAMES = {
 //   TOKEN: 'worldWearToken',
@@ -697,7 +709,7 @@ export default cookieUtils;
 //   try {
 //     const date = new Date();
 //     date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-    
+
 //     const cookieOptions = {
 //       expires: date.toUTCString(),
 //       path: '/',
@@ -708,9 +720,9 @@ export default cookieUtils;
 
 //     const cookieString = Object.entries(cookieOptions)
 //       .filter(([key, value]) => value !== false)
-//       .map(([key, value]) => 
-//         key === 'expires' ? `Expires=${value}` : 
-//         key === 'path' ? `Path=${value}` : 
+//       .map(([key, value]) =>
+//         key === 'expires' ? `Expires=${value}` :
+//         key === 'path' ? `Path=${value}` :
 //         `${key.charAt(0).toUpperCase() + key.slice(1)}=${value}`
 //       )
 //       .join('; ');
@@ -751,9 +763,9 @@ export default cookieUtils;
 //     // 依次嘗試從不同來源獲取 token
 //     const tokenFromLocalStorage = localStorage.getItem('token');
 //     const tokenFromCookie = getCookie(COOKIE_NAMES.TOKEN);
-    
+
 //     let token = tokenFromLocalStorage || tokenFromCookie || null;
-    
+
 //     // 確保 token 格式正確
 //     if (token) {
 //       // 如果 token 已經有 Bearer 前綴，直接返回
@@ -763,7 +775,7 @@ export default cookieUtils;
 //       // 否則添加 Bearer 前綴
 //       return `Bearer ${token}`;
 //     }
-    
+
 //     return null;
 //   } catch (error) {
 //     console.error('獲取 JWT Token 時發生錯誤:', error);
@@ -822,9 +834,6 @@ export default cookieUtils;
 // };
 
 // export default cookieUtils;
-
-
-
 
 /*
 // Cookie 名稱常量
@@ -955,8 +964,6 @@ const cookieUtils = {
 export default cookieUtils;
 */
 
-
-
 // // cookieUtils.js
 
 // // Cookie 名稱常量，與 authSlice 一致
@@ -991,7 +998,7 @@ export default cookieUtils;
 //   try {
 //     const date = new Date();
 //     date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-    
+
 //     const cookieOptions = {
 //       expires: date.toUTCString(),
 //       path: '/',
@@ -1002,9 +1009,9 @@ export default cookieUtils;
 
 //     const cookieString = Object.entries(cookieOptions)
 //       .filter(([key, value]) => value !== false)
-//       .map(([key, value]) => 
-//         key === 'expires' ? `Expires=${value}` : 
-//         key === 'path' ? `Path=${value}` : 
+//       .map(([key, value]) =>
+//         key === 'expires' ? `Expires=${value}` :
+//         key === 'path' ? `Path=${value}` :
 //         `${key.charAt(0).toUpperCase() + key.slice(1)}=${value}`
 //       )
 //       .join('; ');
@@ -1049,7 +1056,7 @@ export default cookieUtils;
 //   // 1. 嘗試從 cookie 獲取
 //   const userIdFromCookie = getUserIdFromCookie();
 //   if (userIdFromCookie) return userIdFromCookie;
-  
+
 //   // 2. 嘗試從 localStorage 獲取
 //   try {
 //     const userString = localStorage.getItem('user');
@@ -1060,12 +1067,12 @@ export default cookieUtils;
 //   } catch (e) {
 //     console.error('解析用戶信息失敗:', e);
 //   }
-  
+
 //   // 3. 從 state 中獲取用戶 ID
 //   if (state) {
 //     const possibleUserIdPaths = [
-//       'auth.user.id', 
-//       'authSlice.user.id', 
+//       'auth.user.id',
+//       'authSlice.user.id',
 //       'user.id'
 //     ];
 
@@ -1074,15 +1081,15 @@ export default cookieUtils;
 //       if (userIdFromState) return userIdFromState;
 //     }
 //   }
-  
+
 //   return '';
 // };
 
 // // 檢查用戶是否登入（多重驗證）
 // export const isUserLoggedIn = () => {
 //   return (
-//     !!getWorldWearTokenFromCookie() && 
-//     !!getUserIdFromCookie() && 
+//     !!getWorldWearTokenFromCookie() &&
+//     !!getUserIdFromCookie() &&
 //     isUserLoggedInByLocalStorage()
 //   );
 // };
@@ -1129,7 +1136,7 @@ export default cookieUtils;
 //     // 設置 Cookie
 //     setTokenCookie(accessToken);
 //     setUserIdCookie(userId);
-    
+
 //     console.log('從外部 API 同步認證資訊成功');
 //     return true;
 //   } catch (error) {
@@ -1156,8 +1163,6 @@ export default cookieUtils;
 //   clearAllUserData,
 //   syncExternalAuth
 // };
-
-
 
 // ------------------------------
 // cookieUtils.js
@@ -1194,7 +1199,7 @@ export default cookieUtils;
 //   try {
 //     const date = new Date();
 //     date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-    
+
 //     const cookieOptions = {
 //       expires: date.toUTCString(),
 //       path: '/',
@@ -1205,9 +1210,9 @@ export default cookieUtils;
 
 //     const cookieString = Object.entries(cookieOptions)
 //       .filter(([key, value]) => value !== false)
-//       .map(([key, value]) => 
-//         key === 'expires' ? `Expires=${value}` : 
-//         key === 'path' ? `Path=${value}` : 
+//       .map(([key, value]) =>
+//         key === 'expires' ? `Expires=${value}` :
+//         key === 'path' ? `Path=${value}` :
 //         `${key.charAt(0).toUpperCase() + key.slice(1)}=${value}`
 //       )
 //       .join('; ');
@@ -1243,7 +1248,7 @@ export default cookieUtils;
 //   // 1. 嘗試從 cookie 獲取
 //   const userIdFromCookie = getUserIdFromCookie();
 //   if (userIdFromCookie) return userIdFromCookie;
-  
+
 //   // 2. 嘗試從 localStorage 獲取
 //   try {
 //     const userString = localStorage.getItem('user');
@@ -1254,12 +1259,12 @@ export default cookieUtils;
 //   } catch (e) {
 //     console.error('解析用戶信息失敗:', e);
 //   }
-  
+
 //   // 3. 從 state 中獲取用戶 ID
 //   if (state) {
 //     const possibleUserIdPaths = [
-//       'auth.user.id', 
-//       'authSlice.user.id', 
+//       'auth.user.id',
+//       'authSlice.user.id',
 //       'user.id'
 //     ];
 
@@ -1268,15 +1273,15 @@ export default cookieUtils;
 //       if (userIdFromState) return userIdFromState;
 //     }
 //   }
-  
+
 //   return '';
 // };
 
 // // 檢查用戶是否登入（多重驗證）
 // export const isUserLoggedIn = () => {
 //   return (
-//     !!getWorldWearTokenFromCookie() && 
-//     !!getUserIdFromCookie() && 
+//     !!getWorldWearTokenFromCookie() &&
+//     !!getUserIdFromCookie() &&
 //     isUserLoggedInByLocalStorage()
 //   );
 // };
