@@ -1,12 +1,17 @@
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import useImgUrl from '../../hooks/useImgUrl';
 import { Outlet } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useDispatch } from 'react-redux';
+import { logoutUser } from '../../slice/authSlice';
 
 export default function AdminLayout() {
   const getImgUrl = useImgUrl();
   const [isCollapse, setIsCollapse] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const mobileCloseMenu = () => {
     if (!isMobile) {
       return;
@@ -25,6 +30,24 @@ export default function AdminLayout() {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
+  }, []);
+
+  useEffect(() => {
+    // 在 Axios 攔截器中處理
+    axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        // 在某些需要 token 的情况下，取到舊 Token ，造成取資料錯誤
+        // Request failed with status code 401
+        if (error.response && error.response.status === 401) {
+          //   登出程式碼
+          dispatch(logoutUser()).unwrap();
+          // 導入登入頁面
+          navigate('/login');
+        }
+        return Promise.reject(error);
+      }
+    );
   }, []);
 
   return (

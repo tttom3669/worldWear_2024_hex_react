@@ -52,7 +52,7 @@ export default function UserOrder() {
                 </h1>
                 <div className="bg-white border-opacity-0 border-opacity-sm-100 border border-nature-95 px-3 py-6 p-sm-6">
                   <ul className="d-flex flex-column gap-5">
-                    {orderData &&
+                    {orderData?.length > 0 ? (
                       orderData.map((order) => (
                         <li key={order.id}>
                           <div className="bg-nature-95 px-3 py-4 border border-nature-90">
@@ -116,7 +116,7 @@ export default function UserOrder() {
                                           <h3 className="fs-base fw-normal">
                                             {productItem.product.title}
                                           </h3>
-    
+
                                           <div className="d-flex flex-row flex-fill justify-content-between flex-lg-column">
                                             <p>
                                               規格:{productItem.color}/
@@ -223,7 +223,14 @@ export default function UserOrder() {
                             </div>
                           </details>
                         </li>
-                      ))}
+                      ))
+                    ) : (
+                      <>
+                        <h2 className="fs-h6 text-center text-nature-60">
+                          暫無訂單
+                        </h2>
+                      </>
+                    )}
                   </ul>
                 </div>
               </div>
