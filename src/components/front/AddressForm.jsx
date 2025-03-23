@@ -121,7 +121,6 @@ AddressForm.propTypes = {
   errors: PropTypes.object.isRequired,
   defaultRegion: PropTypes.string,
   defaultCounty: PropTypes.string,
-  defaultAddress: PropTypes.string,
 };
 
 export default memo(AddressForm);

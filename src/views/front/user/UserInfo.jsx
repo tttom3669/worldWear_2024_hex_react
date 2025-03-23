@@ -30,15 +30,23 @@ export default function UserInfo() {
           },
         }
       );
-      const { county, address, region, birthday, email, name, tel, orders } =
-        res.data;
+      const {
+        county,
+        address,
+        region,
+        birthday,
+        email,
+        username,
+        tel,
+        orders,
+      } = res.data;
       setDefaultUserData({
         county,
         address,
         region,
         birthday,
         email,
-        name,
+        username,
         tel,
       });
       console.log(res.data);
@@ -204,23 +212,23 @@ export default function UserInfo() {
                     onSubmit={handleSubmitUserInfo(onSubmit)}
                   >
                     <div className="d-flex flex-column align-items-start align-items-md-center gap-md-6 flex-md-row">
-                      <label htmlFor="name" className="form-label">
+                      <label htmlFor="username" className="form-label">
                         會員姓名
                       </label>
                       <div className="userInfo__col">
                         <input
                           type="text"
                           className={`form-control ${
-                            errorsUserInfo.name && 'is-invalid'
+                            errorsUserInfo.username && 'is-invalid'
                           }`}
-                          id="name"
+                          id="username"
                           placeholder="請輸入姓名"
-                          {...registerUserInfo('name', {
+                          {...registerUserInfo('username', {
                             required: { value: true, message: '請輸入姓名' },
                           })}
                         />
                         <p className="invalid-feedback">
-                          {errorsUserInfo?.name?.message}
+                          {errorsUserInfo?.username?.message}
                         </p>
                       </div>
                     </div>
