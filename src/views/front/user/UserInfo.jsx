@@ -49,7 +49,6 @@ export default function UserInfo() {
         username,
         tel,
       });
-      console.log(res.data);
       setOrdersData(orders);
     } catch (error) {
       console.log(error);
@@ -172,6 +171,7 @@ export default function UserInfo() {
 
   return (
     <>
+      <title>會員資料維護 - WorldWear</title>
       <main className="userInfo">
         <div className="pt-3 pb-3 pt-md-10 pb-md-25">
           <div className="container">
