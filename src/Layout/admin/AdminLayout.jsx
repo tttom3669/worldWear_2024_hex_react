@@ -3,7 +3,7 @@ import useImgUrl from '../../hooks/useImgUrl';
 import { Outlet } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { logoutUser } from '../../slice/authSlice';
 
 export default function AdminLayout() {
@@ -12,6 +12,9 @@ export default function AdminLayout() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const userData = useSelector((state) => state.authSlice.user);
+  const status = useSelector((state) => state.authSlice.status);
+
   const mobileCloseMenu = () => {
     if (!isMobile) {
       return;
@@ -49,6 +52,13 @@ export default function AdminLayout() {
       }
     );
   }, []);
+
+  // 未登入及不是後台管理員導入登入頁面
+  useEffect(() => {
+    if (status === 'idle' || userData?.role !== 'admin') {
+      navigate('/login');
+    }
+  }, [userData, status]);
 
   return (
     <>
