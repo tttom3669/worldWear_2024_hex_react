@@ -369,6 +369,10 @@ export default function UserInfo() {
                               value: true,
                               message: '請輸入舊密碼',
                             },
+                            minLength: {
+                              value: 8,
+                              message: '密碼長度至少需要8個字元',
+                            },
                           })}
                         />
                         <p className="invalid-feedback">
@@ -393,6 +397,10 @@ export default function UserInfo() {
                             required: {
                               value: true,
                               message: '請輸入新密碼',
+                            },
+                            minLength: {
+                              value: 8,
+                              message: '密碼長度至少需要8個字元',
                             },
                           })}
                         />
@@ -421,6 +429,10 @@ export default function UserInfo() {
                             required: {
                               value: true,
                               message: '請再次輸入新密碼',
+                            },
+                            minLength: {
+                              value: 8,
+                              message: '密碼長度至少需要8個字元',
                             },
                             validate: (value) =>
                               value === watchPassword('newPassword') ||
