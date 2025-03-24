@@ -128,6 +128,7 @@ export default function Cart() {
 
   return (
     <>
+      <title>購物車 - WorldWear</title>
       <FrontHeader defaultType={'light'} />
       <main>
         <div className="pt-5 pb-10 pt-md-12 pb-md-30">

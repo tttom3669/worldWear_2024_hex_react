@@ -39,6 +39,7 @@ export default function UserOrder() {
   }, []);
   return (
     <>
+      <title>查詢訂單 - WorldWear</title>
       <main>
         <div className="pt-3 pb-3 pt-md-10 pb-md-25">
           <div className="container px-0 px-sm-3">
