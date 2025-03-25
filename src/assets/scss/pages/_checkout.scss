@@ -27,7 +27,8 @@
   content: "";
   width: 18px;
   height: 18px;
-  border: 2px solid #007bff; /* 設定邊框顏色 */
+  border: 2px solid  $black; /* 設定邊框顏色 */
+  // border: 2px solid #007bff; /* 設定邊框顏色 */
   border-radius: 50%;
   display: inline-block;
   transition: all 0.2s ease-in-out;
@@ -35,6 +36,7 @@
 
 /* 當 radio 被選取時，改變顏色 */
 .custom-radio input[type="radio"]:checked + label::before {
-  background-color: #007bff; /* 選取時填滿顏色 */
+  // background-color: #007bff; /* 選取時填滿顏色 */
+  background-color: $black; /* 選取時填滿顏色 */
   box-shadow: inset 0 0 0 3px white; /* 內部白色圓點 */
 }
