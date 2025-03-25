@@ -6,6 +6,8 @@ import { Modal } from 'bootstrap';
 import FormTitle from '../../components/front/FormTitle';
 import useSwal from '../../hooks/useSwal';
 import ScreenLoading from '../../components/front/ScreenLoading';
+import useImgUrl from '../../hooks/useImgUrl';
+import { Link, useLocation } from 'react-router-dom';
 
 export default function AdminUsers() {
   const [userData, setUserData] = useState([]);
@@ -19,6 +21,15 @@ export default function AdminUsers() {
   const [tempOrderData, setTempOrderData] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const { toastAlert } = useSwal();
+  const getImgUrl = useImgUrl();
+
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const [paginationData, setPaginationData] = useState({
+    totalPage: 0,
+    currentPage: 0,
+  });
+  const pageLimit = 10;
 
   const [searchUserData, setSearchUserData] = useState({
     username: '',
@@ -41,8 +52,31 @@ export default function AdminUsers() {
           authorization: token,
         },
       });
+
       setUserData(res.data);
       setFilterUserData(res.data);
+      if (tempUserData.id) {
+        setTempUserData(res.data.find((user) => user.id === tempUserData.id));
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const handlePageChange = async (page = 1) => {
+    try {
+      setIsLoading(true);
+      const res = await axios.get(
+        `${API_PATH}/admin/users/?_embed=orders&_page=${page}&_limit=${pageLimit}`,
+        {
+          headers: {
+            authorization: token,
+          },
+        }
+      );
+      setFilterUserData(res.data);
+
       if (tempUserData.id) {
         setTempUserData(res.data.find((user) => user.id === tempUserData.id));
       }
@@ -140,11 +174,31 @@ export default function AdminUsers() {
     adminOrderModal.current = new Modal(orderModalRef.current);
   }, []);
 
+  useEffect(() => {
+    const page = queryParams.get('page') || 1;
+    setPaginationData({
+      totalPage: Math.ceil(userData.length / pageLimit),
+      currentPage: Number(page),
+    });
+    if (page) {
+      handlePageChange(page);
+    }
+  }, [userData]);
+
+  useEffect(() => {
+    const page = queryParams.get('page');
+    if (!page) {
+      return;
+    }
+    setPaginationData({ ...paginationData, currentPage: Number(page) });
+    handlePageChange(page);
+  }, [queryParams.get('page')]);
+
   return (
     <>
       <title>使用者管理 - WorldWear</title>
-      <div className="container">
-        <div className="py-10">
+      <div className="container h-100">
+        <div className="d-flex flex-column  py-10 h-100">
           <div className="d-flex align-items-center gap-6 mb-6">
             <h1 className="fs-h4 ">所有會員</h1>
             <div>會員總數：{filterUserData.length} 人</div>
@@ -261,9 +315,57 @@ export default function AdminUsers() {
             </div>
           ) : (
             <>
-              <h3 className='fs-h5 text-center py-10'>未搜尋到使用者</h3>
+              <h3 className="fs-h5 text-center py-10">未搜尋到使用者</h3>
             </>
           )}
+          {
+            <div className="d-flex justify-content-center mt-4 pagination-container mt-auto">
+              <Link
+                to={`/admin/users?page=${paginationData.currentPage - 1}`}
+                className={`btn btn-outline-primary mx-2 ${
+                  paginationData.currentPage == 1 ? 'disabled' : ''
+                }`}
+                aria-label="前一頁"
+              >
+                <svg width="10" height="19">
+                  <use href={getImgUrl('/icons/prev.svg#prev')}></use>
+                </svg>
+              </Link>
+              {paginationData.totalPage > 0 &&
+                Array.from(
+                  { length: paginationData.totalPage },
+                  (_, index) => index + 1
+                ).map((item) => (
+                  <Link
+                    key={item}
+                    to={`/admin/users?page=${item}`}
+                    className={`btn mx-1 
+                  ${
+                    paginationData.currentPage == item
+                      ? 'btn-primary'
+                      : 'btn-outline-primary'
+                  }`}
+                    aria-label={`第 ${item} 頁`}
+                  >
+                    {item}
+                  </Link>
+                ))}
+
+              <Link
+                to={`/admin/users?page=${paginationData.currentPage + 1}`}
+                className={`btn btn-outline-primary mx-2 ${
+                  paginationData.currentPage == paginationData.totalPage
+                    ? 'disabled'
+                    : ''
+                }`}
+                aria-label="下一頁"
+              >
+                <svg width="10" height="19">
+                  <use href={getImgUrl('/icons/next.svg#next')}></use>
+                </svg>
+              </Link>
+            </div>
+          }
         </div>
       </div>
       <div
