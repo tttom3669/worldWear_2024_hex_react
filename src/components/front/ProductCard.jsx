@@ -1,51 +1,62 @@
-import { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
-  addToFavorites, 
-  removeFromFavorites, 
-  checkProductFavoriteStatus, 
-  selectProductFavoriteStatus,
-} from "../../slice/favoritesSlice";
-import useSwal from "../../hooks/useSwal";
-import cookieUtils from "../../components/tools/cookieUtils";
-import { store } from "../../store";
+  addToFavorites,
+  removeFromFavorites,
+  getFavorites,
+  // checkProductFavoriteStatus,
+  // selectProductFavoriteStatus,
+} from '../../slice/favoritesSlice';
+import useSwal from '../../hooks/useSwal';
+import cookieUtils from '../../components/tools/cookieUtils';
+import { store } from '../../store';
 
 const ProductCard = ({ data }) => {
   const dispatch = useDispatch();
   const [isHovered, setIsHovered] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
   const navigate = useNavigate();
-  
+  const favoriteData = useSelector((state) => state.favorites.favoritesData);
+
   // 使用自定義的 SweetAlert2 提示
   const { toastAlert } = useSwal();
-  
-  // 獲取該商品的收藏狀態
-  const favoriteStatus = useSelector((state) =>
-    state.favorites?.favoritesData?.products?.find(
-      (item) => item.productId === data.id
-    )
-  );
 
-  // 判斷是否已收藏
-  const isFavorite = favoriteStatus !== undefined;
+  const checkProductFavoriteStatus = (id) => {
+    const foundProduct = favoriteData.products.find(
+      (item) => item.productId === id
+    );
+    // 如果找到產品，則返回 true，否則返回 false
+    return foundProduct ? true : false;
+  };
+  // 獲取該商品的收藏狀態
+  // const favoriteStatus = useSelector((state) =>
+  //   state.favorites?.favoritesData?.products?.find(
+  //     (item) => item.productId === data.id
+  //   )
+  // );
+
+  // // 判斷是否已收藏
+  // const isFavorite = favoriteStatus !== undefined;
 
   // 組件加載時檢查產品的收藏狀態
   useEffect(() => {
     // 使用 cookieUtils 檢查登入狀態
     if (cookieUtils.isUserLoggedIn() && data.id) {
-      dispatch(checkProductFavoriteStatus(data.id));
+      const status = checkProductFavoriteStatus(data.id);
+      setIsFavorite(status);
     }
-  }, [dispatch, data.id]);
+  }, [dispatch, data.id, favoriteData]);
 
-  useEffect(() => {
-    console.log("收藏狀態更新:", {
-      productId: data.id,
-      isFavorite,
-      favoriteStatus
-    });
-  }, [data.id, isFavorite, favoriteStatus]);
+  // useEffect(() => {
+  //   console.log("收藏狀態更新:", {
+  //     productId: data.id,
+  //     isFavorite,
+  //     favoriteStatus
+  //   });
+  // }, [data.id, isFavorite, favoriteStatus]);
 
   const handleToggleFavorite = async (e) => {
     e.preventDefault();
@@ -54,15 +65,15 @@ const ProductCard = ({ data }) => {
     // 使用 cookieUtils 檢查登入狀態，與 favoritesSlice.js 保持一致
     if (!cookieUtils.isUserLoggedIn()) {
       toastAlert({
-        icon: "error",
-        title: "請先登入才能將商品加入收藏",
+        icon: 'error',
+        title: '請先登入才能將商品加入收藏',
       });
 
       // 將當前頁面路徑儲存在本地存儲中，以便登入後返回
-      localStorage.setItem("redirectAfterLogin", window.location.pathname);
+      localStorage.setItem('redirectAfterLogin', window.location.pathname);
 
       setTimeout(() => {
-        navigate("/login");
+        navigate('/login');
       }, 3000);
 
       return;
@@ -74,10 +85,10 @@ const ProductCard = ({ data }) => {
         // 從 Redux store 中獲取所有收藏項目
         const state = store.getState();
         const allFavorites = state.favorites.favoritesData.products || [];
-        
+
         // 找到所有相同產品的收藏項目
         const sameProductFavorites = allFavorites.filter(
-          favorite => favorite.productId === data.id
+          (favorite) => favorite.productId === data.id
         );
 
         // 刪除所有相同產品的收藏項目
@@ -86,21 +97,21 @@ const ProductCard = ({ data }) => {
         }
 
         toastAlert({
-          icon: "success",
-          title: "已從收藏中移除",
+          icon: 'success',
+          title: '已從收藏中移除',
         });
       } catch (error) {
-        console.error("移除收藏失敗:", error);
+        console.error('移除收藏失敗:', error);
         toastAlert({
-          icon: "error",
-          title: "移除收藏失敗，請稍後再試",
+          icon: 'error',
+          title: '移除收藏失敗，請稍後再試',
         });
       }
     } else {
       // 如果未收藏，則添加到收藏
       // 從商品數據中獲取顏色和尺寸
-      const selectedColor = data.color?.[0] || ""; // 使用第一個可用顏色
-      const selectedSize = data.size?.[0] || ""; // 使用第一個可用尺寸
+      const selectedColor = data.color?.[0] || ''; // 使用第一個可用顏色
+      const selectedSize = data.size?.[0] || ''; // 使用第一個可用尺寸
 
       dispatch(
         addToFavorites({
@@ -113,15 +124,16 @@ const ProductCard = ({ data }) => {
         .unwrap()
         .then(() => {
           toastAlert({
-            icon: "success",
-            title: "已加入收藏",
+            icon: 'success',
+            title: '已加入收藏',
           });
+          dispatch(getFavorites());
         })
         .catch((error) => {
-          console.error("加入收藏失敗:", error);
+          console.error('加入收藏失敗:', error);
           toastAlert({
-            icon: "error",
-            title: "加入收藏失敗，請稍後再試",
+            icon: 'error',
+            title: '加入收藏失敗，請稍後再試',
           });
         });
     }
@@ -137,14 +149,14 @@ const ProductCard = ({ data }) => {
   const getStatusClass = () => {
     // 根據 status 值設定對應的標籤樣式
     switch (data.status) {
-      case "預購":
-        return "status-preorder";
-      case "現貨":
-        return "status-instock";
-      case "補貨中":
-        return "status-restock";
+      case '預購':
+        return 'status-preorder';
+      case '現貨':
+        return 'status-instock';
+      case '補貨中':
+        return 'status-restock';
       default:
-        return "status-default";
+        return 'status-default';
     }
   };
 
@@ -157,12 +169,12 @@ const ProductCard = ({ data }) => {
   const getStatusText = () => {
     // 固定的狀態標籤內容
     switch (data.status) {
-      case "預購":
-      case "現貨":
-      case "補貨中":
+      case '預購':
+      case '現貨':
+      case '補貨中':
         return data.status;
       default:
-        return "";
+        return '';
     }
   };
 
@@ -177,12 +189,12 @@ const ProductCard = ({ data }) => {
     >
       <Link
         to={`/product/${data.id}`}
-        className={`productList-card card h-100 ${isHovered ? "hovered" : ""}`}
+        className={`productList-card card h-100 ${isHovered ? 'hovered' : ''}`}
       >
         <div className="img-wrapper-container position-relative">
           <motion.div
             className={`img-wrapper position-relative ${
-              data.status === "補貨中" ? "mask" : ""
+              data.status === '補貨中' ? 'mask' : ''
             }`}
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.3 }}
@@ -192,10 +204,10 @@ const ProductCard = ({ data }) => {
               alt={data.title}
               className="card-img-top"
               animate={{ x: isClicked ? 40 : 0 }}
-              transition={{ type: "spring", stiffness: 150 }}
+              transition={{ type: 'spring', stiffness: 150 }}
               onClick={handleImageClick} // 保留點擊動畫但不阻止導航
             />
-            {data.status === "補貨中" && (
+            {data.status === '補貨中' && (
               <div className="card-img-overlay d-flex align-items-center justify-content-center mt-12">
                 <h2 className="card-title fst-italic font-dm-serif text-white">
                   Sold Out
@@ -221,7 +233,7 @@ const ProductCard = ({ data }) => {
           <div className="mobile-favorite-container">
             <button
               type="button"
-              className={`btn favorite ${isFavorite ? "isLike" : ""}`}
+              className={`btn favorite ${isFavorite ? 'isLike' : ''}`}
               onClick={handleToggleFavorite} // 這裡已包含 preventDefault 和 stopPropagation
             >
               <svg
@@ -245,7 +257,7 @@ const ProductCard = ({ data }) => {
             <h5 className="card-title fs-sm fs-lg-base">{data.title}</h5>
             <button
               type="button"
-              className={`btn favorite ${isFavorite ? "isLike" : ""}`}
+              className={`btn favorite ${isFavorite ? 'isLike' : ''}`}
               onClick={handleToggleFavorite}
             >
               <svg

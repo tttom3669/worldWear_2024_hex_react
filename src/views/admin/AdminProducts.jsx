@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { motion } from "framer-motion";
-import useSwal from "../../hooks/useSwal";
-import axios from "axios";
-import cookieUtils from "../../components/tools/cookieUtils";
-import Pagination from "../../components/layouts/Pagination";
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { motion } from 'framer-motion';
+import useSwal from '../../hooks/useSwal';
+import axios from 'axios';
+import cookieUtils from '../../components/tools/cookieUtils';
+import Pagination from '../../components/layouts/Pagination';
 
 const { VITE_API_PATH: API_PATH } = import.meta.env;
 
@@ -12,8 +12,8 @@ const AdminProducts = () => {
   const dispatch = useDispatch();
   const { toastAlert } = useSwal();
   const [products, setProducts] = useState([]);
-  const [searchText, setSearchText] = useState("");
-  const [searchStatus, setSearchStatus] = useState("");
+  const [searchText, setSearchText] = useState('');
+  const [searchStatus, setSearchStatus] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -21,29 +21,28 @@ const AdminProducts = () => {
   const itemsPerPage = 15;
 
   // 狀態選項
-  const statusOptions = ["現貨", "預購", "補貨中"];
+  const statusOptions = ['現貨', '預購', '補貨中'];
+  const fetchProducts = async () => {
+    try {
+      setIsLoading(true);
+      const authAxios = cookieUtils.createAuthAxios();
+      const response = await authAxios.get('/products');
+      const productsData = Array.isArray(response.data) ? response.data : [];
+      setProducts(productsData);
+    } catch (error) {
+      console.error('獲取商品列表失敗:', error);
+      toastAlert({
+        icon: 'error',
+        title: '獲取商品列表失敗',
+      });
+      setProducts([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // 獲取商品列表
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setIsLoading(true);
-        const authAxios = cookieUtils.createAuthAxios();
-        const response = await authAxios.get("/products");
-        const productsData = Array.isArray(response.data) ? response.data : [];
-        setProducts(productsData);
-      } catch (error) {
-        console.error("獲取商品列表失敗:", error);
-        toastAlert({
-          icon: "error",
-          title: "獲取商品列表失敗",
-        });
-        setProducts([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchProducts();
   }, []);
 
@@ -72,28 +71,28 @@ const AdminProducts = () => {
         // 更新商品
         await authAxios.put(`/products/${editingProduct.id}`, editingProduct);
         toastAlert({
-          icon: "success",
-          title: "商品更新成功",
+          icon: 'success',
+          title: '商品更新成功',
         });
       } else {
         // 新增商品
-        await authAxios.post("/products", editingProduct);
+        await authAxios.post('/products', editingProduct);
         toastAlert({
-          icon: "success",
-          title: "商品新增成功",
+          icon: 'success',
+          title: '商品新增成功',
         });
       }
       setShowModal(false);
       setEditingProduct(null);
       // 重新獲取商品列表
-      const response = await authAxios.get("/products");
+      const response = await authAxios.get('/products');
       const productsData = Array.isArray(response.data) ? response.data : [];
       setProducts(productsData);
     } catch (error) {
-      console.error("操作失敗:", error);
+      console.error('操作失敗:', error);
       toastAlert({
-        icon: "error",
-        title: "操作失敗",
+        icon: 'error',
+        title: '操作失敗',
       });
     }
   };
@@ -104,18 +103,18 @@ const AdminProducts = () => {
       const authAxios = cookieUtils.createAuthAxios();
       await authAxios.delete(`/products/${id}`);
       toastAlert({
-        icon: "success",
-        title: "商品刪除成功",
+        icon: 'success',
+        title: '商品刪除成功',
       });
       // 重新獲取商品列表
-      const response = await authAxios.get("/products");
+      const response = await authAxios.get('/products');
       const productsData = Array.isArray(response.data) ? response.data : [];
       setProducts(productsData);
     } catch (error) {
-      console.error("刪除失敗:", error);
+      console.error('刪除失敗:', error);
       toastAlert({
-        icon: "error",
-        title: "刪除失敗",
+        icon: 'error',
+        title: '刪除失敗',
       });
     }
   };
@@ -177,31 +176,31 @@ const AdminProducts = () => {
               <table className="table table-hover">
                 <thead>
                   <tr>
-                    <th className="text-center" style={{ width: "11%" }}>
+                    <th className="text-center" style={{ width: '11%' }}>
                       類別
                     </th>
-                    <th className="text-center" style={{ width: "11%" }}>
+                    <th className="text-center" style={{ width: '11%' }}>
                       商品編號
                     </th>
-                    <th className="text-center" style={{ width: "11%" }}>
+                    <th className="text-center" style={{ width: '11%' }}>
                       商品名稱
                     </th>
-                    <th className="text-center" style={{ width: "11%" }}>
+                    <th className="text-center" style={{ width: '11%' }}>
                       狀態
                     </th>
-                    <th className="text-center" style={{ width: "11%" }}>
+                    <th className="text-center" style={{ width: '11%' }}>
                       定價
                     </th>
-                    <th className="text-center" style={{ width: "11%" }}>
+                    <th className="text-center" style={{ width: '11%' }}>
                       售價
                     </th>
-                    <th className="text-center" style={{ width: "11%" }}>
+                    <th className="text-center" style={{ width: '11%' }}>
                       庫存數量
                     </th>
-                    <th className="text-center" style={{ width: "11%" }}>
+                    <th className="text-center" style={{ width: '11%' }}>
                       已售數量
                     </th>
-                    <th className="text-center" style={{ width: "12%" }}>
+                    <th className="text-center" style={{ width: '12%' }}>
                       編輯功能
                     </th>
                   </tr>
@@ -266,7 +265,7 @@ const AdminProducts = () => {
               <div className="modal-content">
                 <div className="modal-header">
                   <h5 className="modal-title">
-                    {editingProduct ? "編輯商品" : "新增商品"}
+                    {editingProduct ? '編輯商品' : '新增商品'}
                   </h5>
                   <button
                     type="button"
@@ -285,7 +284,7 @@ const AdminProducts = () => {
                       <input
                         type="text"
                         className="form-control"
-                        value={editingProduct?.title || ""}
+                        value={editingProduct?.title || ''}
                         onChange={(e) =>
                           setEditingProduct({
                             ...editingProduct,
