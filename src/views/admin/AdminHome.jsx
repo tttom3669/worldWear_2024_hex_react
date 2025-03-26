@@ -1,7 +1,10 @@
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 export default function AdminHome() {
-  return (
-    <>
-      <h1>後台首頁</h1>
-    </>
-  );
+  const navigate = useNavigate();
+  useEffect(() => {
+    navigate('/admin/products');
+  }, []);
+  return <>後台首頁</>;
 }

@@ -10,6 +10,7 @@ import {
 } from "../../slice/favoritesSlice";
 import useSwal from "../../hooks/useSwal";
 import cookieUtils from "../../components/tools/cookieUtils";
+import { store } from "../../store";
 
 const ProductCard = ({ data }) => {
   const dispatch = useDispatch();
@@ -22,9 +23,13 @@ const ProductCard = ({ data }) => {
   
   // 獲取該商品的收藏狀態
   const favoriteStatus = useSelector((state) =>
-    selectProductFavoriteStatus(state, data.id)
+    state.favorites?.favoritesData?.products?.find(
+      (item) => item.productId === data.id
+    )
   );
-  const isFavorite = favoriteStatus.isInFavorites;
+
+  // 判斷是否已收藏
+  const isFavorite = favoriteStatus !== undefined;
 
   // 組件加載時檢查產品的收藏狀態
   useEffect(() => {
@@ -42,7 +47,7 @@ const ProductCard = ({ data }) => {
     });
   }, [data.id, isFavorite, favoriteStatus]);
 
-  const handleToggleFavorite = (e) => {
+  const handleToggleFavorite = async (e) => {
     e.preventDefault();
     e.stopPropagation(); // 停止事件冒泡，防止觸發父元素的連結
 
@@ -65,29 +70,60 @@ const ProductCard = ({ data }) => {
 
     // 根據商品是否已收藏來決定執行的操作
     if (isFavorite) {
-      // 如果已收藏，則移除收藏
-      if (favoriteStatus.favoriteItem?.id) {
-        dispatch(removeFromFavorites(favoriteStatus.favoriteItem.id));
+      try {
+        // 從 Redux store 中獲取所有收藏項目
+        const state = store.getState();
+        const allFavorites = state.favorites.favoritesData.products || [];
+        
+        // 找到所有相同產品的收藏項目
+        const sameProductFavorites = allFavorites.filter(
+          favorite => favorite.productId === data.id
+        );
+
+        // 刪除所有相同產品的收藏項目
+        for (const favorite of sameProductFavorites) {
+          await dispatch(removeFromFavorites(favorite.id)).unwrap();
+        }
+
         toastAlert({
           icon: "success",
           title: "已從收藏中移除",
         });
+      } catch (error) {
+        console.error("移除收藏失敗:", error);
+        toastAlert({
+          icon: "error",
+          title: "移除收藏失敗，請稍後再試",
+        });
       }
     } else {
       // 如果未收藏，則添加到收藏
+      // 從商品數據中獲取顏色和尺寸
+      const selectedColor = data.color?.[0] || ""; // 使用第一個可用顏色
+      const selectedSize = data.size?.[0] || ""; // 使用第一個可用尺寸
+
       dispatch(
         addToFavorites({
           productId: data.id,
           qty: 1,
-          // 可以從商品數據中獲取顏色和尺寸，如果有的話
-          color: data.color || "",
-          size: data.size || "",
+          color: selectedColor,
+          size: selectedSize,
         })
-      );
-      toastAlert({
-        icon: "success",
-        title: "已加入收藏",
-      });
+      )
+        .unwrap()
+        .then(() => {
+          toastAlert({
+            icon: "success",
+            title: "已加入收藏",
+          });
+        })
+        .catch((error) => {
+          console.error("加入收藏失敗:", error);
+          toastAlert({
+            icon: "error",
+            title: "加入收藏失敗，請稍後再試",
+          });
+        });
     }
   };
 
@@ -185,9 +221,7 @@ const ProductCard = ({ data }) => {
           <div className="mobile-favorite-container">
             <button
               type="button"
-              className={`btn favorite-button ${
-                isFavorite ? "isLike" : ""
-              }`}
+              className={`btn favorite ${isFavorite ? "isLike" : ""}`}
               onClick={handleToggleFavorite} // 這裡已包含 preventDefault 和 stopPropagation
             >
               <svg
@@ -195,7 +229,7 @@ const ProductCard = ({ data }) => {
                 width="17"
                 height="17"
                 fill="currentColor"
-                className="bi bi-heart heartIcon-button"
+                className="bi bi-heart heartIcon"
                 viewBox="0 0 16 16"
               >
                 <path
@@ -212,7 +246,7 @@ const ProductCard = ({ data }) => {
             <button
               type="button"
               className={`btn favorite ${isFavorite ? "isLike" : ""}`}
-              onClick={handleToggleFavorite} // 這裡已包含 preventDefault 和 stopPropagation
+              onClick={handleToggleFavorite}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

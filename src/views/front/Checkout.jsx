@@ -78,6 +78,7 @@ export default function Checkout() {
 
   return (
     <>
+      <title>結帳資訊</title>
       <FrontHeader defaultType={'light'} />
       <main>
         <div className="pt-5 pb-10 pt-md-12 pb-md-30">

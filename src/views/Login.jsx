@@ -317,12 +317,8 @@ export default function Login() {
         <main className="bg-nature-99">
           <div className="container py-5 mt-10 mb-10">
             <div className="row justify-content-center">
-              <div
-                className="col-md-6"
-                style={{ width: "100%", maxWidth: "470px" }}
-              >
-                <div className="card bg-white">
-                  {/* 頁籤導航 */}
+              <div className="col-md-6 login_col">
+                <div className="card Login__card">
                   <div className="card-header p-0">
                     <ul className="nav nav-tabs w-100">
                       {Object.entries(TABS).map(([key, tab]) => (
@@ -340,8 +336,7 @@ export default function Login() {
                     </ul>
                   </div>
 
-                  {/* 表單內容 */}
-                  <div className="card-body">
+                  <div className="card-body Login__card-body">
                     <div className="tab-content bg-white">
                       {/* 登入表單 */}
                       {activeTab === TABS.LOGIN && !showForgotPassword && (

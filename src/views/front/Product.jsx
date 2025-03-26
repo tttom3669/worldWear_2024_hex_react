@@ -96,15 +96,29 @@ export default function Product() {
         setIsPostFavoritesLoding(false)
         return
       }
-      const cartData = {
+
+      const favoriteData = {
         userId: user.id,
-        ...cart
+        productId: productId,
+        qty: cart.qty,
+        color: cart.color,
+        size: cart.size
       }
-      await axios.post(`${API_PATH}/favorites`, cartData)
+
+      await axios.post(`${API_PATH}/favorites`, favoriteData)
       toastAlert({ icon: 'success', title: '已將商品加入收藏' })
       setIsPostFavoritesLoding(false)
     } catch (error) {
-      console.log(error)
+      console.error('收藏錯誤詳情:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      toastAlert({ 
+        icon: 'error', 
+        title: error.response?.data?.message || '操作失敗，請稍後再試' 
+      })
+      setIsPostFavoritesLoding(false)
     }
   }
 
@@ -122,6 +136,7 @@ export default function Product() {
 
   return (
     <>
+      <title>{product.title}</title>
       <FrontHeader defaultType={'light'} />
       <main className="mb-20 product container">
         <div className="row justify-content-center">

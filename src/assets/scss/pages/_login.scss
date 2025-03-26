@@ -8,9 +8,51 @@ $white: #ffffff;                   // 白色背景
 
 // 使用屬性選擇器和後代選擇器提高特異性
 html body {
-  // 提高選擇器特異性，確保不被Bootstrap覆蓋
+  // 調整容器和卡片的基本樣式
+  .login_main {
+    min-height: calc(100vh - 200px);
+  }
+
+  .login_container {
+    padding: 2rem 0;
+  }
+
+  .login_row {
+    margin: 0;
+  }
+
+  .login_col {
+    padding: 0 15px;
+    width: 100%;
+    max-width: 470px;
+    margin: 0 auto;
+  }
+
+  // 卡片容器樣式
+  .Login__card {
+    width: 100%; // 預設寬度為 100%
+    max-width: 470px; // 最大寬度限制
+    margin: 0 auto;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    height: auto; // 高度自適應內容
+    overflow: visible; // 允許內容溢出
+  }
+
+  // 卡片內容區域
+  .Login__card-body {
+    padding: 1rem;
+    height: auto;
+    width: 100%; 
+    box-sizing: border-box;
+    overflow: visible; // 允許內容溢出
+    background-color: $white; // 添加白色背景
+  }
+
   .nav-tabs.w-100 {
     border-bottom: none;
+    width: 100%; 
     
     .nav-item.w-50 {
       text-align: center;
@@ -21,6 +63,7 @@ html body {
         padding: 1rem 0;
         transition: color $animation-duration ease, background-color $animation-duration ease, border-top $animation-duration ease;
         border-top: 3px solid transparent;
+        width: 100%; // 確保按鈕不會超出容器
         
         // 未選中狀態，強制指定顏色
         &.inactive {
@@ -45,13 +88,130 @@ html body {
   }
 
   // 提高內容區域的選擇器特異性
-  div.tab-content.bg-white {
-    div.tab-pane.fade {
+  .tab-content.bg-white {
+    width: 100%; // 確保內容不會超出卡片
+    box-sizing: border-box; // 確保padding不會增加總寬度
+    height: auto; // 高度自適應內容
+    
+    .tab-pane.fade {
       padding: 1rem 0;
       transition: opacity $animation-duration linear, transform $animation-duration ease;
+      width: 100%; // 確保內容不會超出卡片
+      height: auto; // 高度自適應內容
       
       &.show.active {
         animation: tab-fade-in $animation-duration;
+      }
+    }
+  }
+}
+
+// RWD 斷點設定
+@media (max-width: 576px) {
+  html body {
+    .login_main {
+      min-height: calc(100vh - 200px);
+      padding-bottom: 40px; // 與 footer 保持 40px 間距
+    }
+
+    .login_container {
+      padding: 1rem 0;
+      height: auto; // 高度自適應內容
+    }
+
+    .login_row {
+      margin: 0;
+      height: auto; // 高度自適應內容
+    }
+
+    .login_col {
+      padding: 0 10px;
+      height: auto; // 高度自適應內容
+      max-width: 100%; // 在小螢幕時移除最大寬度限制
+    }
+
+    .Login__card {
+      width: 100%; // 在小螢幕時改為 100% 寬度
+      max-width: 100%; // 移除最大寬度限制
+      margin: 0 auto;
+      height: auto; // 高度自適應內容
+      overflow: visible; // 允許內容溢出
+    }
+
+    .Login__card-body {
+      padding: 0.75rem;
+      height: auto; // 高度自適應內容
+      overflow: visible; // 允許內容溢出
+      background-color: $white; // 添加白色背景
+    }
+
+    .nav-link {
+      padding: 0.75rem 0;
+      font-size: 0.9rem;
+    }
+
+    .tab-content.bg-white {
+      width: 100%;
+      height: auto;
+      
+      .tab-pane.fade {
+        padding: 0.75rem 0;
+        height: auto;
+      }
+    }
+  }
+}
+
+@media (max-width: 375px) {
+  html body {
+    .login_main {
+      min-height: calc(100vh - 200px);
+      margin-bottom: 40px;
+    }
+
+    .login_container {
+      padding: 0.5rem 0;
+      height: auto; // 高度自適應內容
+    }
+
+    .login_row {
+      margin: 0;
+      height: auto; // 高度自適應內容
+    }
+
+    .login_col {
+      padding: 0 5px;
+      height: auto; // 高度自適應內容
+      max-width: 100%; // 在小螢幕時移除最大寬度限制
+    }
+
+    .Login__card {
+      width: 100%; // 在小螢幕時改為 100% 寬度
+      max-width: 100%; // 移除最大寬度限制
+      margin: 0 auto;
+      height: auto; // 高度自適應內容
+      overflow: visible; // 允許內容溢出
+    }
+
+    .Login__card-body {
+      padding: 0.5rem;
+      height: auto; // 高度自適應內容
+      overflow: visible; // 允許內容溢出
+      background-color: $white; // 添加白色背景
+    }
+
+    .nav-link {
+      padding: 0.5rem 0;
+      font-size: 0.85rem;
+    }
+
+    .tab-content.bg-white {
+      width: 100%;
+      height: auto;
+      
+      .tab-pane.fade {
+        padding: 0.5rem 0;
+        height: auto;
       }
     }
   }

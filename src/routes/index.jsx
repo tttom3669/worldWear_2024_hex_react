@@ -15,6 +15,10 @@ import Product from '../views/front/Product.jsx';
 import UserFavorites from '../views/front/user/UserFavorites.jsx';
 import UserInfo from '../views/front/user/UserInfo.jsx';
 import Search from '../views/front/Search.jsx';
+import AdminUsers from '../views/admin/AdminUsers.jsx';
+import AdminProducts from '../views/admin/AdminProducts.jsx';
+import AdminOrders from '../views/admin/AdminOrders.jsx';
+import AdminCoupons from '../views/admin/AdminCoupons.jsx';
 
 const routes = [
   {
@@ -110,11 +114,23 @@ const routes = [
         index: true,
         element: <AdminHome />,
       },
-      //   path: '"users',
-      //   path: 'products',
-      //   path: 'orders',
-      //   path: 'coupons',
-      //   path: 'products',
+
+      {
+        path: 'products',
+        element: <AdminProducts />,
+      },
+      {
+        path: 'users',
+        element: <AdminUsers />,
+      },
+      {
+        path: 'orders',
+        element: <AdminOrders />,
+      },
+      {
+        path: 'coupons',
+        element: <AdminCoupons />,
+      },
     ],
   },
   {
