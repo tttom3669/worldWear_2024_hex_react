@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import axios from 'axios';
 import useSwal from '../../hooks/useSwal';
+import { asyncGetCarts } from '../../slice/cartsSlice';
 
 // Import Swiper React components
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -23,7 +24,9 @@ export default function Product() {
   const navigate = useNavigate();
   const { toastAlert } = useSwal();
   const { id: productId } = useParams();
+  const dispatch = useDispatch();
   const user = useSelector(state => state.authSlice.user);
+  const carts = useSelector((state) => state.carts.cartsData);
   const [product, setProduct] = useState({});
   const [isPostCartLoding, setIsPostCartLoding] = useState(false);
   const [isPostFavoritesLoding, setIsPostFavoritesLoding] = useState(false);
@@ -80,6 +83,18 @@ export default function Product() {
     }));
   };
 
+  const findCartItemId = (item) => {
+    const match = carts.products.find(cartItem => {
+      return (
+        cartItem.productId === item.productId &&
+        cartItem.color === item.color &&
+        cartItem.size === item.size
+      );
+    });
+  
+    return match ? match : null;
+  }
+
   const postCarts = async () => {
     try { 
       setIsPostCartLoding(true)
@@ -101,9 +116,18 @@ export default function Product() {
         userId: user.id,
         ...cart
       }
-      await axios.post(`${API_PATH}/carts`, cartData)
+      const matchData = findCartItemId(cart);
+
+      if (matchData) {
+        const qty = matchData.qty + cart.qty;
+        await axios.patch(`${API_PATH}/carts/${matchData.id}`, {qty: qty});
+      } else {
+        await axios.post(`${API_PATH}/carts`, cartData);
+      }
+      
       toastAlert({ icon: 'success', title: '已將商品加入購物車' });
-      setIsPostCartLoding(false)
+      dispatch(asyncGetCarts());
+      setIsPostCartLoding(false);
     } catch (error) {
       console.log(error)
     }
