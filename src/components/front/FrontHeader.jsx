@@ -12,6 +12,7 @@ import {
   asyncGetCarts,
   cartsData as sliceCartsData,
 } from '../../slice/cartsSlice';
+import axios from 'axios';
 function FrontHeader({ defaultType }) {
   const getImgUrl = useImgUrl();
   const dispatch = useDispatch();
@@ -104,6 +105,24 @@ function FrontHeader({ defaultType }) {
       navigate('/');
     }
   };
+
+  // useEffect(() => {
+  //   // 在 Axios 攔截器中處理
+  //   axios.interceptors.response.use(
+  //     (response) => response,
+  //     (error) => {
+  //       // 在某些需要 token 的情况下，取到舊 Token ，造成取資料錯誤
+  //       // Request failed with status code 401
+  //       if (error.response && error.response.status === 401) {
+  //         //   登出程式碼
+  //         dispatch(logoutUser()).unwrap();
+  //         // 導入登入頁面
+  //         navigate('/login');
+  //       }
+  //       return Promise.reject(error);
+  //     }
+  //   );
+  // }, []);
 
   return (
     <>

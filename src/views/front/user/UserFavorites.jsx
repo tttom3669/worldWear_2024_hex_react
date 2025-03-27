@@ -102,28 +102,28 @@ export default function UserFavorites() {
     : processGroupedFavorites(favoritesData);
 
   // 修改 handleUpdateQuantity 函數
-  const handleUpdateQuantity = async (favoriteId, productId, newQty) => {
+  const handleUpdateQuantity = async (favoriteId, productId, newQty, favorite) => {
     // 確保數量不小於 1
     if (newQty < 1) return;
-
+  
     try {
       // 處理預設商品的情況
       if (favoriteId.startsWith("default_")) {
         handleDemoAction("update");
         return;
       }
-
+  
       // 找到所有相同規格的項目
       const groupedItems = favoritesData.filter(
         item => item.productId === productId && 
                 item.color === favorite.color && 
                 item.size === favorite.size
       );
-
+  
       // 計算需要更新的數量
       const totalQty = groupedItems.reduce((sum, item) => sum + (item.qty || 1), 0);
       const qtyDiff = newQty - totalQty;
-
+  
       // 如果數量增加，更新第一個項目
       if (qtyDiff > 0) {
         await dispatch(
@@ -587,7 +587,8 @@ export default function UserFavorites() {
                                         handleUpdateQuantity(
                                           favorite.id,
                                           favorite.productId,
-                                          (favorite.qty || 1) - 1
+                                          (favorite.qty || 1) - 1,
+                                          favorite
                                         )
                                       }
                                       disabled={(favorite.qty || 1) <= 1}
@@ -617,7 +618,8 @@ export default function UserFavorites() {
                                         handleUpdateQuantity(
                                           favorite.id,
                                           favorite.productId,
-                                          (favorite.qty || 1) + 1
+                                          (favorite.qty || 1) + 1,
+                                          favorite
                                         )
                                       }
                                     >

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useSwal from '../../hooks/useSwal';
 import { useDispatch } from 'react-redux';
-import { setCartsData } from '../../slice/cartsSlice';
+import { cartsData, setCartsData } from '../../slice/cartsSlice';
 import ScreenLoading from '../../components/front/ScreenLoading';
 import FrontHeader from '../../components/front/FrontHeader';
 import CartFlow from '../../components/front/CartFlow';
@@ -128,6 +128,7 @@ export default function Cart() {
 
   return (
     <>
+      <title>購物車 - WorldWear</title>
       <FrontHeader defaultType={'light'} />
       <main>
         <div className="pt-5 pb-10 pt-md-12 pb-md-30">
@@ -304,13 +305,6 @@ export default function Cart() {
                       <div className="fw-bold fs-h5 text-center my-4 mt-10 mb-md-20">
                         購物車中未有商品
                       </div>
-
-                      {/* <ReactLoading
-                        type={type}
-                        color={color}
-                        height={'20%'}
-                        width={'20%'}
-                      /> */}
                     </>
                   )}
                 </div>
@@ -322,7 +316,12 @@ export default function Cart() {
                   >
                     繼續逛逛
                   </Link>
-                  <Link className="btn btn-lg btn-primary" to="/checkout">
+                  <Link
+                    className={`btn btn-lg btn-primary ${
+                      tempCartsData.length ? '' : 'disabled'
+                    }`}
+                    to="/checkout"
+                  >
                     前往結賬
                   </Link>
                 </div>
