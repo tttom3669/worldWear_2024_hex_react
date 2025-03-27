@@ -39,7 +39,6 @@ export default function Product() {
   const getProduct = useCallback(async () => {
     try {
       const { data } = await axios.get(`${API_PATH}/products/${productId}`)
-      console.log(data)
       setProduct(data)
       setCart(prevCart => ({
         ...prevCart,
@@ -97,7 +96,7 @@ export default function Product() {
         setIsPostCartLoding(false)
         return
       }
-      
+
       const cartData = {
         userId: user.id,
         ...cart
@@ -173,7 +172,6 @@ export default function Product() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      console.log('有token:', token)
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     }
   }, [])
