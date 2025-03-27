@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useSelector } from "react-redux";
 import axios from 'axios';
 import useSwal from '../../hooks/useSwal';
@@ -14,10 +14,13 @@ import 'swiper/css/pagination';
 
 import FrontHeader from '../../components/front/FrontHeader';
 import useImgUrl from '../../hooks/useImgUrl';
+import cookieUtils from "../../components/tools/cookieUtils";
+
 const { VITE_API_PATH: API_PATH } = import.meta.env;
 
 export default function Product() {
   const getImgUrl = useImgUrl();
+  const navigate = useNavigate();
   const { toastAlert } = useSwal();
   const { id: productId } = useParams();
   const user = useSelector(state => state.authSlice.user);
@@ -81,11 +84,20 @@ export default function Product() {
   const postCarts = async () => {
     try { 
       setIsPostCartLoding(true)
+
+      if (!cookieUtils.isUserLoggedIn()) {
+        toastAlert({ icon: "warning", title: "請先登入" });
+        setIsPostCartLoding(false)
+        navigate("/login");
+        return;
+      }
+
       if (!cart.color || !cart.size) {
         toastAlert({ icon: 'error', title: '請先選取商品顏色和尺寸' })
         setIsPostCartLoding(false)
         return
       }
+      
       const cartData = {
         userId: user.id,
         ...cart
@@ -101,6 +113,14 @@ export default function Product() {
   const postFavorites = async () => {
     try { 
       setIsPostFavoritesLoding(true)
+
+      if (!cookieUtils.isUserLoggedIn()) {
+        toastAlert({ icon: "warning", title: "請先登入" });
+        setIsPostFavoritesLoding(false)
+        navigate("/login");
+        return;
+      }
+
       if (!cart.color || !cart.size) {
         toastAlert({ icon: 'error', title: '請先選取商品顏色和尺寸' })
         setIsPostFavoritesLoding(false)
