@@ -41,42 +41,6 @@ export default function UserFavorites() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // 預設商品資料 - 只在沒有實際收藏時顯示
-  const defaultItems = [
-    {
-      id: "default_001",
-      productId: "product001",
-      qty: 1,
-      color: "白色",
-      size: "XL",
-      product: {
-        id: "product001",
-        name: "法蘭絨短版襯衫",
-        price: 1280,
-        image: "https://i.meee.com.tw/wEzHrAc.jpeg",
-        color: "白色",
-        size: "XL",
-        colors: ["白色", "黑色", "紅色", "藍色", "灰色"]
-      },
-    },
-    {
-      id: "default_002",
-      productId: "product002",
-      qty: 1,
-      color: "軍綠色",
-      size: "XL",
-      product: {
-        id: "product002",
-        name: "寬版工裝短褲",
-        price: 650,
-        image: "https://i.meee.com.tw/m6YmbY2.jpg",
-        color: "軍綠色",
-        size: "XL",
-        colors: ["軍綠色", "黑色", "卡其色", "深藍色"]
-      },
-    },
-  ];
-
   // 處理相同規格的產品統計
   const processGroupedFavorites = (items) => {
     const groupedItems = items.reduce((acc, item) => {
@@ -96,10 +60,8 @@ export default function UserFavorites() {
     return Object.values(groupedItems);
   };
 
-  // 修改 displayItems 的定義
-  const displayItems = isAuthenticated && favoritesData.length === 0
-    ? defaultItems
-    : processGroupedFavorites(favoritesData);
+
+  const displayItems = isAuthenticated && processGroupedFavorites(favoritesData);
 
   // 修改 handleUpdateQuantity 函數
   const handleUpdateQuantity = async (favoriteId, productId, newQty, favorite) => {
@@ -175,7 +137,6 @@ export default function UserFavorites() {
 
       toastAlert({ icon: "success", title: "已從收藏列表中移除" });
     } catch (error) {
-      console.error("Error deleting favorite:", error);
       toastAlert({ icon: "error", title: "移除失敗，請稍後再試" });
     }
   };
@@ -266,13 +227,13 @@ export default function UserFavorites() {
           ? token.substring(7)
           : token;
       } else {
-        console.warn("未找到有效的 token，無法設置 axios 標頭");
+        // console.warn("未找到有效的 token，無法設置 axios 標頭");
       }
 
       // 如果已登入或有 token，嘗試獲取收藏列表
       if ((loggedIn || token) && !hasFetchedFavorites.current) {
         hasFetchedFavorites.current = true;
-        console.log("開始獲取收藏列表...");
+        // console.log("開始獲取收藏列表...");
 
         dispatch(getFavorites())
           .unwrap()
@@ -282,28 +243,18 @@ export default function UserFavorites() {
             setIsLoading(false);
           })
           .catch((error) => {
-            console.error("獲取收藏列表失敗:", error);
-
-            // 詳細記錄錯誤信息
-            if (error.details) {
-              console.error("詳細錯誤信息:", error.details);
-            }
+            // console.error("獲取收藏列表失敗:", error);
 
             // 顯示預設資料而不是跳轉
             setIsAuthenticated(true);
             setIsLoading(false);
           });
       } else {
-        // 用戶未登入或已嘗試過獲取列表，顯示預設資料
-        console.log(
-          loggedIn ? "已嘗試過獲取列表" : "用戶未登入",
-          "，將顯示預設資料"
-        );
         setIsAuthenticated(true);
         setIsLoading(false);
       }
     } catch (error) {
-      console.error("初始化時出錯:", error);
+      // console.error("初始化時出錯:", error);
       // 同樣在出錯時顯示預設資料
       setIsAuthenticated(true);
       setIsLoading(false);
