@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import axios from 'axios';
 
 const { VITE_API_PATH: API_PATH } = import.meta.env;
 
@@ -12,9 +12,9 @@ const STATUS_PRIORITY = {
 
 // slug 到資料庫值的映射
 const STATUS_SLUG_TO_DB = {
-  "in-stock": "現貨",
-  "pre-order": "預購",
-  restocking: "補貨中",
+  'in-stock': '現貨',
+  'pre-order': '預購',
+  restocking: '補貨中',
 };
 
 // 通用的狀態優先排序比較器
@@ -61,10 +61,10 @@ const filterProductsByCategories = (products, filters) => {
 
   const filteredProducts = products.filter((product) =>
     Object.entries(filters).every(([category, selectedLabels]) => {
-      const isSelectAll = selectedLabels.includes("全部");
+      const isSelectAll = selectedLabels.includes('全部');
 
       // 特殊處理狀態篩選 - 將 slug 轉換為資料庫值
-      if (category === "productStatus") {
+      if (category === 'productStatus') {
         // 如果選擇了「全部」或沒有選擇任何狀態，不進行過濾
         if (isSelectAll || selectedLabels.length === 0) {
           return true;
@@ -80,7 +80,7 @@ const filterProductsByCategories = (products, filters) => {
       }
 
       // 處理類別篩選 - 檢查是否是類別篩選
-      if (category === "categoryItems") {
+      if (category === 'categoryItems') {
         // 如果選擇了「全部」或沒有選擇任何類別項目，不進行過濾
         if (isSelectAll || selectedLabels.length === 0) {
           return true;
@@ -120,18 +120,18 @@ const sortProductsBy = (products, sortOption) => {
 
 // 解析類別路徑，支持多選細項類別
 const parseCategoryPath = (categoryPath, productCategories) => {
-  if (!categoryPath || !categoryPath.includes("/")) {
+  if (!categoryPath || !categoryPath.includes('/')) {
     return null;
   }
 
-  const pathParts = categoryPath.split("/");
+  const pathParts = categoryPath.split('/');
   const params = new URLSearchParams();
 
   // 處理性別 (men/women)
-  if (pathParts[0] === "men" || pathParts[0] === "women") {
+  if (pathParts[0] === 'men' || pathParts[0] === 'women') {
     const genderType = pathParts[0];
-    const classValue = genderType === "men" ? "男裝" : "女裝";
-    params.append("class", classValue);
+    const classValue = genderType === 'men' ? '男裝' : '女裝';
+    params.append('class', classValue);
 
     // 處理主類別
     if (pathParts.length >= 2) {
@@ -146,11 +146,11 @@ const parseCategoryPath = (categoryPath, productCategories) => {
         );
 
         if (mainCategory) {
-          params.append("category", mainCategory.title);
+          params.append('category', mainCategory.title);
 
           // 處理子類別 (可能有多個，用逗號分隔)
           if (pathParts.length >= 3) {
-            const subCategoryTypes = pathParts[2].split(",");
+            const subCategoryTypes = pathParts[2].split(',');
 
             // 如果只有一個子類別，直接添加
             if (subCategoryTypes.length === 1) {
@@ -159,7 +159,7 @@ const parseCategoryPath = (categoryPath, productCategories) => {
               );
 
               if (subCategory) {
-                params.append("categoryItems", subCategory.title);
+                params.append('categoryItems', subCategory.title);
               }
             }
             // 如果有多個子類別，將它們作為過濾條件添加
@@ -176,10 +176,10 @@ const parseCategoryPath = (categoryPath, productCategories) => {
 
               // 先添加主類別，稍後在請求處理中處理多個子類別
               if (subCategoryTitles.length > 0) {
-                params.append("category", mainCategory.title);
+                params.append('category', mainCategory.title);
                 // 使用自定義參數傳遞多個子類別標題
                 params.append(
-                  "multiSubCategories",
+                  'multiSubCategories',
                   JSON.stringify(subCategoryTitles)
                 );
               }
@@ -195,7 +195,7 @@ const parseCategoryPath = (categoryPath, productCategories) => {
 
 // 異步獲取產品 Thunk
 export const fetchProducts = createAsyncThunk(
-  "productsList/fetchProducts",
+  'productsList/fetchProducts',
   async (categoryParams, { rejectWithValue, getState }) => {
     try {
       // 從 Redux 狀態中獲取分類數據
@@ -204,10 +204,10 @@ export const fetchProducts = createAsyncThunk(
 
       // 如果有傳入分類參數
       if (categoryParams) {
-        console.log("傳入的分類參數:", categoryParams); // 輸出除錯用
+        console.log('傳入的分類參數:', categoryParams); // 輸出除錯用
 
         // 處理包含子類別的路徑，包括多選的情況
-        if (categoryParams.includes("/")) {
+        if (categoryParams.includes('/')) {
           const parsedParams = parseCategoryPath(
             categoryParams,
             productCategories
@@ -218,10 +218,10 @@ export const fetchProducts = createAsyncThunk(
           }
         }
         // 檢查是否為主分類 (men 或 women)
-        else if (categoryParams === "men" || categoryParams === "women") {
+        else if (categoryParams === 'men' || categoryParams === 'women') {
           // 將 men/women 轉換為對應的 "男裝"/"女裝"
-          const classValue = categoryParams === "men" ? "男裝" : "女裝";
-          params.append("class", classValue);
+          const classValue = categoryParams === 'men' ? '男裝' : '女裝';
+          params.append('class', classValue);
         }
       }
 
@@ -229,13 +229,13 @@ export const fetchProducts = createAsyncThunk(
       const apiUrl = params.toString()
         ? `${API_PATH}/products?${params.toString()}`
         : `${API_PATH}/products`;
-      console.log("API 請求 URL:", apiUrl); // 輸出除錯用
+      console.log('API 請求 URL:', apiUrl); // 輸出除錯用
 
       // 發送請求獲取資料
       const { data } = await axios.get(apiUrl);
 
       // 如果有多個子類別，在前端進行過濾
-      const multiSubCategories = params.get("multiSubCategories");
+      const multiSubCategories = params.get('multiSubCategories');
       if (multiSubCategories) {
         const subCategoryTitles = JSON.parse(multiSubCategories);
 
@@ -249,8 +249,8 @@ export const fetchProducts = createAsyncThunk(
     } catch (error) {
       // 改進錯誤處理: 提供更詳細的錯誤信息
       const errorMsg =
-        error.response?.data?.message || error.message || "取得產品失敗";
-      console.error("取得產品錯誤:", errorMsg);
+        error.response?.data?.message || error.message || '取得產品失敗';
+      console.error('取得產品錯誤:', errorMsg);
       return rejectWithValue(errorMsg);
     }
   }
@@ -260,9 +260,9 @@ export const fetchProducts = createAsyncThunk(
 const initialState = {
   items: [], // 原始產品列表
   filteredItems: [], // 篩選後的產品列表
-  status: "idle", // 請求狀態
+  status: 'idle', // 請求狀態
   error: null, // 錯誤信息
-  sortOption: "最新上架", // 默認排序方式
+  sortOption: '最新上架', // 默認排序方式
   currentPage: 1, // 當前頁碼
   filters: {}, // 篩選條件
   currentCategory: null, // 當前分類
@@ -270,7 +270,7 @@ const initialState = {
 
 // 創建產品列表 Slice
 const productsListSlice = createSlice({
-  name: "productsList",
+  name: 'productsList',
   initialState,
   reducers: {
     // 設置當前分類
@@ -279,7 +279,7 @@ const productsListSlice = createSlice({
       // 清空之前的商品列表，避免顯示上一次的資料
       state.items = [];
       state.filteredItems = [];
-      state.status = "idle";
+      state.status = 'idle';
     },
 
     // 排序 Action
@@ -291,7 +291,8 @@ const productsListSlice = createSlice({
         state.items,
         state.filters
       );
-      state.filteredItems = sortProductsBy(filteredProducts, action.payload);
+      const sortedProducts = sortProductsBy(filteredProducts, action.payload);
+      state.filteredItems = sortedProducts;
     },
 
     // 篩選 Action
@@ -331,16 +332,21 @@ const productsListSlice = createSlice({
       updateFavoriteStatus(state.items);
       updateFavoriteStatus(state.filteredItems);
     },
+
+    // 儲存產品
+    setFilterProducts: (state, action) => {
+      state.filteredItems = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchProducts.pending, (state) => {
-        state.status = "loading";
+        state.status = 'loading';
         // 重置錯誤信息
         state.error = null;
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
-        state.status = "succeeded";
+        state.status = 'succeeded';
         // 為每個產品添加收藏屬性
         state.items = action.payload.map((product) => ({
           ...product,
@@ -353,8 +359,8 @@ const productsListSlice = createSlice({
         );
       })
       .addCase(fetchProducts.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload || "發生未知錯誤";
+        state.status = 'failed';
+        state.error = action.payload || '發生未知錯誤';
         // 確保在錯誤情況下仍有有效的初始狀態
         if (!state.items.length) {
           state.items = [];
@@ -372,6 +378,7 @@ export const {
   toggleFavorite,
   resetFilters,
   setCurrentCategory,
+  setFilterProducts,
 } = productsListSlice.actions;
 
 export default productsListSlice.reducer;
