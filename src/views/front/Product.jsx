@@ -1,32 +1,47 @@
-import { useEffect, useState, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
-import { useSelector } from "react-redux";
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from "react-redux";
 import axios from 'axios';
 import useSwal from '../../hooks/useSwal';
+import { asyncGetCarts } from '../../slice/cartsSlice';
+
+// Import Swiper React components
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Pagination } from 'swiper/modules';
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 import FrontHeader from '../../components/front/FrontHeader';
 import useImgUrl from '../../hooks/useImgUrl';
+import cookieUtils from "../../components/tools/cookieUtils";
+
 const { VITE_API_PATH: API_PATH } = import.meta.env;
 
 export default function Product() {
   const getImgUrl = useImgUrl();
+  const navigate = useNavigate();
   const { toastAlert } = useSwal();
   const { id: productId } = useParams();
+  const dispatch = useDispatch();
   const user = useSelector(state => state.authSlice.user);
-  const [product, setProduct] = useState({})
-  const [isPostCartLoding, setIsPostCartLoding] = useState(false)
-  const [isPostFavoritesLoding, setIsPostFavoritesLoding] = useState(false)
+  const carts = useSelector((state) => state.carts.cartsData);
+  const [product, setProduct] = useState({});
+  const [isPostCartLoding, setIsPostCartLoding] = useState(false);
+  const [isPostFavoritesLoding, setIsPostFavoritesLoding] = useState(false);
   const [cart, setCart] = useState({
     qty: 1,
     color: "",
     size: "",
     productId: ""
-  })
+  });
+  const [popularProducts, setPopularProducts] = useState([]);
+  const swiperRefs = useRef({});
 
   const getProduct = useCallback(async () => {
     try {
       const { data } = await axios.get(`${API_PATH}/products/${productId}`)
-      console.log(data)
       setProduct(data)
       setCart(prevCart => ({
         ...prevCart,
@@ -68,21 +83,51 @@ export default function Product() {
     }));
   };
 
+  const findCartItemId = (item) => {
+    const match = carts.products.find(cartItem => {
+      return (
+        cartItem.productId === item.productId &&
+        cartItem.color === item.color &&
+        cartItem.size === item.size
+      );
+    });
+  
+    return match ? match : null;
+  }
+
   const postCarts = async () => {
     try { 
       setIsPostCartLoding(true)
+
+      if (!cookieUtils.isUserLoggedIn()) {
+        toastAlert({ icon: "warning", title: "請先登入" });
+        setIsPostCartLoding(false)
+        navigate("/login");
+        return;
+      }
+
       if (!cart.color || !cart.size) {
         toastAlert({ icon: 'error', title: '請先選取商品顏色和尺寸' })
         setIsPostCartLoding(false)
         return
       }
+
       const cartData = {
         userId: user.id,
         ...cart
       }
-      await axios.post(`${API_PATH}/carts`, cartData)
+      const matchData = findCartItemId(cart);
+
+      if (matchData) {
+        const qty = matchData.qty + cart.qty;
+        await axios.patch(`${API_PATH}/carts/${matchData.id}`, {qty: qty});
+      } else {
+        await axios.post(`${API_PATH}/carts`, cartData);
+      }
+      
       toastAlert({ icon: 'success', title: '已將商品加入購物車' });
-      setIsPostCartLoding(false)
+      dispatch(asyncGetCarts());
+      setIsPostCartLoding(false);
     } catch (error) {
       console.log(error)
     }
@@ -91,6 +136,14 @@ export default function Product() {
   const postFavorites = async () => {
     try { 
       setIsPostFavoritesLoding(true)
+
+      if (!cookieUtils.isUserLoggedIn()) {
+        toastAlert({ icon: "warning", title: "請先登入" });
+        setIsPostFavoritesLoding(false)
+        navigate("/login");
+        return;
+      }
+
       if (!cart.color || !cart.size) {
         toastAlert({ icon: 'error', title: '請先選取商品顏色和尺寸' })
         setIsPostFavoritesLoding(false)
@@ -122,14 +175,27 @@ export default function Product() {
     }
   }
 
+  const handleNextSlide = (swiperSlug) => {
+    swiperRefs.current[swiperSlug].slideNext();
+  };
+  const handlePrevSlide = (swiperSlug) => {
+    swiperRefs.current[swiperSlug].slidePrev();
+  };
+
+  const getPopularProducts = useCallback(async () => {
+    const res = await axios.get(`${API_PATH}/products`);
+    const filterProducts = res.data.filter((product) => product.is_hot);
+    setPopularProducts(filterProducts);
+  }, []);
+
   useEffect(() => {
-    getProduct()
-  }, [getProduct])
+    getProduct();
+    getPopularProducts();
+  }, [getProduct, getPopularProducts])
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      console.log('有token:', token)
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     }
   }, [])
@@ -280,6 +346,71 @@ export default function Product() {
           </div>
         </div>
       </main>
+      <section
+        className="py-10 py-md-20 bg-nature-90"
+      >
+        <div className="container-sm">
+          <h2 className="fs-h5 fs-md-h2 fw-bold mb-6 text-center">推薦穿搭</h2>
+          <div className="swiper-container swiper__popularProducts-container">
+            <Swiper
+              className="swiper__popularProducts"
+              modules={[Pagination]}
+              slidesPerView={1.375}
+              spaceBetween={24}
+              breakpoints={{
+                576: {
+                  slidesPerGroup: 2,
+                  slidesPerView: 2,
+                },
+                768: {
+                  slidesPerGroup: 3,
+                  slidesPerView: 3,
+                },
+              }}
+              pagination={{ clickable: true }}
+              onSwiper={(swiper) => {
+                swiperRefs.current['popularProducts'] = swiper;
+              }}
+            >
+              {' '}
+              {popularProducts.map((product) => (
+                <SwiperSlide className="position-relative" key={product.id}>
+                  <img
+                    className="w-100 img-fluid object-fit-cover mb-3"
+                    src={product.imageUrl}
+                    alt={product.title}
+                  />
+                  <Link
+                    to={`/product/${product.id}`}
+                    className="stretched-link link-black"
+                  >
+                    <h3 className="d-flex flex-column gap-0 gap-md-1 tracking-sm fs-sm fs-md-base lh-base fw-normal">
+                      <span>{product.title}</span>
+                      <span>{product.categoryItems}</span>
+                    </h3>
+                  </Link>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+            <div
+              className="swiper-button-prev"
+              onClick={() => handlePrevSlide('popularProducts')}
+            >
+              <svg className="pe-none" width="18" height="32">
+                <use href={getImgUrl('/icons/prev.svg#prev')}></use>
+              </svg>
+            </div>
+            <div
+              className="swiper-button-next"
+              onClick={() => handleNextSlide('popularProducts')}
+            >
+              <svg className="pe-none" width="18" height="32">
+                <use href={getImgUrl('/icons/next.svg#next')}></use>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
     </>
   );
 }
