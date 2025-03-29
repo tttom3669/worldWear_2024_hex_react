@@ -106,13 +106,7 @@ export default function UserFavorites() {
     // 確保數量不小於 1
     if (newQty < 1) return;
   
-    try {
-      // 處理預設商品的情況
-      if (favoriteId.startsWith("default_")) {
-        handleDemoAction("update");
-        return;
-      }
-  
+    try { 
       // 找到所有相同規格的項目
       const groupedItems = favoritesData.filter(
         item => item.productId === productId && 
@@ -159,12 +153,6 @@ export default function UserFavorites() {
   // 修改 handleDeleteItem 函數
   const handleDeleteItem = async (favoriteId) => {
     try {
-      // 處理預設商品的情況
-      if (favoriteId.startsWith("default_")) {
-        handleDemoAction("delete");
-        return;
-      }
-
       if (!window.confirm("確定要移除此收藏項目嗎？")) {
         return;
       }
@@ -202,12 +190,6 @@ export default function UserFavorites() {
         return;
       }
 
-      // 處理預設商品的情況
-      if (favorite.id.startsWith("default_")) {
-        handleDemoAction("add-to-cart");
-        return;
-      }
-
       // 找到所有相同規格的項目
       const groupedItems = favoritesData.filter(
         item => item.productId === favorite.productId && 
@@ -237,12 +219,6 @@ export default function UserFavorites() {
   // 更新商品顏色
   const handleUpdateColor = async (favoriteId, newColor) => {
     try {
-      // 處理預設商品的情況
-      if (favoriteId.startsWith("default_")) {
-        handleDemoAction("update-color");
-        return;
-      }
-
       // 使用 Redux action 更新收藏顏色
       await dispatch(
         updateFavoriteItemColor({ id: favoriteId, color: newColor })
@@ -258,12 +234,6 @@ export default function UserFavorites() {
   // 更新商品尺寸
   const handleUpdateSize = async (favoriteId, newSize) => {
     try {
-      // 處理預設商品的情況
-      if (favoriteId.startsWith("default_")) {
-        handleDemoAction("update-size");
-        return;
-      }
-
       // 使用 Redux action 更新收藏尺寸
       await dispatch(
         updateFavoriteItemSize({ id: favoriteId, size: newSize })
@@ -276,64 +246,28 @@ export default function UserFavorites() {
     }
   };
 
-  // 添加 token 調試函數
-  const debugTokenInfo = () => {
-    try {
-      const token = cookieUtils.getJWTToken();
-      const userId = cookieUtils.getUserIdFromCookie();
-      const isLogged = cookieUtils.isUserLoggedIn();
-
-      console.log(
-        "當前 JWT Token:",
-        token ? token.substring(0, 20) + "..." : "無"
-      );
-      console.log("Cookie 中的用戶 ID:", userId || "無");
-      console.log("是否已登入:", isLogged ? "是" : "否");
-
-      return !!token && !!userId; // 返回是否有有效 token 和 userId
-    } catch (error) {
-      console.error("檢查 token 時出錯:", error);
-      return false;
-    }
-  };
-
   // 組件初始化時檢查登入狀態並獲取收藏列表
   useEffect(() => {
-    console.log("UserFavorites 組件初始化");
     setIsLoading(true);
-
     try {
-      // 調試 token 信息
-      const hasTokenAndUserId = debugTokenInfo();
-      console.log("是否有有效 token 和 userId:", hasTokenAndUserId);
 
       // 使用 cookieUtils 直接檢查登入狀態
       const loggedIn = isUserLoggedIn();
-      console.log("用戶登入狀態:", loggedIn);
+      // console.log("用戶登入狀態:", loggedIn);
 
       // 嘗試設置 axios 的全局標頭 - 首先嘗試從不同來源獲取 token
       const token = getJWTToken();
       if (token) {
         // 嘗試直接設置全局 axios 標頭
         axios.defaults.headers.common["Authorization"] = token;
-        console.log("已設置 axios 全局標頭:", token.substring(0, 15) + "...");
 
         // 額外嘗試：檢查 token 格式是否需要特殊處理
         const rawToken = token.startsWith("Bearer ")
           ? token.substring(7)
           : token;
-        console.log("原始 token 值:", rawToken.substring(0, 10) + "...");
       } else {
         console.warn("未找到有效的 token，無法設置 axios 標頭");
       }
-
-      // 直接檢查 cookie 中的 userId 是否與預期的 ID 匹配
-      const currentUserId = getUserIdFromCookie();
-      console.log("當前用戶 ID:", currentUserId);
-      console.log(
-        "是否匹配目標 ID (Ct5HXrUgBSgTZnal_qJdU):",
-        currentUserId === "Ct5HXrUgBSgTZnal_qJdU"
-      );
 
       // 如果已登入或有 token，嘗試獲取收藏列表
       if ((loggedIn || token) && !hasFetchedFavorites.current) {
@@ -395,29 +329,6 @@ export default function UserFavorites() {
     }
   }, [favoritesStatus]);
 
-  // 處理預設商品的演示動作
-  const handleDemoAction = (action) => {
-    switch (action) {
-      case "add-to-cart":
-        toastAlert({ icon: "success", title: "演示：已加入購物車" });
-        break;
-      case "delete":
-        toastAlert({ icon: "success", title: "演示：已從收藏列表中移除" });
-        break;
-      case "update":
-        toastAlert({ icon: "success", title: "演示：已更新數量" });
-        break;
-      case "update-color":
-        toastAlert({ icon: "success", title: "演示：已更新顏色" });
-        break;
-      case "update-size":
-        toastAlert({ icon: "success", title: "演示：已更新尺寸" });
-        break;
-      default:
-        toastAlert({ icon: "info", title: "演示操作" });
-    }
-  };
-
   // 加強詳細日誌記錄
   useEffect(() => {
     console.log("當前收藏數據狀態:", {
@@ -435,12 +346,6 @@ export default function UserFavorites() {
     favoritesStatus,
     favoritesError,
   ]);
-
-  // 在 useEffect 中添加調試代碼
-  useEffect(() => {
-    console.log("收藏數據:", favoritesData);
-    console.log("顯示項目:", displayItems);
-  }, [favoritesData, displayItems]);
 
   return (
     <>
