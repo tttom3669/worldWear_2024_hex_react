@@ -6,8 +6,8 @@ import { Modal } from 'bootstrap';
 import FormTitle from '../../components/front/FormTitle';
 import useSwal from '../../hooks/useSwal';
 import ScreenLoading from '../../components/front/ScreenLoading';
-import useImgUrl from '../../hooks/useImgUrl';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import AdminPagination from '../../components/admin/AdminPagination';
 
 export default function AdminUsers() {
   const [userData, setUserData] = useState([]);
@@ -21,7 +21,6 @@ export default function AdminUsers() {
   const [tempOrderData, setTempOrderData] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const { toastAlert } = useSwal();
-  const getImgUrl = useImgUrl();
 
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -106,7 +105,7 @@ export default function AdminUsers() {
   const changeOrder = async (orderId, patchData) => {
     try {
       const res = await axios.patch(
-        `${API_PATH}/orders/${orderId}`,
+        `${API_PATH}/admin/orders/${orderId}`,
         {
           ...patchData,
         },
@@ -197,14 +196,14 @@ export default function AdminUsers() {
   return (
     <>
       <title>使用者管理 - WorldWear</title>
-      <div className="container h-100">
-        <div className="d-flex flex-column  py-10 h-100">
+      <div className="p-10 h-100">
+        <div className="d-flex flex-column h-100">
           <div className="d-flex align-items-center gap-6 mb-6">
             <h1 className="fs-h4 ">所有會員</h1>
             <div>會員總數：{filterUserData.length} 人</div>
           </div>
-          <div className="d-flex mb-6">
-            <div className="d-flex align-items-center gap-6 mb-6">
+          <div className="d-flex  w-100 mb-6">
+            <div className="d-flex  w-100 align-items-center gap-6 mb-6">
               <div className="form-floating">
                 <input
                   type="text"
@@ -318,54 +317,12 @@ export default function AdminUsers() {
               <h3 className="fs-h5 text-center py-10">未搜尋到使用者</h3>
             </>
           )}
-          {
-            <div className="d-flex justify-content-center mt-4 pagination-container mt-auto">
-              <Link
-                to={`/admin/users?page=${paginationData.currentPage - 1}`}
-                className={`btn btn-outline-primary mx-2 ${
-                  paginationData.currentPage == 1 ? 'disabled' : ''
-                }`}
-                aria-label="前一頁"
-              >
-                <svg width="10" height="19">
-                  <use href={getImgUrl('/icons/prev.svg#prev')}></use>
-                </svg>
-              </Link>
-              {paginationData.totalPage > 0 &&
-                Array.from(
-                  { length: paginationData.totalPage },
-                  (_, index) => index + 1
-                ).map((item) => (
-                  <Link
-                    key={item}
-                    to={`/admin/users?page=${item}`}
-                    className={`btn mx-1 
-                  ${
-                    paginationData.currentPage == item
-                      ? 'btn-primary'
-                      : 'btn-outline-primary'
-                  }`}
-                    aria-label={`第 ${item} 頁`}
-                  >
-                    {item}
-                  </Link>
-                ))}
-
-              <Link
-                to={`/admin/users?page=${paginationData.currentPage + 1}`}
-                className={`btn btn-outline-primary mx-2 ${
-                  paginationData.currentPage == paginationData.totalPage
-                    ? 'disabled'
-                    : ''
-                }`}
-                aria-label="下一頁"
-              >
-                <svg width="10" height="19">
-                  <use href={getImgUrl('/icons/next.svg#next')}></use>
-                </svg>
-              </Link>
-            </div>
-          }
+          {paginationData.totalPage > 0 && (
+            <AdminPagination
+              paginationData={paginationData}
+              apiPath="/admin/users"
+            />
+          )}
         </div>
       </div>
       <div
@@ -453,7 +410,7 @@ export default function AdminUsers() {
                         <th scope="col">購買項目</th>
                         <th scope="col">應付金額</th>
                         <th scope="col">是否付款</th>
-                        <th scope="col">運送狀態</th>
+                        <th scope="col">訂單狀態</th>
                         <th></th>
                       </tr>
                     </thead>
@@ -569,7 +526,7 @@ export default function AdminUsers() {
                   <div>{tempOrderData.final_total}</div>
                 </div>
                 <div className="d-flex align-items-center gap-6">
-                  <h3 className="fs-base">運送狀態</h3>
+                  <h3 className="fs-base">訂單狀態</h3>
                   <select
                     className="form-select"
                     style={{ maxWidth: '20%' }}
@@ -626,7 +583,7 @@ export default function AdminUsers() {
               <div className="form-check d-flex align-items-center justify-content-end gap-2">
                 <input
                   type="checkbox"
-                  defaultValue={tempOrderData.is_paid}
+                  checked={tempOrderData.is_paid || false}
                   className="form-check-input"
                   id="exampleCheck1"
                   onChange={(e) =>
