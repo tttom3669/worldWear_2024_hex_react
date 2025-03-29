@@ -1,22 +1,23 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useParams, useLocation, useSearchParams } from "react-router-dom";
+import { useEffect, useState, useCallback, useMemo, use } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useParams, useLocation, useSearchParams } from 'react-router-dom';
 import {
   fetchProducts,
   sortProducts,
   setCurrentPage,
   resetFilters,
   setCurrentCategory,
-} from "../../slice/productsListSlice";
-import FrontHeader from "../../components/front/FrontHeader";
-import Pagination from "../../components/layouts/Pagination";
-import ProductCard from "../../components/front/ProductCard";
-import ScreenLoading from "../../components/front/ScreenLoading";
+} from '../../slice/productsListSlice';
+import FrontHeader from '../../components/front/FrontHeader';
+import Pagination from '../../components/layouts/Pagination';
+import ProductCard from '../../components/front/ProductCard';
+import ScreenLoading from '../../components/front/ScreenLoading';
 
 import ProductAside, {
   FilterSortButton,
   SortFilter,
-} from "../../components/front/ProductAside";
+} from '../../components/front/ProductAside';
+import { getFavorites } from '../../slice/favoritesSlice';
 
 export default function ProductsList() {
   const dispatch = useDispatch();
@@ -30,9 +31,9 @@ export default function ProductsList() {
   const {
     filteredItems = [],
     items = [],
-    status = "idle",
+    status = 'idle',
     error = null,
-    sortOption = "最新上架",
+    sortOption = '最新上架',
     currentPage = 1,
     filters = {},
     currentCategory = null,
@@ -46,10 +47,10 @@ export default function ProductsList() {
     // 處理 hash 路由格式 (例如 /#/products/women/dress/long-dress)
     const hashPath = location.hash;
     if (hashPath) {
-      const path = hashPath.replace("#", "");
-      const pathSegments = path.split("/").filter(Boolean);
+      const path = hashPath.replace('#', '');
+      const pathSegments = path.split('/').filter(Boolean);
 
-      if (pathSegments.length >= 2 && pathSegments[0] === "products") {
+      if (pathSegments.length >= 2 && pathSegments[0] === 'products') {
         // 處理三層結構: /products/women/jacket/long-jacket
         if (pathSegments.length >= 4) {
           return `${pathSegments[1]}/${pathSegments[2]}/${pathSegments[3]}`;
@@ -88,17 +89,17 @@ export default function ProductsList() {
     // 使用 currentCategory 來決定標題
     if (currentCategory) {
       // 檢查是否為頂層性別類別
-      if (currentCategory === "men") {
-        return "男裝 商品一覽";
-      } else if (currentCategory === "women") {
-        return "女裝 商品一覽";
+      if (currentCategory === 'men') {
+        return '男裝 商品一覽';
+      } else if (currentCategory === 'women') {
+        return '女裝 商品一覽';
       }
 
       // 處理包含路徑的類別
-      const pathParts = currentCategory.split("/");
+      const pathParts = currentCategory.split('/');
       if (pathParts.length > 0) {
         // 顯示性別類別
-        const gender = pathParts[0] === "men" ? "男裝" : "女裝";
+        const gender = pathParts[0] === 'men' ? '男裝' : '女裝';
 
         if (pathParts.length > 1) {
           // 有子類別，但仍只顯示主類別
@@ -109,7 +110,7 @@ export default function ProductsList() {
     }
 
     // 預設顯示
-    return "商品一覽";
+    return '商品一覽';
   }, [currentCategory]);
 
   // 使用 useEffect 獲取產品數據，根據實際路徑參數
@@ -125,9 +126,9 @@ export default function ProductsList() {
     }
 
     // 調試日誌
-    console.log("路由參數:", { gender, category, subcategory });
-    console.log("hash 路徑:", location.hash);
-    console.log("提取的實際分類:", actualCategory);
+    console.log('路由參數:', { gender, category, subcategory });
+    console.log('hash 路徑:', location.hash);
+    console.log('提取的實際分類:', actualCategory);
   }, [
     gender,
     category,
@@ -139,7 +140,7 @@ export default function ProductsList() {
 
   // 在組件初始化時，從 URL 查詢參數讀取頁碼
   useEffect(() => {
-    const pageParam = searchParams.get("page");
+    const pageParam = searchParams.get('page');
     if (pageParam) {
       const pageNumber = parseInt(pageParam, 10);
       if (!isNaN(pageNumber) && pageNumber >= 1) {
@@ -154,7 +155,7 @@ export default function ProductsList() {
     dispatch(resetFilters());
 
     // 如果 URL 中沒有 page 參數，重置頁碼到第 1 頁
-    const pageParam = searchParams.get("page");
+    const pageParam = searchParams.get('page');
     if (!pageParam) {
       dispatch(setCurrentPage(1));
     }
@@ -189,13 +190,13 @@ export default function ProductsList() {
     setShowOffcanvas((prev) => !prev);
     setShowHeader((prev) => !prev);
 
-    const headerContainer = document.getElementById("header-container");
+    const headerContainer = document.getElementById('header-container');
     if (headerContainer) {
-      headerContainer.style.display = showOffcanvas ? "block" : "none";
+      headerContainer.style.display = showOffcanvas ? 'block' : 'none';
     }
 
     // 控制 body 的滾動
-    document.body.style.overflow = showOffcanvas ? "" : "hidden";
+    document.body.style.overflow = showOffcanvas ? '' : 'hidden';
   }, [showOffcanvas]);
 
   // 計算總篩選數量
@@ -203,7 +204,7 @@ export default function ProductsList() {
     () =>
       Object.values(filters).reduce(
         (count, labels) =>
-          count + (labels.includes("全部") ? 0 : labels.length),
+          count + (labels.includes('全部') ? 0 : labels.length),
         0
       ),
     [filters]
@@ -212,20 +213,20 @@ export default function ProductsList() {
   // 在組件被卸載時確保header可見和body滾動恢復
   useEffect(() => {
     return () => {
-      const headerContainer = document.getElementById("header-container");
+      const headerContainer = document.getElementById('header-container');
       if (headerContainer) {
-        headerContainer.style.display = "block";
+        headerContainer.style.display = 'block';
       }
-      document.body.style.overflow = "";
+      document.body.style.overflow = '';
     };
   }, []);
 
   // 渲染內容
   const renderContent = () => {
-    if (status === "failed") {
+    if (status === 'failed') {
       return (
         <div className="alert alert-danger" role="alert">
-          {error || "載入產品時發生錯誤"}
+          {error || '載入產品時發生錯誤'}
         </div>
       );
     }
@@ -250,10 +251,14 @@ export default function ProductsList() {
     );
   };
 
+  useEffect(() => {
+    dispatch(getFavorites());
+  }, []);
+
   return (
     <>
       <title>
-        {`${gender === "women" ? "女裝" : "男裝"}  商品一覽 - WorldWear`}
+        {`${gender === 'women' ? '女裝' : '男裝'}  商品一覽 - WorldWear`}
       </title>
       {showHeader && <FrontHeader defaultType="light" />}
       <main className="mt-17 bg-nature-99">
@@ -293,10 +298,10 @@ export default function ProductsList() {
         </section>
 
         {/* Offcanvas */}
-        <div className={`offcanvas-wrapper ${showOffcanvas ? "show" : ""}`}>
+        <div className={`offcanvas-wrapper ${showOffcanvas ? 'show' : ''}`}>
           <div
             className={`offcanvas offcanvas-fullscreen ${
-              showOffcanvas ? "show" : ""
+              showOffcanvas ? 'show' : ''
             }`}
             tabIndex="-1"
             id="offcanvasCategoryMenu"
@@ -329,14 +334,14 @@ export default function ProductsList() {
 
           {/* Backdrop for offcanvas */}
           <div
-            className={`offcanvas-backdrop fade ${showOffcanvas ? "show" : ""}`}
+            className={`offcanvas-backdrop fade ${showOffcanvas ? 'show' : ''}`}
             onClick={toggleOffcanvas}
           ></div>
         </div>
       </main>
       <ScreenLoading
         isLoading={
-          status === "loading" || (status === "idle" && currentCategory)
+          status === 'loading' || (status === 'idle' && currentCategory)
         }
       />
     </>
