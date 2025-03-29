@@ -119,6 +119,7 @@ function FrontHeader({ defaultType }) {
   //         // 導入登入頁面
   //         navigate('/login');
   //       }
+
   //       return Promise.reject(error);
   //     }
   //   );
@@ -280,7 +281,11 @@ function FrontHeader({ defaultType }) {
                       </Link>
                     </li>
                   </ul>
-                  <ul className="navbar-nav l-menu d-lg-none header--login__item">
+                  <ul
+                    className={`navbar-nav l-menu d-lg-none header--login__item ${
+                      isLogin ? 'align-items-stretch align-items-lg-center' : ''
+                    }`}
+                  >
                     <li>
                       <Link className="nav-link l-menu__link" to="/cart">
                         購物車
@@ -380,7 +385,7 @@ function FrontHeader({ defaultType }) {
                 type="button"
                 onClick={(e) => mainMenuHandler(e)}
                 name="user"
-                className="l-menu__collapse-btn border-0 bg-transparent p-2 <%= (mode==='login' ) ? 'l-menu__collapse-btn--login' : '' %>"
+                className="l-menu__collapse-btn border-0 bg-transparent p-2"
               >
                 <div className="header--logout__item">
                   <svg className="pe-none" width="24" height="24">

@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import axios from "axios";
-import useImgUrl from "../../../hooks/useImgUrl";
-import UserAside from "../../../components/front/UserAside";
-import useSwal from "../../../hooks/useSwal";
+import React, { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import axios from 'axios';
+import useImgUrl from '../../../hooks/useImgUrl';
+import UserAside from '../../../components/front/UserAside';
+import useSwal from '../../../hooks/useSwal';
 import {
   getFavorites,
   removeFromFavorites,
@@ -12,15 +12,15 @@ import {
   addFavoriteToCart,
   updateFavoriteItemColor,
   updateFavoriteItemSize,
-} from "../../../slice/favoritesSlice";
+} from '../../../slice/favoritesSlice';
 // 導入 cookieUtils
 import cookieUtils, {
   isUserLoggedIn,
   getJWTToken,
   getUserIdFromCookie,
-} from "../../../components/tools/cookieUtils";
+} from '../../../components/tools/cookieUtils';
 import ScreenLoading from '../../../components/front/ScreenLoading';
-import ColorSelect from "../../../components/front/ColorSelect";
+import ColorSelect from '../../../components/front/ColorSelect';
 
 export default function UserFavorites() {
   const getImgUrl = useImgUrl();
@@ -34,13 +34,52 @@ export default function UserFavorites() {
     (state) => state.favorites?.favoritesData?.products || []
   );
   const favoritesStatus = useSelector(
-    (state) => state.favorites?.status || "idle"
+    (state) => state.favorites?.status || 'idle'
   );
   const favoritesError = useSelector((state) => state.favorites?.error || null);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+<<<<<<< HEAD
+=======
+  // 預設商品資料 - 只在沒有實際收藏時顯示
+  const defaultItems = [
+    {
+      id: 'default_001',
+      productId: 'product001',
+      qty: 1,
+      color: '白色',
+      size: 'XL',
+      product: {
+        id: 'product001',
+        name: '法蘭絨短版襯衫',
+        price: 1280,
+        image: 'https://i.meee.com.tw/wEzHrAc.jpeg',
+        color: '白色',
+        size: 'XL',
+        colors: ['白色', '黑色', '紅色', '藍色', '灰色'],
+      },
+    },
+    {
+      id: 'default_002',
+      productId: 'product002',
+      qty: 1,
+      color: '軍綠色',
+      size: 'XL',
+      product: {
+        id: 'product002',
+        name: '寬版工裝短褲',
+        price: 650,
+        image: 'https://i.meee.com.tw/m6YmbY2.jpg',
+        color: '軍綠色',
+        size: 'XL',
+        colors: ['軍綠色', '黑色', '卡其色', '深藍色'],
+      },
+    },
+  ];
+
+>>>>>>> dev
   // 處理相同規格的產品統計
   const processGroupedFavorites = (items) => {
     const groupedItems = items.reduce((acc, item) => {
@@ -49,7 +88,7 @@ export default function UserFavorites() {
         acc[key] = {
           ...item,
           qty: 0,
-          originalItems: []
+          originalItems: [],
         };
       }
       acc[key].qty += item.qty || 1;
@@ -60,74 +99,117 @@ export default function UserFavorites() {
     return Object.values(groupedItems);
   };
 
+<<<<<<< HEAD
 
   const displayItems = isAuthenticated && processGroupedFavorites(favoritesData);
+=======
+  // 修改 displayItems 的定義
+  const displayItems =
+    isAuthenticated && favoritesData.length === 0
+      ? defaultItems
+      : processGroupedFavorites(favoritesData);
+>>>>>>> dev
 
   // 修改 handleUpdateQuantity 函數
-  const handleUpdateQuantity = async (favoriteId, productId, newQty, favorite) => {
+  const handleUpdateQuantity = async (
+    favoriteId,
+    productId,
+    newQty,
+    favorite
+  ) => {
     // 確保數量不小於 1
     if (newQty < 1) return;
+<<<<<<< HEAD
   
     try { 
+=======
+
+    try {
+      // 處理預設商品的情況
+      if (favoriteId.startsWith('default_')) {
+        handleDemoAction('update');
+        return;
+      }
+
+>>>>>>> dev
       // 找到所有相同規格的項目
       const groupedItems = favoritesData.filter(
-        item => item.productId === productId && 
-                item.color === favorite.color && 
-                item.size === favorite.size
+        (item) =>
+          item.productId === productId &&
+          item.color === favorite.color &&
+          item.size === favorite.size
       );
-  
+
       // 計算需要更新的數量
-      const totalQty = groupedItems.reduce((sum, item) => sum + (item.qty || 1), 0);
+      const totalQty = groupedItems.reduce(
+        (sum, item) => sum + (item.qty || 1),
+        0
+      );
       const qtyDiff = newQty - totalQty;
-  
+
       // 如果數量增加，更新第一個項目
       if (qtyDiff > 0) {
         await dispatch(
-          updateFavoriteItemQuantity({ 
-            id: favoriteId, 
-            qty: (favorite.qty || 1) + qtyDiff 
+          updateFavoriteItemQuantity({
+            id: favoriteId,
+            qty: (favorite.qty || 1) + qtyDiff,
           })
         ).unwrap();
-      } 
+      }
       // 如果數量減少，從最後一個項目開始減少
       else if (qtyDiff < 0) {
         let remainingDiff = Math.abs(qtyDiff);
-        for (let i = groupedItems.length - 1; i >= 0 && remainingDiff > 0; i--) {
+        for (
+          let i = groupedItems.length - 1;
+          i >= 0 && remainingDiff > 0;
+          i--
+        ) {
           const item = groupedItems[i];
           const currentQty = item.qty || 1;
           const newItemQty = Math.max(1, currentQty - remainingDiff);
-          remainingDiff -= (currentQty - newItemQty);
-          
+          remainingDiff -= currentQty - newItemQty;
+
           await dispatch(
-            updateFavoriteItemQuantity({ 
-              id: item.id, 
-              qty: newItemQty 
+            updateFavoriteItemQuantity({
+              id: item.id,
+              qty: newItemQty,
             })
           ).unwrap();
         }
       }
     } catch (error) {
-      console.error("Error updating quantity:", error);
-      toastAlert({ icon: "error", title: "更新數量失敗，請稍後再試" });
+      console.error('Error updating quantity:', error);
+      toastAlert({ icon: 'error', title: '更新數量失敗，請稍後再試' });
     }
   };
 
   // 修改 handleDeleteItem 函數
   const handleDeleteItem = async (favoriteId) => {
     try {
+<<<<<<< HEAD
       if (!window.confirm("確定要移除此收藏項目嗎？")) {
+=======
+      // 處理預設商品的情況
+      if (favoriteId.startsWith('default_')) {
+        handleDemoAction('delete');
+        return;
+      }
+
+      if (!window.confirm('確定要移除此收藏項目嗎？')) {
+>>>>>>> dev
         return;
       }
 
       // 找到要刪除的項目
-      const favorite = favoritesData.find(item => item.id === favoriteId);
+      const favorite = favoritesData.find((item) => item.id === favoriteId);
       if (!favorite) return;
 
       // 找到所有相同規格的項目
       const groupedItems = favoritesData.filter(
-        item => item.productId === favorite.productId && 
-                item.color === favorite.color && 
-                item.size === favorite.size
+        (item) =>
+          item.productId === favorite.productId &&
+          item.color === favorite.color &&
+          item.size === favorite.size
       );
 
       // 刪除所有相同規格的項目
@@ -135,9 +217,14 @@ export default function UserFavorites() {
         await dispatch(removeFromFavorites(item.id)).unwrap();
       }
 
-      toastAlert({ icon: "success", title: "已從收藏列表中移除" });
+      toastAlert({ icon: 'success', title: '已從收藏列表中移除' });
     } catch (error) {
+<<<<<<< HEAD
       toastAlert({ icon: "error", title: "移除失敗，請稍後再試" });
+=======
+      console.error('Error deleting favorite:', error);
+      toastAlert({ icon: 'error', title: '移除失敗，請稍後再試' });
+>>>>>>> dev
     }
   };
 
@@ -146,86 +233,160 @@ export default function UserFavorites() {
     try {
       // 檢查登入狀態
       if (!isUserLoggedIn()) {
-        toastAlert({ icon: "warning", title: "請先登入" });
-        navigate("/login");
+        toastAlert({ icon: 'warning', title: '請先登入' });
+        navigate('/login');
         return;
       }
 
+<<<<<<< HEAD
+=======
+      // 處理預設商品的情況
+      if (favorite.id.startsWith('default_')) {
+        handleDemoAction('add-to-cart');
+        return;
+      }
+
+>>>>>>> dev
       // 找到所有相同規格的項目
       const groupedItems = favoritesData.filter(
-        item => item.productId === favorite.productId && 
-                item.color === favorite.color && 
-                item.size === favorite.size
+        (item) =>
+          item.productId === favorite.productId &&
+          item.color === favorite.color &&
+          item.size === favorite.size
       );
 
       // 計算總數量
-      const totalQty = groupedItems.reduce((sum, item) => sum + (item.qty || 1), 0);
+      const totalQty = groupedItems.reduce(
+        (sum, item) => sum + (item.qty || 1),
+        0
+      );
 
       // 創建一個新的購物車項目，包含總數量
       const cartItem = {
         ...favorite,
-        qty: totalQty
+        qty: totalQty,
       };
 
       // 使用 Redux action 加入購物車
       await dispatch(addFavoriteToCart(cartItem)).unwrap();
 
-      toastAlert({ icon: "success", title: "已加入購物車" });
+      toastAlert({ icon: 'success', title: '已加入購物車' });
     } catch (error) {
-      console.error("Error adding to cart:", error);
-      toastAlert({ icon: "error", title: "加入購物車失敗，請稍後再試" });
+      console.error('Error adding to cart:', error);
+      toastAlert({ icon: 'error', title: '加入購物車失敗，請稍後再試' });
     }
   };
 
   // 更新商品顏色
   const handleUpdateColor = async (favoriteId, newColor) => {
     try {
+<<<<<<< HEAD
+=======
+      // 處理預設商品的情況
+      if (favoriteId.startsWith('default_')) {
+        handleDemoAction('update-color');
+        return;
+      }
+
+>>>>>>> dev
       // 使用 Redux action 更新收藏顏色
       await dispatch(
         updateFavoriteItemColor({ id: favoriteId, color: newColor })
       ).unwrap();
-      
-      toastAlert({ icon: "success", title: "已更新顏色" });
+
+      toastAlert({ icon: 'success', title: '已更新顏色' });
     } catch (error) {
-      console.error("Error updating color:", error);
-      toastAlert({ icon: "error", title: "更新顏色失敗，請稍後再試" });
+      console.error('Error updating color:', error);
+      toastAlert({ icon: 'error', title: '更新顏色失敗，請稍後再試' });
     }
   };
 
   // 更新商品尺寸
   const handleUpdateSize = async (favoriteId, newSize) => {
     try {
+<<<<<<< HEAD
+=======
+      // 處理預設商品的情況
+      if (favoriteId.startsWith('default_')) {
+        handleDemoAction('update-size');
+        return;
+      }
+
+>>>>>>> dev
       // 使用 Redux action 更新收藏尺寸
       await dispatch(
         updateFavoriteItemSize({ id: favoriteId, size: newSize })
       ).unwrap();
-      
-      toastAlert({ icon: "success", title: "已更新尺寸" });
+
+      toastAlert({ icon: 'success', title: '已更新尺寸' });
     } catch (error) {
-      console.error("Error updating size:", error);
-      toastAlert({ icon: "error", title: "更新尺寸失敗，請稍後再試" });
+      console.error('Error updating size:', error);
+      toastAlert({ icon: 'error', title: '更新尺寸失敗，請稍後再試' });
+    }
+  };
+
+<<<<<<< HEAD
+  // 組件初始化時檢查登入狀態並獲取收藏列表
+  useEffect(() => {
+=======
+  // 添加 token 調試函數
+  const debugTokenInfo = () => {
+    try {
+      const token = cookieUtils.getJWTToken();
+      const userId = cookieUtils.getUserIdFromCookie();
+      const isLogged = cookieUtils.isUserLoggedIn();
+
+      console.log(
+        '當前 JWT Token:',
+        token ? token.substring(0, 20) + '...' : '無'
+      );
+      console.log('Cookie 中的用戶 ID:', userId || '無');
+      console.log('是否已登入:', isLogged ? '是' : '否');
+
+      return !!token && !!userId; // 返回是否有有效 token 和 userId
+    } catch (error) {
+      console.error('檢查 token 時出錯:', error);
+      return false;
     }
   };
 
   // 組件初始化時檢查登入狀態並獲取收藏列表
   useEffect(() => {
+    console.log('UserFavorites 組件初始化');
+>>>>>>> dev
     setIsLoading(true);
     try {
+<<<<<<< HEAD
 
       // 使用 cookieUtils 直接檢查登入狀態
       const loggedIn = isUserLoggedIn();
       // console.log("用戶登入狀態:", loggedIn);
+=======
+      // 調試 token 信息
+      const hasTokenAndUserId = debugTokenInfo();
+      console.log('是否有有效 token 和 userId:', hasTokenAndUserId);
+
+      // 使用 cookieUtils 直接檢查登入狀態
+      const loggedIn = isUserLoggedIn();
+      console.log('用戶登入狀態:', loggedIn);
+>>>>>>> dev
 
       // 嘗試設置 axios 的全局標頭 - 首先嘗試從不同來源獲取 token
       const token = getJWTToken();
       if (token) {
         // 嘗試直接設置全局 axios 標頭
+<<<<<<< HEAD
         axios.defaults.headers.common["Authorization"] = token;
+=======
+        axios.defaults.headers.common['Authorization'] = token;
+        console.log('已設置 axios 全局標頭:', token.substring(0, 15) + '...');
+>>>>>>> dev
 
         // 額外嘗試：檢查 token 格式是否需要特殊處理
-        const rawToken = token.startsWith("Bearer ")
+        const rawToken = token.startsWith('Bearer ')
           ? token.substring(7)
           : token;
+<<<<<<< HEAD
       } else {
         // console.warn("未找到有效的 token，無法設置 axios 標頭");
       }
@@ -234,27 +395,67 @@ export default function UserFavorites() {
       if ((loggedIn || token) && !hasFetchedFavorites.current) {
         hasFetchedFavorites.current = true;
         // console.log("開始獲取收藏列表...");
+=======
+        console.log('原始 token 值:', rawToken.substring(0, 10) + '...');
+      } else {
+        console.warn('未找到有效的 token，無法設置 axios 標頭');
+      }
+
+      // 直接檢查 cookie 中的 userId 是否與預期的 ID 匹配
+      const currentUserId = getUserIdFromCookie();
+      console.log('當前用戶 ID:', currentUserId);
+      console.log(
+        '是否匹配目標 ID (Ct5HXrUgBSgTZnal_qJdU):',
+        currentUserId === 'Ct5HXrUgBSgTZnal_qJdU'
+      );
+
+      // 如果已登入或有 token，嘗試獲取收藏列表
+      if ((loggedIn || token) && !hasFetchedFavorites.current) {
+        hasFetchedFavorites.current = true;
+        console.log('開始獲取收藏列表...');
+>>>>>>> dev
 
         dispatch(getFavorites())
           .unwrap()
           .then((result) => {
-            console.log("成功獲取收藏列表:", result);
+            console.log('成功獲取收藏列表:', result);
             setIsAuthenticated(true);
             setIsLoading(false);
           })
           .catch((error) => {
+<<<<<<< HEAD
             // console.error("獲取收藏列表失敗:", error);
+=======
+            console.error('獲取收藏列表失敗:', error);
+
+            // 詳細記錄錯誤信息
+            if (error.details) {
+              console.error('詳細錯誤信息:', error.details);
+            }
+>>>>>>> dev
 
             // 顯示預設資料而不是跳轉
             setIsAuthenticated(true);
             setIsLoading(false);
           });
       } else {
+<<<<<<< HEAD
+=======
+        // 用戶未登入或已嘗試過獲取列表，顯示預設資料
+        console.log(
+          loggedIn ? '已嘗試過獲取列表' : '用戶未登入',
+          '，將顯示預設資料'
+        );
+>>>>>>> dev
         setIsAuthenticated(true);
         setIsLoading(false);
       }
     } catch (error) {
+<<<<<<< HEAD
       // console.error("初始化時出錯:", error);
+=======
+      console.error('初始化時出錯:', error);
+>>>>>>> dev
       // 同樣在出錯時顯示預設資料
       setIsAuthenticated(true);
       setIsLoading(false);
@@ -264,25 +465,51 @@ export default function UserFavorites() {
   // 監聽 favoritesStatus 變化
   useEffect(() => {
     try {
-      setIsLoading(favoritesStatus === "loading");
+      setIsLoading(favoritesStatus === 'loading');
 
       // 如果收藏列表獲取失敗，顯示預設資料而不跳轉
-      if (favoritesStatus === "failed") {
-        console.log("收藏列表獲取失敗，將顯示預設資料");
+      if (favoritesStatus === 'failed') {
+        console.log('收藏列表獲取失敗，將顯示預設資料');
         setIsAuthenticated(true); // 設置為已認證以顯示預設資料
         setIsLoading(false);
       }
     } catch (error) {
-      console.error("處理狀態變化時出錯:", error);
+      console.error('處理狀態變化時出錯:', error);
       // 同樣在出錯時顯示預設資料
       setIsAuthenticated(true);
       setIsLoading(false);
     }
   }, [favoritesStatus]);
 
+<<<<<<< HEAD
+=======
+  // 處理預設商品的演示動作
+  const handleDemoAction = (action) => {
+    switch (action) {
+      case 'add-to-cart':
+        toastAlert({ icon: 'success', title: '演示：已加入購物車' });
+        break;
+      case 'delete':
+        toastAlert({ icon: 'success', title: '演示：已從收藏列表中移除' });
+        break;
+      case 'update':
+        toastAlert({ icon: 'success', title: '演示：已更新數量' });
+        break;
+      case 'update-color':
+        toastAlert({ icon: 'success', title: '演示：已更新顏色' });
+        break;
+      case 'update-size':
+        toastAlert({ icon: 'success', title: '演示：已更新尺寸' });
+        break;
+      default:
+        toastAlert({ icon: 'info', title: '演示操作' });
+    }
+  };
+
+>>>>>>> dev
   // 加強詳細日誌記錄
   useEffect(() => {
-    console.log("當前收藏數據狀態:", {
+    console.log('當前收藏數據狀態:', {
       isAuthenticated,
       isLoading,
       favoritesDataLength: favoritesData.length,
@@ -298,6 +525,15 @@ export default function UserFavorites() {
     favoritesError,
   ]);
 
+<<<<<<< HEAD
+=======
+  // 在 useEffect 中添加調試代碼
+  useEffect(() => {
+    console.log('收藏數據:', favoritesData);
+    console.log('顯示項目:', displayItems);
+  }, [favoritesData, displayItems]);
+
+>>>>>>> dev
   return (
     <>
       <title>收藏列表 - WorldWear</title>
@@ -319,7 +555,7 @@ export default function UserFavorites() {
                       請先登入以查看您的收藏列表
                     </div>
                     <button
-                      onClick={() => navigate("/login")}
+                      onClick={() => navigate('/login')}
                       className="btn btn-primary mt-3"
                     >
                       前往登入
@@ -328,42 +564,32 @@ export default function UserFavorites() {
                 ) : displayItems.length > 0 ? (
                   <div className="bg-white border-opacity-0 border-opacity-sm-100 border border-nature-95">
                     {/* 表格標題列（灰色背景） */}
-                    <div className="d-flex p-3 bg-nature-90">
-                      <div style={{ width: "480px" }} className="fw-bold">
-                        產品資料
-                      </div>
-                      <div style={{ width: "180px" }} className="fw-bold">
-                        規格
-                      </div>
-                      <div style={{ width: "180px" }} className="fw-bold ms-2">
-                        數量
-                      </div>
-                      <div style={{ width: "180px" }} className="fw-bold">
-                        單價
-                      </div>
-                      <div style={{ width: "180px" }} className="fw-bold">
-                        變更
-                      </div>
+                    <div className="favorite__thead d-none d-lg-flex px-3 py-2 bg-nature-90 fw-bold">
+                      <div>產品資料</div>
+                      <div>規格</div>
+                      <div>數量</div>
+                      <div>單價</div>
+                      <div>變更</div>
                     </div>
 
                     {/* 列表內容 - 使用 displayItems 包含預設資料 */}
-                    <ul className="list-unstyled m-0">
+                    <ul className="favorite__tbody list-unstyled m-0">
                       {displayItems.map((favorite) => {
-                        console.log("產品數據:", favorite.product);
+                        console.log('產品數據:', favorite.product);
                         return (
                           <li
                             key={favorite.id}
-                            className="d-flex align-items-center py-4 px-3 border-bottom border-nature-90 mt-3"
+                            className="d-flex flex-wrap align-items-center py-4 px-3 border-bottom border-nature-90 mt-3 flex-lg-nowrap"
                           >
                             {/* 產品資料欄 */}
-                            <div style={{ width: "480px" }}>
-                              <div className="d-flex align-items-center">
+                            <div className='mb-3 mb-lg-0'>
+                              <div className="d-flex align-items-start align-items-lg-center">
                                 <div
                                   className="me-3"
                                   style={{
-                                    width: "108px",
-                                    height: "108px",
-                                    overflow: "hidden",
+                                    width: '108px',
+                                    height: '108px',
+                                    overflow: 'hidden',
                                   }}
                                 >
                                   <img
@@ -371,69 +597,124 @@ export default function UserFavorites() {
                                     src={
                                       favorite.product?.imageUrl ||
                                       favorite.product?.image ||
-                                      "https://placehold.co/108x108?text=No+Image"
+                                      'https://placehold.co/108x108?text=No+Image'
                                     }
-                                    alt={favorite.product?.title || "產品圖片"}
+                                    alt={favorite.product?.title || '產品圖片'}
                                   />
                                 </div>
                                 <div className="product-title">
                                   {favorite.product?.title ||
                                     favorite.product?.name ||
-                                    "未知產品"}
+                                    '未知產品'}
                                 </div>
                               </div>
                             </div>
 
                             {/* 規格欄 */}
-                            <div style={{ width: "180px" }}>
-                              <div className="product-spec me-2">
+                            <div className='mb-3 mb-lg-0'>
+                              <div className="product-spec gap-6 w-50 w-lg-auto gap-lg-0 me-lg-2">
                                 <select
-                                  className="form-select form-select-sm mb-2"
-                                  value={favorite.color || ""}
-                                  onChange={(e) => handleUpdateColor(favorite.id, e.target.value)}
-                                  style={{ backgroundColor: "white" }}
-                                  disabled={favorite.id.startsWith("default_")}
+                                  className="form-select form-select-sm mb-3 mb-lg-2"
+                                  value={favorite.color || ''}
+                                  onChange={(e) =>
+                                    handleUpdateColor(
+                                      favorite.id,
+                                      e.target.value
+                                    )
+                                  }
+                                  style={{ backgroundColor: 'white' }}
+                                  disabled={favorite.id.startsWith('default_')}
                                 >
-                                  <option value="" style={{ backgroundColor: "white" }}>選擇顏色</option>
-                                  {favorite.product?.specs?.map((spec, index) => (
-                                    <option 
-                                      key={`${favorite.productId}-${spec.color}-${index}`} 
-                                      value={spec.color} 
-                                      style={{ backgroundColor: "white" }}
-                                    >
-                                      {spec.color}
-                                    </option>
-                                  ))}
-                                  {Array.isArray(favorite.product?.color) && favorite.product.color.map((color, index) => (
-                                    <option 
-                                      key={`${favorite.productId}-${color}-${index}`} 
-                                      value={color} 
-                                      style={{ backgroundColor: "white" }}
-                                    >
-                                      {color}
-                                    </option>
-                                  ))}
+                                  <option
+                                    value=""
+                                    style={{ backgroundColor: 'white' }}
+                                  >
+                                    選擇顏色
+                                  </option>
+                                  {favorite.product?.specs?.map(
+                                    (spec, index) => (
+                                      <option
+                                        key={`${favorite.productId}-${spec.color}-${index}`}
+                                        value={spec.color}
+                                        style={{ backgroundColor: 'white' }}
+                                      >
+                                        {spec.color}
+                                      </option>
+                                    )
+                                  )}
+                                  {Array.isArray(favorite.product?.color) &&
+                                    favorite.product.color.map(
+                                      (color, index) => (
+                                        <option
+                                          key={`${favorite.productId}-${color}-${index}`}
+                                          value={color}
+                                          style={{ backgroundColor: 'white' }}
+                                        >
+                                          {color}
+                                        </option>
+                                      )
+                                    )}
                                 </select>
                                 <select
                                   className="form-select form-select-sm"
-                                  value={favorite.size || ""}
-                                  onChange={(e) => handleUpdateSize(favorite.id, e.target.value)}
-                                  style={{ backgroundColor: "white" }}
+                                  value={favorite.size || ''}
+                                  onChange={(e) =>
+                                    handleUpdateSize(
+                                      favorite.id,
+                                      e.target.value
+                                    )
+                                  }
+                                  style={{ backgroundColor: 'white' }}
                                 >
-                                  <option value="" style={{ backgroundColor: "white" }}>選擇尺寸</option>
-                                  <option value="XS" style={{ backgroundColor: "white" }}>XS</option>
-                                  <option value="S" style={{ backgroundColor: "white" }}>S</option>
-                                  <option value="M" style={{ backgroundColor: "white" }}>M</option>
-                                  <option value="L" style={{ backgroundColor: "white" }}>L</option>
-                                  <option value="XL" style={{ backgroundColor: "white" }}>XL</option>
-                                  <option value="XXL" style={{ backgroundColor: "white" }}>XXL</option>
+                                  <option
+                                    value=""
+                                    style={{ backgroundColor: 'white' }}
+                                  >
+                                    選擇尺寸
+                                  </option>
+                                  <option
+                                    value="XS"
+                                    style={{ backgroundColor: 'white' }}
+                                  >
+                                    XS
+                                  </option>
+                                  <option
+                                    value="S"
+                                    style={{ backgroundColor: 'white' }}
+                                  >
+                                    S
+                                  </option>
+                                  <option
+                                    value="M"
+                                    style={{ backgroundColor: 'white' }}
+                                  >
+                                    M
+                                  </option>
+                                  <option
+                                    value="L"
+                                    style={{ backgroundColor: 'white' }}
+                                  >
+                                    L
+                                  </option>
+                                  <option
+                                    value="XL"
+                                    style={{ backgroundColor: 'white' }}
+                                  >
+                                    XL
+                                  </option>
+                                  <option
+                                    value="XXL"
+                                    style={{ backgroundColor: 'white' }}
+                                  >
+                                    XXL
+                                  </option>
                                 </select>
                               </div>
                             </div>
 
                             {/* 數量欄 */}
-                            <div style={{ width: "180px" }}>
-                              <div className="product-qty py-1.5 py-lg-0 ms-2">
+                            <div className='mb-3 mb-lg-0'>
+                              <div className="product-qty py-lg-0 ms-lg-2">
                                 <div className="d-flex align-items-center">
                                   <div className="btn-group me-2" role="group">
                                     <button
@@ -456,14 +737,14 @@ export default function UserFavorites() {
                                       >
                                         <use
                                           href={getImgUrl(
-                                            "/icons/minus.svg#minus"
+                                            '/icons/minus.svg#minus'
                                           )}
                                         />
                                       </svg>
                                     </button>
                                     <span
                                       className="btn border border-dark"
-                                      style={{ width: "42px", cursor: "auto" }}
+                                      style={{ width: '42px', cursor: 'auto' }}
                                     >
                                       {favorite.qty || 1}
                                     </span>
@@ -485,7 +766,9 @@ export default function UserFavorites() {
                                         height="24"
                                       >
                                         <use
-                                          href={getImgUrl("/icons/plus.svg#plus")}
+                                          href={getImgUrl(
+                                            '/icons/plus.svg#plus'
+                                          )}
                                         />
                                       </svg>
                                     </button>
@@ -495,30 +778,30 @@ export default function UserFavorites() {
                             </div>
 
                             {/* 單價欄 */}
-                            <div style={{ width: "180px" }}>
+                            <div className='d-flex align-items-center justify-content-end justify-content-lg-center'>
                               <div className="product-price">
                                 NT$
                                 {favorite.product?.price?.toLocaleString() ||
-                                  "未知"}
+                                  '未知'}
                               </div>
                             </div>
 
                             {/* 變更欄 */}
-                            <div style={{ width: "180px" }}>
+                            <div>
                               <div
                                 className="d-flex flex-column"
-                                style={{ gap: "10px" }}
+                                style={{ gap: '10px' }}
                               >
                                 <button
                                   type="button"
-                                  className="btn btn-primary w-100 text-center"
+                                  className="btn btn-primary w-100 text-center fw-bold fs-sm fs-md-base"
                                   onClick={() => handleAddToCart(favorite)}
                                 >
                                   加入購物車
                                 </button>
                                 <button
                                   type="button"
-                                  className="btn btn-nature-90 w-100 text-center"
+                                  className="btn btn-nature-90 w-100 text-center fw-bold fs-sm fs-md-base"
                                   onClick={() => handleDeleteItem(favorite.id)}
                                 >
                                   刪除
@@ -536,7 +819,7 @@ export default function UserFavorites() {
                       您的收藏列表目前沒有商品
                     </div>
                     <button
-                      onClick={() => navigate("/")}
+                      onClick={() => navigate('/')}
                       className="btn btn-primary mt-3"
                     >
                       繼續購物
