@@ -41,45 +41,6 @@ export default function UserFavorites() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-<<<<<<< HEAD
-=======
-  // 預設商品資料 - 只在沒有實際收藏時顯示
-  const defaultItems = [
-    {
-      id: 'default_001',
-      productId: 'product001',
-      qty: 1,
-      color: '白色',
-      size: 'XL',
-      product: {
-        id: 'product001',
-        name: '法蘭絨短版襯衫',
-        price: 1280,
-        image: 'https://i.meee.com.tw/wEzHrAc.jpeg',
-        color: '白色',
-        size: 'XL',
-        colors: ['白色', '黑色', '紅色', '藍色', '灰色'],
-      },
-    },
-    {
-      id: 'default_002',
-      productId: 'product002',
-      qty: 1,
-      color: '軍綠色',
-      size: 'XL',
-      product: {
-        id: 'product002',
-        name: '寬版工裝短褲',
-        price: 650,
-        image: 'https://i.meee.com.tw/m6YmbY2.jpg',
-        color: '軍綠色',
-        size: 'XL',
-        colors: ['軍綠色', '黑色', '卡其色', '深藍色'],
-      },
-    },
-  ];
-
->>>>>>> dev
   // 處理相同規格的產品統計
   const processGroupedFavorites = (items) => {
     const groupedItems = items.reduce((acc, item) => {
@@ -99,16 +60,8 @@ export default function UserFavorites() {
     return Object.values(groupedItems);
   };
 
-<<<<<<< HEAD
 
   const displayItems = isAuthenticated && processGroupedFavorites(favoritesData);
-=======
-  // 修改 displayItems 的定義
-  const displayItems =
-    isAuthenticated && favoritesData.length === 0
-      ? defaultItems
-      : processGroupedFavorites(favoritesData);
->>>>>>> dev
 
   // 修改 handleUpdateQuantity 函數
   const handleUpdateQuantity = async (
@@ -119,19 +72,8 @@ export default function UserFavorites() {
   ) => {
     // 確保數量不小於 1
     if (newQty < 1) return;
-<<<<<<< HEAD
   
     try { 
-=======
-
-    try {
-      // 處理預設商品的情況
-      if (favoriteId.startsWith('default_')) {
-        handleDemoAction('update');
-        return;
-      }
-
->>>>>>> dev
       // 找到所有相同規格的項目
       const groupedItems = favoritesData.filter(
         (item) =>
@@ -186,17 +128,7 @@ export default function UserFavorites() {
   // 修改 handleDeleteItem 函數
   const handleDeleteItem = async (favoriteId) => {
     try {
-<<<<<<< HEAD
       if (!window.confirm("確定要移除此收藏項目嗎？")) {
-=======
-      // 處理預設商品的情況
-      if (favoriteId.startsWith('default_')) {
-        handleDemoAction('delete');
-        return;
-      }
-
-      if (!window.confirm('確定要移除此收藏項目嗎？')) {
->>>>>>> dev
         return;
       }
 
@@ -219,12 +151,7 @@ export default function UserFavorites() {
 
       toastAlert({ icon: 'success', title: '已從收藏列表中移除' });
     } catch (error) {
-<<<<<<< HEAD
       toastAlert({ icon: "error", title: "移除失敗，請稍後再試" });
-=======
-      console.error('Error deleting favorite:', error);
-      toastAlert({ icon: 'error', title: '移除失敗，請稍後再試' });
->>>>>>> dev
     }
   };
 
@@ -238,15 +165,6 @@ export default function UserFavorites() {
         return;
       }
 
-<<<<<<< HEAD
-=======
-      // 處理預設商品的情況
-      if (favorite.id.startsWith('default_')) {
-        handleDemoAction('add-to-cart');
-        return;
-      }
-
->>>>>>> dev
       // 找到所有相同規格的項目
       const groupedItems = favoritesData.filter(
         (item) =>
@@ -280,15 +198,6 @@ export default function UserFavorites() {
   // 更新商品顏色
   const handleUpdateColor = async (favoriteId, newColor) => {
     try {
-<<<<<<< HEAD
-=======
-      // 處理預設商品的情況
-      if (favoriteId.startsWith('default_')) {
-        handleDemoAction('update-color');
-        return;
-      }
-
->>>>>>> dev
       // 使用 Redux action 更新收藏顏色
       await dispatch(
         updateFavoriteItemColor({ id: favoriteId, color: newColor })
@@ -304,15 +213,6 @@ export default function UserFavorites() {
   // 更新商品尺寸
   const handleUpdateSize = async (favoriteId, newSize) => {
     try {
-<<<<<<< HEAD
-=======
-      // 處理預設商品的情況
-      if (favoriteId.startsWith('default_')) {
-        handleDemoAction('update-size');
-        return;
-      }
-
->>>>>>> dev
       // 使用 Redux action 更新收藏尺寸
       await dispatch(
         updateFavoriteItemSize({ id: favoriteId, size: newSize })
@@ -325,68 +225,25 @@ export default function UserFavorites() {
     }
   };
 
-<<<<<<< HEAD
   // 組件初始化時檢查登入狀態並獲取收藏列表
   useEffect(() => {
-=======
-  // 添加 token 調試函數
-  const debugTokenInfo = () => {
-    try {
-      const token = cookieUtils.getJWTToken();
-      const userId = cookieUtils.getUserIdFromCookie();
-      const isLogged = cookieUtils.isUserLoggedIn();
-
-      console.log(
-        '當前 JWT Token:',
-        token ? token.substring(0, 20) + '...' : '無'
-      );
-      console.log('Cookie 中的用戶 ID:', userId || '無');
-      console.log('是否已登入:', isLogged ? '是' : '否');
-
-      return !!token && !!userId; // 返回是否有有效 token 和 userId
-    } catch (error) {
-      console.error('檢查 token 時出錯:', error);
-      return false;
-    }
-  };
-
-  // 組件初始化時檢查登入狀態並獲取收藏列表
-  useEffect(() => {
-    console.log('UserFavorites 組件初始化');
->>>>>>> dev
     setIsLoading(true);
     try {
-<<<<<<< HEAD
 
       // 使用 cookieUtils 直接檢查登入狀態
       const loggedIn = isUserLoggedIn();
       // console.log("用戶登入狀態:", loggedIn);
-=======
-      // 調試 token 信息
-      const hasTokenAndUserId = debugTokenInfo();
-      console.log('是否有有效 token 和 userId:', hasTokenAndUserId);
-
-      // 使用 cookieUtils 直接檢查登入狀態
-      const loggedIn = isUserLoggedIn();
-      console.log('用戶登入狀態:', loggedIn);
->>>>>>> dev
 
       // 嘗試設置 axios 的全局標頭 - 首先嘗試從不同來源獲取 token
       const token = getJWTToken();
       if (token) {
         // 嘗試直接設置全局 axios 標頭
-<<<<<<< HEAD
         axios.defaults.headers.common["Authorization"] = token;
-=======
-        axios.defaults.headers.common['Authorization'] = token;
-        console.log('已設置 axios 全局標頭:', token.substring(0, 15) + '...');
->>>>>>> dev
 
         // 額外嘗試：檢查 token 格式是否需要特殊處理
         const rawToken = token.startsWith('Bearer ')
           ? token.substring(7)
           : token;
-<<<<<<< HEAD
       } else {
         // console.warn("未找到有效的 token，無法設置 axios 標頭");
       }
@@ -395,25 +252,6 @@ export default function UserFavorites() {
       if ((loggedIn || token) && !hasFetchedFavorites.current) {
         hasFetchedFavorites.current = true;
         // console.log("開始獲取收藏列表...");
-=======
-        console.log('原始 token 值:', rawToken.substring(0, 10) + '...');
-      } else {
-        console.warn('未找到有效的 token，無法設置 axios 標頭');
-      }
-
-      // 直接檢查 cookie 中的 userId 是否與預期的 ID 匹配
-      const currentUserId = getUserIdFromCookie();
-      console.log('當前用戶 ID:', currentUserId);
-      console.log(
-        '是否匹配目標 ID (Ct5HXrUgBSgTZnal_qJdU):',
-        currentUserId === 'Ct5HXrUgBSgTZnal_qJdU'
-      );
-
-      // 如果已登入或有 token，嘗試獲取收藏列表
-      if ((loggedIn || token) && !hasFetchedFavorites.current) {
-        hasFetchedFavorites.current = true;
-        console.log('開始獲取收藏列表...');
->>>>>>> dev
 
         dispatch(getFavorites())
           .unwrap()
@@ -423,39 +261,18 @@ export default function UserFavorites() {
             setIsLoading(false);
           })
           .catch((error) => {
-<<<<<<< HEAD
             // console.error("獲取收藏列表失敗:", error);
-=======
-            console.error('獲取收藏列表失敗:', error);
-
-            // 詳細記錄錯誤信息
-            if (error.details) {
-              console.error('詳細錯誤信息:', error.details);
-            }
->>>>>>> dev
 
             // 顯示預設資料而不是跳轉
             setIsAuthenticated(true);
             setIsLoading(false);
           });
       } else {
-<<<<<<< HEAD
-=======
-        // 用戶未登入或已嘗試過獲取列表，顯示預設資料
-        console.log(
-          loggedIn ? '已嘗試過獲取列表' : '用戶未登入',
-          '，將顯示預設資料'
-        );
->>>>>>> dev
         setIsAuthenticated(true);
         setIsLoading(false);
       }
     } catch (error) {
-<<<<<<< HEAD
       // console.error("初始化時出錯:", error);
-=======
-      console.error('初始化時出錯:', error);
->>>>>>> dev
       // 同樣在出錯時顯示預設資料
       setIsAuthenticated(true);
       setIsLoading(false);
@@ -481,32 +298,6 @@ export default function UserFavorites() {
     }
   }, [favoritesStatus]);
 
-<<<<<<< HEAD
-=======
-  // 處理預設商品的演示動作
-  const handleDemoAction = (action) => {
-    switch (action) {
-      case 'add-to-cart':
-        toastAlert({ icon: 'success', title: '演示：已加入購物車' });
-        break;
-      case 'delete':
-        toastAlert({ icon: 'success', title: '演示：已從收藏列表中移除' });
-        break;
-      case 'update':
-        toastAlert({ icon: 'success', title: '演示：已更新數量' });
-        break;
-      case 'update-color':
-        toastAlert({ icon: 'success', title: '演示：已更新顏色' });
-        break;
-      case 'update-size':
-        toastAlert({ icon: 'success', title: '演示：已更新尺寸' });
-        break;
-      default:
-        toastAlert({ icon: 'info', title: '演示操作' });
-    }
-  };
-
->>>>>>> dev
   // 加強詳細日誌記錄
   useEffect(() => {
     console.log('當前收藏數據狀態:', {
@@ -525,15 +316,6 @@ export default function UserFavorites() {
     favoritesError,
   ]);
 
-<<<<<<< HEAD
-=======
-  // 在 useEffect 中添加調試代碼
-  useEffect(() => {
-    console.log('收藏數據:', favoritesData);
-    console.log('顯示項目:', displayItems);
-  }, [favoritesData, displayItems]);
-
->>>>>>> dev
   return (
     <>
       <title>收藏列表 - WorldWear</title>
