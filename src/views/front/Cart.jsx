@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useSwal from '../../hooks/useSwal';
 import { useDispatch } from 'react-redux';
-import { cartsData, setCartsData } from '../../slice/cartsSlice';
+import { setCartsData } from '../../slice/cartsSlice';
 import ScreenLoading from '../../components/front/ScreenLoading';
 import FrontHeader from '../../components/front/FrontHeader';
 import CartFlow from '../../components/front/CartFlow';

@@ -225,7 +225,7 @@ $header-aside-height-mobile: 29px;
     @include media-breakpoint-down(lg) {
       & > .l-menu {
         flex-direction: column;
-        align-items: stretch;
+        // align-items: stretch;
         gap: 0;
         li {
           display: flex;

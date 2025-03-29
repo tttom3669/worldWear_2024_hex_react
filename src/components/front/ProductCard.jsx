@@ -233,7 +233,7 @@ const ProductCard = ({ data }) => {
           <div className="mobile-favorite-container">
             <button
               type="button"
-              className={`btn favorite ${isFavorite ? 'isLike' : ''}`}
+              className={`btn favorite-button ${isFavorite ? 'isLike' : ''}`}
               onClick={handleToggleFavorite} // 這裡已包含 preventDefault 和 stopPropagation
             >
               <svg
