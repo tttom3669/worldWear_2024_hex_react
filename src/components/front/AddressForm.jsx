@@ -56,8 +56,8 @@ const AddressForm = ({ register, errors, defaultRegion, defaultCounty }) => {
 
   return (
     <>
-      <div className="d-flex flex-column align-items-start align-items-md-center gap-md-6 flex-md-row">
-        <label htmlFor="address" className="form-label">
+      <div className="d-flex flex-column align-items-start gap-md-6 flex-md-row ">
+        <label htmlFor="address" className="form-label fw-bold">
           宅配地址
         </label>
         <div className="userInfo__col d-flex flex-column gap-2">
