@@ -130,7 +130,7 @@ const ProductCard = ({ data }) => {
           dispatch(getFavorites());
         })
         .catch((error) => {
-          console.error('加入收藏失敗:', error);
+          // console.error('加入收藏失敗:', error);
           toastAlert({
             icon: 'error',
             title: '加入收藏失敗，請稍後再試',

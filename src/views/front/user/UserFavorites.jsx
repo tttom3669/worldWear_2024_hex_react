@@ -251,70 +251,23 @@ export default function UserFavorites() {
       // 如果已登入或有 token，嘗試獲取收藏列表
       if ((loggedIn || token) && !hasFetchedFavorites.current) {
         hasFetchedFavorites.current = true;
-        // console.log("開始獲取收藏列表...");
-
-        dispatch(getFavorites())
+         dispatch(getFavorites())
           .unwrap()
           .then((result) => {
-            console.log('成功獲取收藏列表:', result);
             setIsAuthenticated(true);
             setIsLoading(false);
           })
           .catch((error) => {
-            // console.error("獲取收藏列表失敗:", error);
-
-            // 顯示預設資料而不是跳轉
-            setIsAuthenticated(true);
             setIsLoading(false);
           });
       } else {
-        setIsAuthenticated(true);
+
         setIsLoading(false);
       }
     } catch (error) {
-      // console.error("初始化時出錯:", error);
-      // 同樣在出錯時顯示預設資料
-      setIsAuthenticated(true);
       setIsLoading(false);
     }
-  }, [dispatch]); // 只依賴 dispatch
-
-  // 監聽 favoritesStatus 變化
-  useEffect(() => {
-    try {
-      setIsLoading(favoritesStatus === 'loading');
-
-      // 如果收藏列表獲取失敗，顯示預設資料而不跳轉
-      if (favoritesStatus === 'failed') {
-        console.log('收藏列表獲取失敗，將顯示預設資料');
-        setIsAuthenticated(true); // 設置為已認證以顯示預設資料
-        setIsLoading(false);
-      }
-    } catch (error) {
-      console.error('處理狀態變化時出錯:', error);
-      // 同樣在出錯時顯示預設資料
-      setIsAuthenticated(true);
-      setIsLoading(false);
-    }
-  }, [favoritesStatus]);
-
-  // 加強詳細日誌記錄
-  useEffect(() => {
-    console.log('當前收藏數據狀態:', {
-      isAuthenticated,
-      isLoading,
-      favoritesDataLength: favoritesData.length,
-      displayItemsLength: displayItems.length,
-      favoritesStatus,
-      favoritesError,
-    });
-  }, [
-    isAuthenticated,
-    isLoading,
-    favoritesData,
-    favoritesStatus,
-    favoritesError,
-  ]);
+  }, [dispatch]);
 
   return (
     <>

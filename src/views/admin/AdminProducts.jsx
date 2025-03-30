@@ -1,39 +1,72 @@
-import { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { motion } from 'framer-motion';
-import useSwal from '../../hooks/useSwal';
-import axios from 'axios';
-import cookieUtils from '../../components/tools/cookieUtils';
-import Pagination from '../../components/layouts/Pagination';
+import { useState, useEffect, useRef } from "react";
+import useSwal from "../../hooks/useSwal";
+import cookieUtils from "../../components/tools/cookieUtils";
+import Pagination from "../../components/layouts/Pagination";
+import ProductModal from "../../components/admin/ProductModal";
+import DeleteProductModal from "../../components/admin/DeleteProductModal";
 
-const { VITE_API_PATH: API_PATH } = import.meta.env;
+// const { VITE_API_PATH: API_PATH } = import.meta.env;
+
+const defaultModalState = () => ({
+  class: "",
+  category: "",
+  categoryItems: "",
+  title: "",
+  content: {
+    design_style:"",
+    design_introduction:"",
+    origin:"",
+  },
+  description:"",
+  clean:{
+    method1: "",
+    method2: "",
+    method3: "",
+    method4: ""
+  },
+  productSizeRef: "",
+  is_enabled: 0,
+  status: "",
+  is_hot: 0,
+  origin_price: "",
+  price: "",
+  unit: "",
+  color: [],
+  num: [],
+  size: [],
+  imageUrl: "",
+  imagesUrl: [],
+  id: "",
+});
 
 const AdminProducts = () => {
-  const dispatch = useDispatch();
   const { toastAlert } = useSwal();
   const [products, setProducts] = useState([]);
-  const [searchText, setSearchText] = useState('');
-  const [searchStatus, setSearchStatus] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [editingProduct, setEditingProduct] = useState(null);
+  const [searchText, setSearchText] = useState("");
+  const [searchStatus, setSearchStatus] = useState("");
+  const [tempProduct, setTempProduct] = useState(defaultModalState());
+  const [modalMode, setModalMode] = useState(null);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [isDeleteProductModalOpen, setIsDeleteProductModalOpen] =
+    useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
 
   // 狀態選項
-  const statusOptions = ['現貨', '預購', '補貨中'];
-  const fetchProducts = async () => {
+  const statusOptions = ["現貨", "預購", "補貨中"];
+  const getProducts = async () => {
     try {
       setIsLoading(true);
       const authAxios = cookieUtils.createAuthAxios();
-      const response = await authAxios.get('/products');
+      const response = await authAxios.get("/products");
       const productsData = Array.isArray(response.data) ? response.data : [];
       setProducts(productsData);
     } catch (error) {
-      console.error('獲取商品列表失敗:', error);
+      console.error("獲取商品列表失敗:", error);
       toastAlert({
-        icon: 'error',
-        title: '獲取商品列表失敗',
+        icon: "error",
+        title: "獲取商品列表失敗",
       });
       setProducts([]);
     } finally {
@@ -43,7 +76,7 @@ const AdminProducts = () => {
 
   // 獲取商品列表
   useEffect(() => {
-    fetchProducts();
+    getProducts();
   }, []);
 
   // 搜尋功能
@@ -63,69 +96,33 @@ const AdminProducts = () => {
   };
 
   // 處理新增/編輯商品
-  const handleProductSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const authAxios = cookieUtils.createAuthAxios();
-      if (editingProduct) {
-        // 更新商品
-        await authAxios.put(`/products/${editingProduct.id}`, editingProduct);
-        toastAlert({
-          icon: 'success',
-          title: '商品更新成功',
-        });
-      } else {
-        // 新增商品
-        await authAxios.post('/products', editingProduct);
-        toastAlert({
-          icon: 'success',
-          title: '商品新增成功',
-        });
-      }
-      setShowModal(false);
-      setEditingProduct(null);
-      // 重新獲取商品列表
-      const response = await authAxios.get('/products');
-      const productsData = Array.isArray(response.data) ? response.data : [];
-      setProducts(productsData);
-    } catch (error) {
-      console.error('操作失敗:', error);
-      toastAlert({
-        icon: 'error',
-        title: '操作失敗',
-      });
+  const handleOpenProductModal = (mode, product) => {
+    setModalMode(mode);
+    switch (mode) {
+      case 'create':
+        setTempProduct(defaultModalState);
+        break;
+      case 'edit':
+        setTempProduct(product);
+        break;
+      default:
+        break;
     }
+    setIsProductModalOpen(true); // 傳入狀態給子原件商品 modal，透過傳入狀態打開 modal
   };
 
-  // 處理刪除商品
-  const handleDelete = async (id) => {
-    try {
-      const authAxios = cookieUtils.createAuthAxios();
-      await authAxios.delete(`/products/${id}`);
-      toastAlert({
-        icon: 'success',
-        title: '商品刪除成功',
-      });
-      // 重新獲取商品列表
-      const response = await authAxios.get('/products');
-      const productsData = Array.isArray(response.data) ? response.data : [];
-      setProducts(productsData);
-    } catch (error) {
-      console.error('刪除失敗:', error);
-      toastAlert({
-        icon: 'error',
-        title: '刪除失敗',
-      });
-    }
+  const handleOpenDelProductModal = (product) => {
+    setTempProduct(product); // 將該項的商品資料寫入
+    setIsDeleteProductModalOpen(true); // 傳入狀態給子原件商品 modal，透過傳入狀態打開 modal
   };
 
   return (
     <>
       <title>商品管理 - WorldWear</title>
-      <div className="container-fluid mt-4">
-        <div className="row align-items-center mb-4">
+      <div className="container-fluid p-10 h-100">
+        <div className="row align-items-center mb-6">
           <div className="col-md-2">
-            <h2 className="mb-0">所有商品</h2>
+            <h1 className="fs-h4 mb-4">所有商品</h1>
           </div>
           <div className="col-md-4">
             <input
@@ -154,15 +151,13 @@ const AdminProducts = () => {
             <button
               className="btn btn-primary"
               onClick={() => {
-                setEditingProduct(null);
-                setShowModal(true);
+                handleOpenProductModal('create');
               }}
             >
               <i className="bi bi-plus-lg"></i> 新增商品
             </button>
           </div>
         </div>
-
         {/* 商品列表 */}
         <div className="table-responsive">
           {isLoading ? (
@@ -176,33 +171,15 @@ const AdminProducts = () => {
               <table className="table table-hover">
                 <thead>
                   <tr>
-                    <th className="text-center" style={{ width: '11%' }}>
-                      類別
-                    </th>
-                    <th className="text-center" style={{ width: '11%' }}>
-                      商品編號
-                    </th>
-                    <th className="text-center" style={{ width: '11%' }}>
-                      商品名稱
-                    </th>
-                    <th className="text-center" style={{ width: '11%' }}>
-                      狀態
-                    </th>
-                    <th className="text-center" style={{ width: '11%' }}>
-                      定價
-                    </th>
-                    <th className="text-center" style={{ width: '11%' }}>
-                      售價
-                    </th>
-                    <th className="text-center" style={{ width: '11%' }}>
-                      庫存數量
-                    </th>
-                    <th className="text-center" style={{ width: '11%' }}>
-                      已售數量
-                    </th>
-                    <th className="text-center" style={{ width: '12%' }}>
-                      編輯功能
-                    </th>
+                    <th style={{ width: "11%" }}>類別</th>
+                    <th style={{ width: "11%" }}>商品編號</th>
+                    <th style={{ width: "11%" }}>商品名稱</th>
+                    <th style={{ width: "11%" }}>狀態</th>
+                    <th style={{ width: "11%" }}>定價</th>
+                    <th style={{ width: "11%" }}>售價</th>
+                    <th style={{ width: "11%" }}>庫存數量</th>
+                    <th style={{ width: "11%" }}>已售數量</th>
+                    <th style={{ width: "12%" }}>編輯功能</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -213,27 +190,27 @@ const AdminProducts = () => {
                     )
                     .map((product) => (
                       <tr key={product.id}>
-                        <td className="text-center">{product.class}</td>
-                        <td className="text-center">{product.id}</td>
+                        <td>{product.class}</td>
+                        <td>{product.id}</td>
                         <td className="text-start">{product.title}</td>
-                        <td className="text-center">{product.status}</td>
-                        <td className="text-center">${product.origin_price}</td>
-                        <td className="text-center">${product.price}</td>
-                        <td className="text-center">-</td>
-                        <td className="text-center">-</td>
-                        <td className="text-center">
+                        <td>{product.status}</td>
+                        <td>${product.origin_price}</td>
+                        <td>${product.price}</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>
                           <button
                             className="btn btn-sm btn-primary me-2"
                             onClick={() => {
-                              setEditingProduct(product);
-                              setShowModal(true);
+                              handleOpenProductModal('edit', product);
                             }}
+                            type="button"
                           >
                             修改
                           </button>
                           <button
                             className="btn btn-sm btn-danger"
-                            onClick={() => handleDelete(product.id)}
+                            onClick={() => handleOpenDelProductModal(product)}
                           >
                             刪除
                           </button>
@@ -257,64 +234,21 @@ const AdminProducts = () => {
             </>
           )}
         </div>
-
         {/* 新增/編輯商品彈窗 */}
-        {showModal && (
-          <div className="modal show d-block" tabIndex="-1">
-            <div className="modal-dialog modal-lg">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">
-                    {editingProduct ? '編輯商品' : '新增商品'}
-                  </h5>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    onClick={() => {
-                      setShowModal(false);
-                      setEditingProduct(null);
-                    }}
-                  ></button>
-                </div>
-                <div className="modal-body">
-                  <form onSubmit={handleProductSubmit}>
-                    {/* 這裡可以根據需求添加表單欄位 */}
-                    <div className="mb-3">
-                      <label className="form-label">商品名稱</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={editingProduct?.title || ''}
-                        onChange={(e) =>
-                          setEditingProduct({
-                            ...editingProduct,
-                            title: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    {/* 其他表單欄位... */}
-                    <div className="text-end">
-                      <button
-                        type="button"
-                        className="btn btn-secondary me-2"
-                        onClick={() => {
-                          setShowModal(false);
-                          setEditingProduct(null);
-                        }}
-                      >
-                        取消
-                      </button>
-                      <button type="submit" className="btn btn-primary">
-                        確定
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <ProductModal
+        modalMode={modalMode}
+        tempProduct={tempProduct}
+        isOpen={isProductModalOpen}
+        setIsOpen={setIsProductModalOpen}
+        getProducts={getProducts}
+      />
+        {/* 刪除 modal */}
+        <DeleteProductModal
+        tempProduct={tempProduct}
+        getProducts={getProducts}
+        isOpen={isDeleteProductModalOpen}
+        setIsOpen={setIsDeleteProductModalOpen}
+      />
       </div>
     </>
   );
