@@ -130,7 +130,7 @@ const ProductCard = ({ data }) => {
           dispatch(getFavorites());
         })
         .catch((error) => {
-          console.error('加入收藏失敗:', error);
+          // console.error('加入收藏失敗:', error);
           toastAlert({
             icon: 'error',
             title: '加入收藏失敗，請稍後再試',
@@ -233,7 +233,7 @@ const ProductCard = ({ data }) => {
           <div className="mobile-favorite-container">
             <button
               type="button"
-              className={`btn favorite-button ${isFavorite ? 'isLike' : ''}`}
+              className={`btn btn favorite-button ${isFavorite ? 'isLike' : ''}`}
               onClick={handleToggleFavorite} // 這裡已包含 preventDefault 和 stopPropagation
             >
               <svg

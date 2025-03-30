@@ -146,11 +146,7 @@ $accordion-active-bg: #FFDDB9; // 保留但不使用
   border: 1px solid $border-color;
   transition: border-color 0.3s, background-color 0.3s;
   background-color: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border-radius: 50%; // Make both buttons circular
+  border-radius: 50%;
 
   &:hover {
     background-color: $hover-bg-color;
@@ -202,6 +198,7 @@ $accordion-active-bg: #FFDDB9; // 保留但不使用
   .favorite-button.isLike {
     background-color: $like-bg-color;
   }
+  
 }
 
 // Heart icon styles
