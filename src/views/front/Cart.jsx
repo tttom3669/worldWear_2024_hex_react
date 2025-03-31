@@ -15,7 +15,7 @@ const { VITE_API_PATH: API_PATH } = import.meta.env;
 export default function Cart() {
   const getImgUrl = useImgUrl();
   const [tempCartsData, setTempCartsData] = useState([]);
-  const [tempCouponData, setTempCouponData] = useState('worldWear');
+  const [tempCouponData, setTempCouponData] = useState('');
   const [couponData, setCouponData] = useState({});
   const { toastAlert } = useSwal();
   const dispatch = useDispatch();
