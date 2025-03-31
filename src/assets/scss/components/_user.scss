@@ -1,0 +1,26 @@
+.c-user-aside {
+  .list-group-item {
+    background-color: $white;
+    padding: 0;
+    border: 1px solid $nature-95;
+    &:not(:first-child) {
+      border-top: unset;
+    }
+  }
+  &__link {
+    display: block;
+    color: $black;
+    background-color: $white;
+    font-family: Noto Sans TC;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 150%;
+    letter-spacing: 0.02em;
+    padding: 12px 16px;
+    transition: background-color 0.3s;
+    &:hover,
+    &.active {
+      background-color: $primary-90 !important;
+    }
+  }
+}

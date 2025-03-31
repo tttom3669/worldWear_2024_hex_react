@@ -1,0 +1,58 @@
+.l-admin {
+  &__layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    height: 100dvh;
+    overflow: hidden;
+    transition: all 0.3s linear;
+    @include media-breakpoint-up(md) {
+      grid-template-columns: 12.5rem 1fr;
+      grid-template-rows: auto 1fr;
+      &.active {
+        grid-template-columns: 0 1fr;
+      }
+    }
+  }
+  &__header {
+    background-color: $nature-10;
+    grid-column: span 1 / span 1;
+  }
+  &__aside {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 10;
+    height: 100dvh;
+    background-color: $nature-10;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    grid-row: span 2 / span 2;
+    width: 100%;
+    transform: translateX(-100%);
+    transition: transform 0.3s linear;
+    @include media-breakpoint-up(md) {
+      width: 12.5rem;
+      position: relative;
+      height: auto;
+    }
+    &-link {
+      color: $white;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px;
+      transition: color 0.3s;
+      &:hover {
+        color: $primary-80;
+      }
+    }
+    &.active {
+      transform: translateX(0);
+    }
+  }
+  &__content {
+    overflow-y: auto;
+  }
+}

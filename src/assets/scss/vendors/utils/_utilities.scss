@@ -184,6 +184,8 @@ $utilities: map-merge(
       ),
     ),
     'border-color': (
+      responsive: true,
+      // cus*
       property: border-color,
       class: border,
       local-vars: (
@@ -197,14 +199,19 @@ $utilities: map-merge(
       values: $utilities-border-subtle,
     ),
     'border-width': (
+      responsive: true,
+      // cus*
       property: border-width,
       class: border,
       values: $border-widths,
     ),
     'border-opacity': (
+      responsive: true,
+      // cus*
       css-var: true,
       class: border-opacity,
       values: (
+        0: 0,
         10: 0.1,
         25: 0.25,
         50: 0.5,
@@ -230,6 +237,7 @@ $utilities: map-merge(
           //cus*
           24px: 24px,
           40px: 40px,
+          vw: 100vw,
         ),
       ),
     'max-width': (
@@ -267,6 +275,7 @@ $utilities: map-merge(
         // cus*
         24px: 24px,
         40px: 40px,
+        dvh: 100dvh,
       ),
     ),
     'max-height': (
@@ -969,6 +978,13 @@ $utilities: map-merge(
       class: bg,
       values: (
         'no-repeat': no-repeat,
+      ),
+    ),
+    'rotate': (
+      property: transform,
+      class: rotate,
+      values: (
+        180: rotate(180deg),
       ),
     )
   ),

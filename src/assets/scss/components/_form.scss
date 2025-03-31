@@ -7,6 +7,11 @@
     box-shadow: unset;
     outline: unset;
   }
+  &:disabled {
+    color: $nature-70;
+    background-color: $nature-95;
+    border: 1px solid $nature-90;
+  }
   &::placeholder {
     color: $nature-80;
   }

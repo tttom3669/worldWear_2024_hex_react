@@ -2,26 +2,56 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
-
+import { useSelector, useDispatch } from 'react-redux';
 import { productCategories as productCategoriesData } from '../../slice/productsSlice';
 import useImgUrl from '../../hooks/useImgUrl';
 import { useEffect, useRef, useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-
-// 登入功能等 登入註冊做完，才來實作
-// 搜尋功能。 等產品頁面，才來實作
-// <%= (mode==='login' ) ? 'header--login' : 'header--logout' %>  <%= (type==='light' ) ? 'header--light' : 'header--dark' %>
-
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { checkLogin, logoutUser } from '../../slice/authSlice';
+import {
+  asyncGetCarts,
+  cartsData as sliceCartsData,
+} from '../../slice/cartsSlice';
+import axios from 'axios';
 function FrontHeader({ defaultType }) {
   const getImgUrl = useImgUrl();
+  const dispatch = useDispatch();
   const [headerType, setHeaderType] = useState('');
   const [isHeaderScroll, setIsHeaderScroll] = useState(false);
   const [menuData, setMenuData] = useState({ isOpen: false });
+  const [isLogin, setIsLogin] = useState(false);
+  const navigate = useNavigate();
   const headerRef = useRef(null);
+  const [isSubmenuActive, setIsSubmenuActive] = useState(false);
   const productCategories = useSelector(productCategoriesData);
+  const cartsData = useSelector(sliceCartsData);
+  const userData = useSelector((state) => state.authSlice.user);
+
   gsap.registerPlugin(ScrollTrigger);
   gsap.registerPlugin(useGSAP);
+
+  const [isInitialized, setIsInitialized] = useState(false);
+  const auth = useSelector((state) => state.authSlice);
+
+  // 初始化認證狀態 - 使用 checkLogin action
+  useEffect(() => {
+    // 檢查用戶是否已登入
+    dispatch(checkLogin());
+    setIsInitialized(true);
+    dispatch(asyncGetCarts());
+  }, [dispatch]);
+
+  // 更新登入狀態
+  useEffect(() => {
+    if (isInitialized) {
+      const loggedIn = auth.status === 'logged-in' && auth.user !== null;
+      setIsLogin(loggedIn);
+
+      if (loggedIn) {
+        console.log('FrontHeader: 用戶已登入');
+      }
+    }
+  }, [isInitialized, auth.status, auth.user]);
 
   useEffect(() => {
     setHeaderType(defaultType);
@@ -47,7 +77,7 @@ function FrontHeader({ defaultType }) {
   const isDesktop = () => {
     return window.innerWidth > 992;
   };
-  
+
   function mainMenuHandler(e) {
     e.preventDefault();
     const name = e.target.name || e.target.parentElement.name;
@@ -57,13 +87,51 @@ function FrontHeader({ defaultType }) {
     });
   }
 
+  // 處理登出功能 - 使用 logoutUser action
+  const handleLogout = async () => {
+    try {
+      console.log('登出按鈕被點擊'); // 添加除錯訊息
+
+      // 執行登出 action 並等待完成
+      await dispatch(logoutUser()).unwrap();
+
+      console.log('登出成功，準備導航回首頁');
+
+      // 登出成功後導航回首頁
+      navigate('/');
+    } catch (error) {
+      console.error('登出失敗:', error);
+      // 即使登出失敗，也嘗試導航回首頁
+      navigate('/');
+    }
+  };
+
+  // useEffect(() => {
+  //   // 在 Axios 攔截器中處理
+  //   axios.interceptors.response.use(
+  //     (response) => response,
+  //     (error) => {
+  //       // 在某些需要 token 的情况下，取到舊 Token ，造成取資料錯誤
+  //       // Request failed with status code 401
+  //       if (error.response && error.response.status === 401) {
+  //         //   登出程式碼
+  //         dispatch(logoutUser()).unwrap();
+  //         // 導入登入頁面
+  //         navigate('/login');
+  //       }
+
+  //       return Promise.reject(error);
+  //     }
+  //   );
+  // }, []);
+
   return (
     <>
-      <aside className="bg-primary-80 py-1 py-lg-3 text-center fs-sm fw-bold">
+      <aside className="position-relative relative bg-primary-80 py-1 py-lg-3 text-center fs-sm fw-bold z-1">
         與世界共舞，與時尚同步 - WorldWear
       </aside>
       <header
-        className={`header header--login
+        className={`header ${isLogin ? 'header--login' : 'header--logout'}
         ${
           isHeaderScroll
             ? 'header--scroll'
@@ -121,6 +189,11 @@ function FrontHeader({ defaultType }) {
                           type="search"
                           placeholder="Search"
                           aria-label="Search"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              navigate(`/search/?s=${e.target.value}`);
+                            }
+                          }}
                         />
                       </form>
                     </div>
@@ -154,13 +227,13 @@ function FrontHeader({ defaultType }) {
                             <use href={getImgUrl('/icons/cart.svg#cart')}></use>
                           </svg>
                           <span className="header__cart-badge d-flex justify-content-center align-items-center position-absolute top-0 start-100 translate-middle  rounded-circle bg-danger text-white fs-xxs">
-                            2
+                            {cartsData?.products.length}
                           </span>
                         </Link>
                       </li>
                       <li className="d-flex justify-content-center align-items-center">
                         <Link
-                          to="/favorites"
+                          to="/user/favorites"
                           className=" text-reset header__heart d-flex"
                         >
                           <svg width="16" height="16">
@@ -171,14 +244,14 @@ function FrontHeader({ defaultType }) {
                         </Link>
                       </li>
                       <li>
-                        <a href="#">
+                        <Link to="/user">
                           <img
                             src={getImgUrl('/images/shared/user.png')}
                             alt="user"
                             width="24"
                             height="24"
                           />
-                        </a>
+                        </Link>
                       </li>
                     </ul>
                   </div>
@@ -190,31 +263,120 @@ function FrontHeader({ defaultType }) {
                 >
                   <ul className="navbar-nav l-menu header--logout__item ">
                     <li>
-                      <Link className="l-menu__link" to="/login">
+                      <Link
+                        className="l-menu__link"
+                        to="/login"
+                        state={{ activeTab: 'login' }}
+                      >
                         登入
                       </Link>
                     </li>
                     <li>
-                      <Link className="l-menu__link" to="/signup">
+                      <Link
+                        className="l-menu__link"
+                        to="/login"
+                        state={{ activeTab: 'register' }}
+                      >
                         註冊
                       </Link>
                     </li>
                   </ul>
-                  <ul className="navbar-nav l-menu d-lg-none header--login__item">
+                  <ul
+                    className={`navbar-nav l-menu d-lg-none header--login__item ${
+                      isLogin ? 'align-items-stretch align-items-lg-center' : ''
+                    }`}
+                  >
                     <li>
                       <Link className="nav-link l-menu__link" to="/cart">
                         購物車
                       </Link>
                     </li>
                     <li>
-                      <Link className="nav-link l-menu__link" to="/favorites">
+                      <Link
+                        className="nav-link l-menu__link"
+                        to="/user/favorites"
+                      >
                         收藏清單
                       </Link>
                     </li>
-                    <li>
-                      <Link className="nav-link l-menu__link" to="#">
-                        會員中心
+                    <li className="d-flex flex-column">
+                      <Link
+                        className="nav-link l-menu__link"
+                        onClick={() => {
+                          setIsSubmenuActive(!isSubmenuActive);
+                        }}
+                      >
+                        <div className="d-flex justify-content-between align-items-center">
+                          會員中心
+                          <img
+                            style={{ transition: 'all .3s' }}
+                            className={`${isSubmenuActive ? 'rotate-180' : ''}`}
+                            src={getImgUrl('/icons/dropdown_up.svg')}
+                            alt=""
+                          />
+                        </div>
                       </Link>
+                      <div
+                        className={`l-menu__submenu ${
+                          isSubmenuActive ? 'active' : ''
+                        }`}
+                      >
+                        <ul>
+                          <li>
+                            <Link
+                              className="nav-link l-menu__link fw-normal"
+                              to="/user/userInfo"
+                              onClick={() => {
+                                setMenuData({ ...menuData, isOpen: false });
+                              }}
+                            >
+                              會員資料維護
+                            </Link>
+                          </li>
+
+                          <li>
+                            <Link
+                              className="nav-link l-menu__link fw-normal"
+                              to="/user/favorites"
+                              onClick={() => {
+                                setMenuData({ ...menuData, isOpen: false });
+                              }}
+                            >
+                              收藏列表
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              className="nav-link l-menu__link fw-normal"
+                              to="/user/order"
+                              onClick={() => {
+                                setMenuData({ ...menuData, isOpen: false });
+                              }}
+                            >
+                              查詢訂單
+                            </Link>
+                          </li>
+
+                          {userData?.role === 'admin' && (
+                            <li>
+                              <Link
+                                className="nav-link l-menu__link fw-normal"
+                                to="/admin"
+                              >
+                                進入後台
+                              </Link>
+                            </li>
+                          )}
+                          <li>
+                            <Link
+                              className="nav-link l-menu__link fw-normal"
+                              onClick={handleLogout}
+                            >
+                              登出
+                            </Link>
+                          </li>
+                        </ul>
+                      </div>
                     </li>
                   </ul>
                 </div>
@@ -223,7 +385,7 @@ function FrontHeader({ defaultType }) {
                 type="button"
                 onClick={(e) => mainMenuHandler(e)}
                 name="user"
-                className="l-menu__collapse-btn border-0 bg-transparent p-2 <%= (mode==='login' ) ? 'l-menu__collapse-btn--login' : '' %>"
+                className="l-menu__collapse-btn border-0 bg-transparent p-2"
               >
                 <div className="header--logout__item">
                   <svg className="pe-none" width="24" height="24">
@@ -256,21 +418,33 @@ function FrontHeader({ defaultType }) {
                   <li>
                     <Link
                       className="l-menu__dropdown-link"
-                      to={`products/${gender.slug}`}
+                      to={`/products/${gender.slug}`}
                     >
                       所有商品
                     </Link>
                   </li>
-                  {gender.categories.map((category) => (
+                  {/* {gender.categories.map((category) => (
                     <li key={category.slug}>
                       <Link
                         className="l-menu__dropdown-link"
-                        to={`products/${category.slug}`}
+                        to={`/products/${gender.slug}/${category.slug}`}
                       >
                         {category.title}
                       </Link>
                     </li>
-                  ))}
+                  ))} */}
+                  {gender.categories
+                    .filter((category) => category.slug !== 'product-status')
+                    .map((category) => (
+                      <li key={category.slug}>
+                        <Link
+                          className="l-menu__dropdown-link"
+                          to={`/products/${gender.slug}/${category.slug}`}
+                        >
+                          {category.title}
+                        </Link>
+                      </li>
+                    ))}
                 </ul>
               </div>
             </div>

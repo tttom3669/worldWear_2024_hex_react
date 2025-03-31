@@ -1,0 +1,34 @@
+.userInfo {
+  .userInfo__col {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+
+    @include media-breakpoint-up(md) {
+      width: 362px;
+      max-width: 362px;
+    }
+    &:has(.is-invalid) {
+      .form-control::placeholder {
+        opacity: 0;
+      }
+    }
+    .invalid-feedback {
+      margin: 0 !important;
+      position: absolute;
+      left: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+    .form-control:focus + .invalid-feedback {
+      opacity: 0.3;
+    }
+  }
+  .form-label {
+    min-width: 120px;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.04em;
+  }
+}

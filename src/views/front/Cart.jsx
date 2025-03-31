@@ -1,25 +1,35 @@
 import axios from 'axios';
+import useImgUrl from '../../hooks/useImgUrl';
+import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import useSwal from '../../hooks/useSwal';
+import { useDispatch } from 'react-redux';
+import { setCartsData } from '../../slice/cartsSlice';
+import ScreenLoading from '../../components/front/ScreenLoading';
 import FrontHeader from '../../components/front/FrontHeader';
 import CartFlow from '../../components/front/CartFlow';
-import useImgUrl from '../../hooks/useImgUrl';
-import { useEffect, useState } from 'react';
-import useSwal from '../../hooks/useSwal';
-
 const { VITE_API_PATH: API_PATH } = import.meta.env;
+
+// 處理庫存、相同購物車品項產品問題
 
 export default function Cart() {
   const getImgUrl = useImgUrl();
-  const [cartsData, setCartsData] = useState([]);
-  const [cartsTotal, setCartsTotal] = useState(0);
-  const [tempCouponData, setTempCouponData] = useState('');
+  const [tempCartsData, setTempCartsData] = useState([]);
+  const [tempCouponData, setTempCouponData] = useState('worldWear');
   const [couponData, setCouponData] = useState({});
   const { toastAlert } = useSwal();
+  const dispatch = useDispatch();
+  const [isLoading, setIsLoading] = useState(false);
+  const [updateCartData, setUpdateCartData] = useState({
+    isLoading: false,
+    cartId: null,
+  });
 
   const couponHandler = async () => {
     try {
+      setIsLoading(true);
       const res = await axios.get(`${API_PATH}/coupons?code=${tempCouponData}`);
       toastAlert({ icon: 'success', title: '已套用優惠券代碼' });
-      console.log(res);
       if (res.data.length <= 0) {
         throw new Error('No coupon data found');
       }
@@ -28,6 +38,8 @@ export default function Cart() {
       setCouponData({});
       toastAlert({ icon: 'error', title: '輸入錯誤優惠券代碼' });
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -35,52 +47,88 @@ export default function Cart() {
     return percent ? (total * percent) / 100 : 0;
   };
   const getCarts = async () => {
-    // const token = document.cookie.replace(
-    //   /(?:(?:^|.*;\s*)worldWearToken\s*\=\s*([^;]*).*$)|^.*$/,
-    //   '$1'
-    // );
     const userId = document.cookie.replace(
       /(?:(?:^|.*;\s*)worldWearUserId\s*\=\s*([^;]*).*$)|^.*$/,
       '$1'
     );
-    const res = await axios.get(
-      `${API_PATH}/carts/?userId=${userId}&_expand=user&_expand=product`
-    );
-    console.log(res);
-
-    setCartsData(res.data);
+    try {
+      const res = await axios.get(
+        `${API_PATH}/carts/?userId=${userId}&_expand=user&_expand=product`
+      );
+      setTempCartsData(res.data);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
   const updateCarts = async (cartId, qty) => {
     const method = qty <= 0 ? 'DELETE' : 'PATCH';
     const alertTitle = qty <= 0 ? '已從購物車中刪除' : '已更新購物車';
     const apiData = qty <= 0 ? {} : { qty };
+    try {
+      setUpdateCartData({
+        cartId,
+        isLoading: true,
+      });
+      await axios({
+        method,
+        url: `${API_PATH}/carts/${cartId}`,
+        data: apiData,
+      });
 
-    const res = await axios({
-      method,
-      url: `${API_PATH}/carts/${cartId}`,
-      data: apiData,
-    });
-    console.log(res);
+      toastAlert({ icon: 'success', title: alertTitle });
+      getCarts();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setUpdateCartData({
+        ...updateCartData,
+        isLoading: false,
+      });
+    }
+  };
 
-    toastAlert({ icon: 'success', title: alertTitle });
-
-    getCarts();
+  const checkBtnDisabled = (cart, type) => {
+    // 正在更新購物車或超出庫存，則禁止增減購物車數量
+    if (type === 'plus') {
+      return (
+        (updateCartData.isLoading && updateCartData.cartId === cart.id) ||
+        cart.qty >= cart?.product?.num?.[cart.color]?.[cart.size]
+      );
+    } else {
+      return updateCartData.isLoading && updateCartData.cartId === cart.id;
+    }
   };
 
   useEffect(() => {
+    setIsLoading(true);
     getCarts();
   }, []);
 
+  const cartsTotal = useMemo(() => {
+    return tempCartsData
+      .map((cart) => cart.product.price * cart.qty)
+      .reduce((accVal, curVal) => accVal + curVal, 0);
+  }, [tempCartsData]);
+
+  const cartsDiscount = useMemo(() => {
+    return calDiscount(cartsTotal, couponData?.percent);
+  }, [cartsTotal, couponData]);
+
   useEffect(() => {
-    setCartsTotal(
-      cartsData
-        .map((cart) => cart.product.price * cart.qty)
-        .reduce((accVal, curVal) => accVal + curVal, 0)
+    dispatch(
+      setCartsData({
+        total: cartsTotal,
+        final_total: cartsTotal - cartsDiscount,
+        products: [...tempCartsData],
+      })
     );
-  }, [cartsData]);
+  }, [cartsTotal, cartsDiscount]);
 
   return (
     <>
+      <title>購物車 - WorldWear</title>
       <FrontHeader defaultType={'light'} />
       <main>
         <div className="pt-5 pb-10 pt-md-12 pb-md-30">
@@ -91,164 +139,191 @@ export default function Cart() {
                 <div>
                   <h1 className="mb-5 fw-bold fs-h5">購物車</h1>
 
-                  <div className="cart__table mb-5">
-                    <div className="cart__thead px-3">
-                      <div>商品資料</div>
-                      <div>單價</div>
-                      <div>數量</div>
-                      <div>小計</div>
-                    </div>
-                    <div className="cart__tbody">
-                      {cartsData.map((cart) => (
-                        <div
-                          className="pt-3 pb-5 px-lg-3 py-lg-4"
-                          key={cart.id}
-                        >
-                          <img
-                            className="cart__product-img mb-3 mb-lg-0"
-                            src={cart.product.imageUrl}
-                            alt={cart.product.title}
-                          />
-                          <div className="cart__product-content mb-3 px-lg-3 py-lg-4.5 mb-lg-0">
-                            <p className="mb-lg-4">{cart.product.title}</p>
-                            <p>
-                              規格：{cart.color}/{cart.size}
-                            </p>
-                          </div>
-
-                          <div className="cart__product-price mb-3 md-lg-0">
-                            <span className="mb-1">
-                              ${cart.product.price.toLocaleString('zh-TW')}
-                            </span>
-                            <span className="text-decoration-line-through text-nature-70">
-                              $
-                              {cart.product.origin_price.toLocaleString(
-                                'zh-TW'
-                              )}
-                            </span>
-                          </div>
-                          <div className="cart__product-num py-1.5 py-lg-0">
-                            <div className="c-product-num">
-                              <button
-                                className="btn c-product-num__minus"
-                                type="button"
-                                onClick={() =>
-                                  updateCarts(cart.id, cart.qty - 1)
-                                }
-                              >
-                                <svg className="pe-none" width="24" height="24">
-                                  <use
-                                    href={getImgUrl('/icons/minus.svg#minus')}
-                                  />
-                                </svg>
-                              </button>
-                              <input
-                                type="text"
-                                className="form-control c-product-num__val"
-                                value={cart.qty}
-                                readOnly
-                              />
-                              <button
-                                className="btn c-product-num__plus"
-                                type="button"
-                                onClick={() =>
-                                  updateCarts(cart.id, cart.qty + 1)
-                                }
-                              >
-                                <svg className="pe-none" width="24" height="24">
-                                  <use
-                                    href={getImgUrl('/icons/plus.svg#plus')}
-                                  />
-                                </svg>
-                              </button>
-                            </div>
-                          </div>
-                          <div className="cart__product-total">
-                            <p>
-                              $
-                              {(cart.product.price * cart.qty).toLocaleString(
-                                'zh-TW'
-                              )}
-                            </p>
-                          </div>
+                  {tempCartsData.length ? (
+                    <>
+                      <div className="cart__table mb-5">
+                        <div className="cart__thead px-3">
+                          <div>商品資料</div>
+                          <div>單價</div>
+                          <div>數量</div>
+                          <div>小計</div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="border-bottom border-nature-90 pb-5 mb-5">
-                    <div className="d-flex flex-column justify-content-between pb-3 p-md-3 flex-md-row">
-                      <div className="d-flex flex-column mb-3 mb-md-0">
-                        <div className="d-flex justify-content-end justify-content-md-start">
-                          <div className="cart__discount mb-3">
-                            <input
-                              type="text"
-                              className="form-control cart__discount-input"
-                              placeholder="請輸入折價券"
-                              value={tempCouponData}
-                              onChange={(e) =>
-                                setTempCouponData(e.target.value)
-                              }
-                            />
-                            <button
-                              className="btn btn-outline-primary cart__discount-btn"
-                              type="button"
-                              onClick={couponHandler}
-                              disabled={tempCouponData === ''}
+                        <div className="cart__tbody">
+                          {tempCartsData.map((cart) => (
+                            <div
+                              className="pt-3 pb-5 px-lg-3 py-lg-4"
+                              key={cart.id}
                             >
-                              使用
-                            </button>
+                              <img
+                                className="cart__product-img mb-3 mb-lg-0"
+                                src={cart.product.imageUrl}
+                                alt={cart.product.title}
+                              />
+                              <div className="cart__product-content mb-3 px-lg-3 py-lg-4.5 mb-lg-0">
+                                <p className="mb-lg-4">{cart.product.title}</p>
+                                <p>
+                                  規格：{cart.color}/{cart.size}
+                                </p>
+                              </div>
+
+                              <div className="cart__product-price mb-3 md-lg-0">
+                                <span className="mb-1">
+                                  ${cart.product.price.toLocaleString('zh-TW')}
+                                </span>
+                                <span className="text-decoration-line-through text-nature-70">
+                                  $
+                                  {cart.product.origin_price.toLocaleString(
+                                    'zh-TW'
+                                  )}
+                                </span>
+                              </div>
+                              <div className="cart__product-num py-1.5 py-lg-0">
+                                <div className="c-product-num">
+                                  <button
+                                    className="btn c-product-num__minus"
+                                    type="button"
+                                    onClick={() =>
+                                      updateCarts(cart.id, cart.qty - 1)
+                                    }
+                                    disabled={checkBtnDisabled(cart, 'minus')}
+                                  >
+                                    <svg
+                                      className="pe-none"
+                                      width="24"
+                                      height="24"
+                                    >
+                                      <use
+                                        href={getImgUrl(
+                                          '/icons/minus.svg#minus'
+                                        )}
+                                      />
+                                    </svg>
+                                  </button>
+                                  <input
+                                    type="text"
+                                    className="form-control c-product-num__val"
+                                    value={cart.qty}
+                                    readOnly
+                                  />
+                                  <button
+                                    className="btn c-product-num__plus"
+                                    type="button"
+                                    onClick={() =>
+                                      updateCarts(cart.id, cart.qty + 1)
+                                    }
+                                    disabled={checkBtnDisabled(cart, 'plus')}
+                                  >
+                                    <svg
+                                      className="pe-none"
+                                      width="24"
+                                      height="24"
+                                    >
+                                      <use
+                                        href={getImgUrl('/icons/plus.svg#plus')}
+                                      />
+                                    </svg>
+                                  </button>
+                                </div>
+                              </div>
+                              <div className="cart__product-total">
+                                <p>
+                                  $
+                                  {(
+                                    cart.product.price * cart.qty
+                                  ).toLocaleString('zh-TW')}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="border-bottom border-nature-90 pb-5 mb-5">
+                        <div className="d-flex flex-column justify-content-between pb-3 p-md-3 flex-md-row">
+                          <div className="d-flex flex-column mb-3 mb-md-0">
+                            <div className="d-flex justify-content-end justify-content-md-start">
+                              <div className="cart__discount mb-3">
+                                <input
+                                  type="text"
+                                  className="form-control cart__discount-input"
+                                  placeholder="請輸入折價券"
+                                  value={tempCouponData}
+                                  onChange={(e) =>
+                                    setTempCouponData(e.target.value)
+                                  }
+                                />
+                                <button
+                                  className="btn btn-outline-primary cart__discount-btn"
+                                  type="button"
+                                  onClick={couponHandler}
+                                  disabled={tempCouponData === ''}
+                                >
+                                  使用
+                                </button>
+                              </div>
+                            </div>
+                            {couponData?.title && (
+                              <div className="d-flex justify-content-end justify-content-md-start">
+                                <p className="bg-secondary-80 border border-secondary-70 fs-sm rounded-1 px-2 py-1">
+                                  商品適用優惠：{couponData.title}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                          <div className="d-flex flex-column gap-2 gap-md-4">
+                            <div className="d-flex justify-content-end gap-6">
+                              <p>商品金額</p>
+                              <p>${cartsTotal.toLocaleString('zh-TW')}</p>
+                            </div>
+                            {couponData?.percent && (
+                              <div className="d-flex justify-content-end gap-6">
+                                <p>折扣碼折抵</p>
+                                <p className="text-secondary-60">
+                                  ${cartsDiscount}
+                                </p>
+                              </div>
+                            )}
                           </div>
                         </div>
-                        {couponData?.title && (
-                          <div className="d-flex justify-content-end justify-content-md-start">
-                            <p className="bg-secondary-80 border border-secondary-70 fs-sm rounded-1 px-2 py-1">
-                              商品適用優惠：{couponData.title}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                      <div className="d-flex flex-column gap-2 gap-md-4">
-                        <div className="d-flex justify-content-end gap-6">
-                          <p>商品金額</p>
-                          <p>${cartsTotal.toLocaleString('zh-TW')}</p>
+                        <div className="d-flex align-items-center justify-content-end gap-6">
+                          <p>
+                            <span className="fw-bold">
+                              {tempCartsData.length}
+                            </span>
+                            項商品
+                          </p>
+                          <p className="fw-bold fs-h4">
+                            $
+                            {(cartsTotal - cartsDiscount).toLocaleString(
+                              'zh-TW'
+                            )}
+                          </p>
                         </div>
-                        {couponData?.percent && (
-                          <div className="d-flex justify-content-end gap-6">
-                            <p>折扣碼折抵</p>
-                            <p className="text-secondary-60">
-                              ${calDiscount(cartsTotal, couponData?.percent)}
-                            </p>
-                          </div>
-                        )}
                       </div>
-                    </div>
-                    <div className="d-flex align-items-center justify-content-end gap-6">
-                      <p>
-                        <span className="fw-bold">{cartsData.length}</span>
-                        項商品
-                      </p>
-                      <p className="fw-bold fs-h4">
-                        $
-                        {(
-                          cartsTotal -
-                          calDiscount(cartsTotal, couponData?.percent)
-                        ).toLocaleString('zh-TW')}
-                      </p>
-                    </div>
-                  </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="fw-bold fs-h5 text-center my-4 mt-10 mb-md-20">
+                        購物車中未有商品
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <div className="d-flex flex-column-reverse justify-content-end align-items-center gap-3 mb-10 flex-sm-row gap-md-6 mb-md-30">
-                  <input
-                    type="button"
+                  <Link
                     className="btn btn-lg btn-outline-primary"
-                    value="繼續逛逛"
-                  />
-                  <input
-                    type="button"
-                    className="btn btn-lg btn-primary"
-                    value="前往結賬"
-                  />
+                    to="/products"
+                  >
+                    繼續逛逛
+                  </Link>
+                  <Link
+                    className={`btn btn-lg btn-primary ${
+                      tempCartsData.length ? '' : 'disabled'
+                    }`}
+                    to="/checkout"
+                  >
+                    前往結賬
+                  </Link>
                 </div>
               </div>
             </div>
@@ -291,6 +366,7 @@ export default function Cart() {
           </div>
         </div>
       </main>
+      <ScreenLoading isLoading={isLoading} />
     </>
   );
 }

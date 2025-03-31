@@ -1,0 +1,33 @@
+  .pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    gap: 5px;
+  
+    button {
+      border-radius: 8px; // 調整圓角
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 14px;
+    }
+  }
+  
+  .prev,
+  .next {
+    font-weight: bold;
+    min-width: 60px;
+  }
+  
+  @media (max-width: 576px) {
+    .pagination {
+      gap: 2px;
+  
+      button {
+        padding: 6px 10px;
+        font-size: 12px;
+        border-radius: 6px; 
+      }
+    }
+  }
+  

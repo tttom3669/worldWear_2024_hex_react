@@ -12,33 +12,77 @@ export const productsSlice = createSlice({
             slug: 'top',
             title: '上衣',
             imageUrl: '/images/home/category-top.png',
-            // 之後擴充 subCategories: []
+            subCategories: [
+              { slug: 'shirt', title: '襯衫' },
+              { slug: 'knitwear', title: '針織衫' },
+              { slug: 'tshirt', title: 'T恤' },
+              { slug: 'casual', title: '休閒上衣' }
+            ]
           },
           {
             slug: 'jacket',
             title: '外套',
             imageUrl: '/images/home/category-jacket.png',
+            subCategories: [
+              { slug: 'jacket', title: '夾克外套' },
+              { slug: 'coat', title: '大衣' },
+              { slug: 'knitwear-jacket', title: '針織外套' },
+              // { slug: 'leather-jacket', title: '仿皮外套' },
+              { slug: 'suit-jacket', title: '西裝外套' },
+              // { slug: 'functional-jacket', title: '機能外套' },
+              // { slug: 'hoodie', title: '連帽外套' }
+            ]
           },
           {
             slug: 'dress',
             title: '洋裝',
             imageUrl: '/images/home/category-dress.png',
+            subCategories: [
+              { slug: 'dress', title: '洋裝' },
+              { slug: 'long-dress', title: '長洋裝' },
+              { slug: 'one-piece', title: '連衣裙' }
+            ]
           },
           {
             slug: 'pants',
             title: '褲子',
             imageUrl: '/images/home/category-pants.png',
+            subCategories: [
+              { slug: 'short-pants', title: '短褲' },
+              { slug: 'skirt-pants', title: '褲裙' },
+              { slug: 'long-pants', title: '長褲' }
+            ]
           },
           {
             slug: 'skirts',
             title: '裙子',
             imageUrl: '/images/home/category-skirt.png',
+            subCategories: [
+              { slug: 'short-skirt', title: '短裙' },
+              { slug: 'denim-skirt', title: '牛仔裙' }
+            ]
           },
           {
             slug: 'accessories',
-            title: '服飾配件',
+            title: '配件',
             imageUrl: '/images/home/category-accessories.png',
+            subCategories: [
+              { slug: 'hat', title: '帽子' },
+              { slug: 'shawl', title: '披肩' },
+              { slug: 'belt', title: '皮帶' },
+              { slug: 'socks', title: '襪子' }
+            ]
           },
+          {
+            slug: 'product-status',
+            title: '狀態',
+            imageUrl: '#',
+            subCategories: [
+              { slug: 'in-stock', title: '現貨' },
+              { slug: 'pre-order', title: '預購' },
+              { slug: 'restocking', title: '補貨中' }
+            ]
+          }
         ],
       },
       {
@@ -49,22 +93,56 @@ export const productsSlice = createSlice({
             slug: 'top',
             title: '上衣',
             imageUrl: '/images/home/category-top-m.png',
+            subCategories: [
+              { slug: 'long-sleeve', title: '長袖' },
+              { slug: 'short-sleeve', title: '短袖' }
+            ]
           },
           {
             slug: 'jacket',
             title: '外套',
             imageUrl: '/images/home/category-jacket-m.png',
+            subCategories: [
+              { slug: 'casual-jacket', title: '休閒外套' },
+              { slug: 'jacket', title: '夾克外套' },
+              { slug: 'long-jacket', title: '長版外套' },
+              { slug: 'suit-jacket', title: '西裝外套' },
+              { slug: 'functional-jacket', title: '機能外套' },
+              { slug: 'hoodie', title: '連帽外套' }
+            ]
           },
           {
             slug: 'pants',
             title: '褲子',
             imageUrl: '/images/home/category-pants-m.png',
+            subCategories: [
+              { slug: 'jeans', title: '牛仔褲' },
+              { slug: 'suit-pants', title: '西裝長褲' },
+              { slug: 'wide-pants', title: '寬褲' },
+              { slug: 'casual-pants', title: '休閒褲' },
+              { slug: 'short-pants', title: '短褲' }
+            ]
           },
           {
             slug: 'accessories',
-            title: '服飾配件',
+            title: '配件',
             imageUrl: '/images/home/category-accessories-m.png',
+            subCategories: [
+              { slug: 'hat', title: '帽子' },
+              { slug: 'belt', title: '皮帶' },
+              { slug: 'socks', title: '襪子' }
+            ]
           },
+          {
+            slug: 'product-status',
+            title: '狀態',
+            imageUrl: '#',
+            subCategories: [
+              { slug: 'in-stock', title: '現貨' },
+              { slug: 'pre-order', title: '預購' },
+              { slug: 'restocking', title: '補貨中' }
+            ]
+          }
         ],
       },
     ],
