@@ -132,14 +132,14 @@ export default function Checkout() {
                     />
                     <div className="px-5 py-8 bg-white border border-nature-90">
                       {/* 姓名 */}
-                      <div className=" d-flex align-items-center mb-3">
+                      <div className="d-flex flex-column align-items-md-center mb-3 flex-md-row">
                         <label className="form-label form-label-text me-6">
                           姓名
                         </label>
                         <div className="checkout__col">
                           <input
                             type="text"
-                            className={`form-control form-input bg-white ${
+                            className={`form-control  w-100 form-input bg-white ${
                               errors.buyerName && 'is-invalid'
                             }`}
                             placeholder="請輸入訂購人姓名"
@@ -157,14 +157,14 @@ export default function Checkout() {
                       </div>
 
                       {/* 手機 */}
-                      <div className="d-flex align-items-center mb-3">
+                      <div className="d-flex flex-column align-items-md-center mb-3 flex-md-row">
                         <label className="form-label form-label-text me-6">
                           手機
                         </label>
                         <div className="checkout__col">
                           <input
                             type="text"
-                            className={`form-control form-input bg-white ${
+                            className={`form-control  w-100 form-input bg-white ${
                               errors.buyerPhone && 'is-invalid'
                             }`}
                             placeholder="請輸入訂購人手機號碼"
@@ -190,14 +190,14 @@ export default function Checkout() {
                       </div>
 
                       {/* EMAIL */}
-                      <div className="d-flex align-items-center mb-3">
+                      <div className="d-flex flex-column align-items-md-center mb-3 flex-md-row">
                         <label className="form-label form-label-text me-6">
                           EMAIL
                         </label>
                         <div className="checkout__col">
                           <input
                             type="email"
-                            className={`form-control form-input bg-white ${
+                            className={`form-control  w-100 form-input bg-white ${
                               errors.buyerEmail && 'is-invalid'
                             }`}
                             placeholder="請輸入訂購人電子郵件"
@@ -243,14 +243,14 @@ export default function Checkout() {
                           收貨人同訂購人
                         </label>
                       </div>
-                      <div className="d-flex align-items-center mb-3">
+                      <div className="d-flex flex-column align-items-md-center mb-3 flex-md-row">
                         <label className="form-label form-label-text me-6">
                           收貨人
                         </label>
                         <div className="checkout__col">
                           <input
                             type="text"
-                            className={`form-control form-input bg-white ${
+                            className={`form-control w-100 form-input bg-white ${
                               errors.deliveryName && 'is-invalid'
                             }`}
                             placeholder="請輸入訂購人姓名"
@@ -266,14 +266,14 @@ export default function Checkout() {
                           </p>
                         </div>
                       </div>
-                      <div className="d-flex align-items-center mb-3 mb-md-8 pb-3 border-bottom border-nature-90">
+                      <div className="d-flex flex-column align-items-md-center pb-6 mb-8 flex-md-row  pb-md-3 border-bottom border-nature-90">
                         <label className="form-label form-label-text me-6">
                           手機
                         </label>
                         <div className="checkout__col">
                           <input
                             type="text"
-                            className={`form-control form-input bg-white ${
+                            className={`form-control  w-100 form-input bg-white ${
                               errors.deliveryPhone && 'is-invalid'
                             }`}
                             placeholder="請輸入收貨人手機號碼"
@@ -297,7 +297,7 @@ export default function Checkout() {
                           </p>
                         </div>
                       </div>
-                      <div className="d-flex align-items-center gap-4 md-3 mb-md-8">
+                      <div className="d-flex align-items-center gap-4 mb-8">
                         <div className="custom-radio">
                           <input
                             type="radio"
@@ -389,14 +389,14 @@ export default function Checkout() {
                           {paymentMethod === '信用卡' && (
                             <div className="paymentList__item-content">
                               <div className="p-5">
-                                <div className="d-flex align-items-center mb-3">
+                                <div className="d-flex flex-column align-items-md-center flex-md-row mb-3">
                                   <label className="form-label form-label-text">
                                     卡號*
                                   </label>
                                   <div className="checkout__col">
                                     <input
                                       type="text"
-                                      className={`form-control  form-input ${
+                                      className={`form-control w-100  form-input ${
                                         errors.cardNumber && 'is-invalid'
                                       }`}
                                       defaultValue="0920912091281234"
@@ -414,14 +414,14 @@ export default function Checkout() {
                                     </p>
                                   </div>
                                 </div>
-                                <div className="d-flex align-items-center mb-3">
+                                <div className="d-flex flex-column align-items-md-center flex-md-row mb-3">
                                   <label className="form-label form-label-text">
                                     有效期限*
                                   </label>
                                   <div className="checkout__col">
                                     <input
                                       type="text"
-                                      className={`form-control  form-input ${
+                                      className={`form-control  w-100 form-input ${
                                         errors.cardExpiry && 'is-invalid'
                                       } `}
                                       defaultValue="08/30"
@@ -439,14 +439,14 @@ export default function Checkout() {
                                     </p>
                                   </div>
                                 </div>
-                                <div className="d-flex align-items-center mb-3">
+                                <div className="d-flex flex-column align-items-md-center flex-md-row mb-3">
                                   <label className="form-label form-label-text">
                                     卡片後三碼*
                                   </label>
                                   <div className="checkout__col">
                                     <input
                                       type="text"
-                                      className={`form-control  form-input ${
+                                      className={`form-control  w-100 form-input ${
                                         errors.cardCode && 'is-invalid'
                                       }`}
                                       defaultValue="801"
