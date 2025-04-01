@@ -116,7 +116,7 @@ const ProductModal = ({
   //新增商品資料方法
   const createProduct = async () => {
     try {
-      await axios.post(`${API_PATH}/admin/product`, {
+      await axios.post(`${API_PATH}/admin/products`, {
         data: {
           ...modalData,
           origin_price: Number(modalData.origin_price),
@@ -141,7 +141,7 @@ const ProductModal = ({
   //編輯現有商品資料方法
   const updateProduct = async () => {
     try {
-      await axios.patch(`${API_PATH}/admin/product/${modalData.id}`, {
+      await axios.patch(`${API_PATH}/admin/products/${modalData.id}`, {
         data: {
           ...modalData,
           origin_price: Number(modalData.origin_price),
