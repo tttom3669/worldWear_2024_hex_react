@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
 import useSwal from '../../hooks/useSwal';
-import axios from 'axios';
 import cookieUtils from '../../components/tools/cookieUtils';
 import { convertTimestampToDate } from '../../components/tools/dateUtils';
 import Pagination from '../../components/layouts/Pagination';
 
-const { VITE_API_PATH: API_PATH } = import.meta.env;
 
 export default function AdminCoupons()  {
   const { toastAlert } = useSwal();

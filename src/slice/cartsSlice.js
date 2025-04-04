@@ -25,14 +25,12 @@ export const { setCartsData } = cartsSlice.actions;
 export const asyncGetCarts = createAsyncThunk(
   'asyncGetCarts',
   async function (payload, { dispatch, getState }) {
-    // const token = document.cookie.replace(
-    //   /(?:(?:^|.*;\s*)worldWearToken\s*\=\s*([^;]*).*$)|^.*$/,
-    //   '$1'
-    // );
-    const userId = document.cookie.replace(
-      /(?:(?:^|.*;\s*)worldWearUserId\s*\=\s*([^;]*).*$)|^.*$/,
-      '$1'
-    );
+    const userId =
+      document.cookie
+        .split('; ')
+        .find((row) => row.startsWith(`worldWearUserId`))
+        ?.split('=')[1] || '';
+
     const res = await axios.get(
       `${API_PATH}/carts/?userId=${userId}&_expand=user&_expand=product`
     );
