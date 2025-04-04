@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { Modal } from 'bootstrap';
 import axios from 'axios';
+import PropTypes from 'prop-types';
 
-const { VITE_BASE_URL: baseUrl, VITE_API_PATH: apiPath } = import.meta.env;
+const { VITE_API_PATH: API_PATH } = import.meta.env;
 
 const DeleteProductModal = ({
   tempProduct,
@@ -37,7 +38,7 @@ const DeleteProductModal = ({
   const deleteProduct = async () => {
     try {
       await axios.delete(
-        `${baseUrl}/v2/api/${apiPath}/admin/product/${tempProduct.id}`
+        `${API_PATH}/admin/products/${tempProduct.id}`
       );
     } catch (error) {
       console.error(error);
@@ -101,6 +102,13 @@ const DeleteProductModal = ({
       </div>
     </>
   );
+};
+
+DeleteProductModal.propTypes = {
+  tempProduct: PropTypes.object.isRequired,
+  getProducts: PropTypes.func.isRequired,
+  isOpen: PropTypes.bool.isRequired,
+  setIsOpen: PropTypes.func.isRequired,
 };
 
 export default DeleteProductModal;

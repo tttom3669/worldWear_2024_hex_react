@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from "react";
-import { Modal } from "bootstrap";
-import axios from "axios";
-import useSwal from "../../hooks/useSwal";
+import { useState, useEffect, useRef } from 'react';
+import { Modal } from 'bootstrap';
+import axios from 'axios';
+import useSwal from '../../hooks/useSwal';
+import PropTypes from 'prop-types';
 
 const { VITE_API_PATH: API_PATH } = import.meta.env;
 
@@ -49,15 +50,15 @@ const ProductModal = ({
 
     // 用於判斷是否屬於 content 欄位更新
     const contentFields = [
-      "material_contents",
-      "notes",
-      "origin",
-      "shelf_life",
+      'material_contents',
+      'notes',
+      'origin',
+      'shelf_life',
     ];
     const isContentField = contentFields.includes(name);
 
     // 先定義 inputValue
-    const inputValue = type === "checkbox" ? checked : value;
+    const inputValue = type === 'checkbox' ? checked : value;
 
     // 使用回呼函式保證可取得最新狀態（避免非同步造成的舊資料）
     setModalData((prevProduct) => {
@@ -95,7 +96,7 @@ const ProductModal = ({
 
   // 新增商品附圖資料
   const handleAddImage = () => {
-    const newImages = [...modalData.imagesUrl, ""];
+    const newImages = [...modalData.imagesUrl, ''];
     setModalData({
       ...modalData,
       imagesUrl: newImages,
@@ -116,7 +117,7 @@ const ProductModal = ({
   //新增商品資料方法
   const createProduct = async () => {
     try {
-      await axios.post(`${API_PATH}/admin/product`, {
+      await axios.post(`${API_PATH}/admin/products`, {
         data: {
           ...modalData,
           origin_price: Number(modalData.origin_price),
@@ -125,15 +126,14 @@ const ProductModal = ({
         },
       });
       toastAlert({
-        icon: "success",
-        title: "新增產品成功",
+        icon: 'success',
+        title: '新增產品成功',
       });
       handleCloseProductModal();
     } catch (error) {
-      // console.error(error.response.data.message);
       toastAlert({
-        icon: "error",
-        title: "新增產品失敗",
+        icon: 'error',
+        title: error.response.data.message || '新增產品失敗',
       });
     }
   };
@@ -141,7 +141,7 @@ const ProductModal = ({
   //編輯現有商品資料方法
   const updateProduct = async () => {
     try {
-      await axios.patch(`${API_PATH}/admin/product/${modalData.id}`, {
+      await axios.patch(`${API_PATH}/admin/products/${modalData.id}`, {
         data: {
           ...modalData,
           origin_price: Number(modalData.origin_price),
@@ -150,22 +150,22 @@ const ProductModal = ({
         },
       });
       toastAlert({
-        icon: "success",
-        title: "修改產品成功",
+        icon: 'success',
+        title: '修改產品成功',
       });
       handleCloseProductModal();
     } catch (error) {
       console.error(error);
       toastAlert({
-        icon: "error",
-        title: "編輯產品失敗",
+        icon: 'error',
+        title: '編輯產品失敗',
       });
     }
   };
 
   // 控制商品資料 - 編輯或新增
   const handleUpdateProduct = async () => {
-    const apiCall = modalMode === "create" ? createProduct : updateProduct;
+    const apiCall = modalMode === 'create' ? createProduct : updateProduct;
     try {
       await apiCall();
       getProducts();
@@ -180,13 +180,13 @@ const ProductModal = ({
         id="productModal"
         ref={productModalRef}
         className="modal"
-        style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
       >
         <div className="modal-dialog modal-dialog-centered modal-xl">
           <div className="modal-content border-0 shadow">
             <div className="modal-header border-bottom">
               <h5 className="modal-title fs-4">
-                {modalMode === "create" ? "新增產品" : "編輯產品"}
+                {modalMode === 'create' ? '新增產品' : '編輯產品'}
               </h5>
               <button
                 onClick={handleCloseProductModal}
@@ -253,7 +253,7 @@ const ProductModal = ({
                     <div className="btn-group w-100">
                       {modalData.imagesUrl.length < 5 &&
                         modalData.imagesUrl[modalData.imagesUrl.length - 1] !==
-                          "" && (
+                          '' && (
                           <button
                             onClick={handleAddImage}
                             className="btn btn-outline-primary btn-sm w-100"
@@ -338,7 +338,7 @@ const ProductModal = ({
                   </div>
                   <div className="mb-3">
                     <label htmlFor="design_style" className="form-label">
-                    商品穿搭風格
+                      商品穿搭風格
                     </label>
                     <input
                       value={modalData.content.design_style}
@@ -352,7 +352,7 @@ const ProductModal = ({
                   </div>
                   <div className="mb-3">
                     <label htmlFor="design_introduction" className="form-label">
-                    商品介紹
+                      商品介紹
                     </label>
                     <input
                       value={modalData.content.design_introduction}
@@ -366,7 +366,7 @@ const ProductModal = ({
                   </div>
                   <div className="mb-3">
                     <label htmlFor="origin" className="form-label">
-                    產地
+                      產地
                     </label>
                     <input
                       value={modalData.content.origin}
@@ -570,6 +570,14 @@ const ProductModal = ({
       </div>
     </>
   );
+};
+
+ProductModal.propTypes = {
+  modalMode: PropTypes.string.isRequired,
+  tempProduct: PropTypes.object.isRequired,
+  isOpen: PropTypes.bool.isRequired,
+  setIsOpen: PropTypes.func.isRequired,
+  getProducts: PropTypes.func.isRequired,
 };
 
 export default ProductModal;

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import useSwal from "../../hooks/useSwal";
 import cookieUtils from "../../components/tools/cookieUtils";
 import Pagination from "../../components/layouts/Pagination";

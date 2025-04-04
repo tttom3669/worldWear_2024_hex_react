@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+
 import {
   addToFavorites,
   removeFromFavorites,
@@ -12,6 +13,7 @@ import {
 import useSwal from '../../hooks/useSwal';
 import cookieUtils from '../../components/tools/cookieUtils';
 import { store } from '../../store';
+import PropTypes from 'prop-types';
 
 const ProductCard = ({ data }) => {
   const dispatch = useDispatch();
@@ -133,13 +135,13 @@ const ProductCard = ({ data }) => {
           // console.error('加入收藏失敗:', error);
           toastAlert({
             icon: 'error',
-            title: '加入收藏失敗，請稍後再試',
+            title: error.response.data.message || '加入收藏失敗，請稍後再試',
           });
         });
     }
   };
 
-  const handleImageClick = (e) => {
+  const handleImageClick = () => {
     // 移除 e.preventDefault()，讓連結可以正常工作
     setIsClicked(true);
     setTimeout(() => setIsClicked(false), 400);
@@ -289,6 +291,10 @@ const ProductCard = ({ data }) => {
       </Link>
     </motion.div>
   );
+};
+
+ProductCard.propTypes = {
+  data: PropTypes.object.isRequired,
 };
 
 export default ProductCard;

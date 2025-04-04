@@ -4,10 +4,12 @@ import FrontHeader from '../../components/front/FrontHeader';
 import ProductCard from '../../components/front/ProductCard';
 import axios from 'axios';
 import { useState } from 'react';
+import ScreenLoading from '../../components/front/ScreenLoading';
 const { VITE_API_PATH: API_PATH } = import.meta.env;
 
 export default function Search() {
   const [searchParams] = useSearchParams();
+  const [isLoading, setIsLoading] = useState(false);
   const searchQuery = searchParams.get('s');
   const [searchProducts, setSearchProducts] = useState([]);
 
@@ -18,6 +20,15 @@ export default function Search() {
 
   useEffect(() => {
     getSearchProduct(searchQuery);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    setIsLoading(true);
+    getSearchProduct(searchQuery);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
+    return () => clearTimeout(timer);
   }, [searchQuery]);
 
   return (
@@ -49,6 +60,7 @@ export default function Search() {
           </div>
         </div>
       </main>
+      <ScreenLoading isLoading={isLoading} />
     </>
   );
 }

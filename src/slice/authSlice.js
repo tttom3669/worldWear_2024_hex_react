@@ -84,7 +84,7 @@ export const checkEmailExists = createAsyncThunk(
         exists: response.data.length > 0
       };
     } catch (error) {
-      return rejectWithValue('檢查郵件是否存在時發生錯誤');
+      return rejectWithValue( error.response?.data?.message || '檢查郵件是否存在時發生錯誤');
     }
   }
 );
@@ -191,7 +191,7 @@ export const logoutUser = createAsyncThunk(
       
       return { success: true };
     } catch (error) {
-      return rejectWithValue('登出失敗');
+      return rejectWithValue(error.response?.data?.message || '登出失敗');
     }
   }
 );

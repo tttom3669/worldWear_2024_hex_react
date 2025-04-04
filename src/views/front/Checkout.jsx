@@ -90,11 +90,12 @@ export default function Checkout() {
     const buyerName = formValues.buyerName;
     const buyerPhone = formValues.buyerPhone;
     const payment = formValues.payment;
-
+    const shipping = formValues.shipping;
     reset({
       deliveryName: buyerName,
       deliveryPhone: buyerPhone,
       payment: payment,
+      shipping: shipping,
     });
   };
 
@@ -460,6 +461,7 @@ export default function Checkout() {
                                         },
                                       })}
                                     />
+                                    setIsLoading]
                                     <p className="invalid-feedback">
                                       {errors.cardCode?.message}
                                     </p>

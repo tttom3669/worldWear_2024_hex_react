@@ -14,14 +14,16 @@ export default function UserOrder() {
   const getOrder = async () => {
     try {
       setIsLoading(true);
-      const userId = document.cookie.replace(
-        /(?:(?:^|.*;\s*)worldWearUserId\s*\=\s*([^;]*).*$)|^.*$/,
-        '$1'
-      );
-      const token = document.cookie.replace(
-        /(?:(?:^|.*;\s*)worldWearToken\s*\=\s*([^;]*).*$)|^.*$/,
-        '$1'
-      );
+      const userId =
+        document.cookie
+          .split('; ')
+          .find((row) => row.startsWith(`worldWearUserId`))
+          ?.split('=')[1] || '';
+      const token =
+        document.cookie
+          .split('; ')
+          .find((row) => row.startsWith(`worldWearToken`))
+          ?.split('=')[1] || '';
       const res = await axios.get(`${API_PATH}/orders?userId=${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,

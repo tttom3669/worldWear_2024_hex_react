@@ -12,7 +12,6 @@ import {
   asyncGetCarts,
   cartsData as sliceCartsData,
 } from '../../slice/cartsSlice';
-import axios from 'axios';
 function FrontHeader({ defaultType }) {
   const getImgUrl = useImgUrl();
   const dispatch = useDispatch();
