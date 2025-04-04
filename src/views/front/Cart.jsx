@@ -47,10 +47,11 @@ export default function Cart() {
     return percent ? (total * percent) / 100 : 0;
   };
   const getCarts = async () => {
-    const userId = document.cookie.replace(
-      /(?:(?:^|.*;\s*)worldWearUserId\s*\=\s*([^;]*).*$)|^.*$/,
-      '$1'
-    );
+    const userId =
+      document.cookie
+        .split('; ')
+        .find((row) => row.startsWith(`worldWearUserId`))
+        ?.split('=')[1] || '';
     try {
       const res = await axios.get(
         `${API_PATH}/carts/?userId=${userId}&_expand=user&_expand=product`

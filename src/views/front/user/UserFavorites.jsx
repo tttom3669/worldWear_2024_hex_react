@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
@@ -14,13 +14,11 @@ import {
   updateFavoriteItemSize,
 } from '../../../slice/favoritesSlice';
 // 導入 cookieUtils
-import cookieUtils, {
+import {
   isUserLoggedIn,
   getJWTToken,
-  getUserIdFromCookie,
 } from '../../../components/tools/cookieUtils';
 import ScreenLoading from '../../../components/front/ScreenLoading';
-import ColorSelect from '../../../components/front/ColorSelect';
 
 export default function UserFavorites() {
   const getImgUrl = useImgUrl();
@@ -33,10 +31,6 @@ export default function UserFavorites() {
   const favoritesData = useSelector(
     (state) => state.favorites?.favoritesData?.products || []
   );
-  const favoritesStatus = useSelector(
-    (state) => state.favorites?.status || 'idle'
-  );
-  const favoritesError = useSelector((state) => state.favorites?.error || null);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -60,8 +54,8 @@ export default function UserFavorites() {
     return Object.values(groupedItems);
   };
 
-
-  const displayItems = isAuthenticated && processGroupedFavorites(favoritesData);
+  const displayItems =
+    isAuthenticated && processGroupedFavorites(favoritesData);
 
   // 修改 handleUpdateQuantity 函數
   const handleUpdateQuantity = async (
@@ -72,8 +66,8 @@ export default function UserFavorites() {
   ) => {
     // 確保數量不小於 1
     if (newQty < 1) return;
-  
-    try { 
+
+    try {
       // 找到所有相同規格的項目
       const groupedItems = favoritesData.filter(
         (item) =>
@@ -128,7 +122,7 @@ export default function UserFavorites() {
   // 修改 handleDeleteItem 函數
   const handleDeleteItem = async (favoriteId) => {
     try {
-      if (!window.confirm("確定要移除此收藏項目嗎？")) {
+      if (!window.confirm('確定要移除此收藏項目嗎？')) {
         return;
       }
 
@@ -151,7 +145,10 @@ export default function UserFavorites() {
 
       toastAlert({ icon: 'success', title: '已從收藏列表中移除' });
     } catch (error) {
-      toastAlert({ icon: "error", title: "移除失敗，請稍後再試" });
+      toastAlert({
+        icon: 'error',
+        title: error.response.data.message || '移除失敗，請稍後再試',
+      });
     }
   };
 
@@ -229,7 +226,6 @@ export default function UserFavorites() {
   useEffect(() => {
     setIsLoading(true);
     try {
-
       // 使用 cookieUtils 直接檢查登入狀態
       const loggedIn = isUserLoggedIn();
       // console.log("用戶登入狀態:", loggedIn);
@@ -238,12 +234,7 @@ export default function UserFavorites() {
       const token = getJWTToken();
       if (token) {
         // 嘗試直接設置全局 axios 標頭
-        axios.defaults.headers.common["Authorization"] = token;
-
-        // 額外嘗試：檢查 token 格式是否需要特殊處理
-        const rawToken = token.startsWith('Bearer ')
-          ? token.substring(7)
-          : token;
+        axios.defaults.headers.common['Authorization'] = token;
       } else {
         // console.warn("未找到有效的 token，無法設置 axios 標頭");
       }
@@ -251,20 +242,22 @@ export default function UserFavorites() {
       // 如果已登入或有 token，嘗試獲取收藏列表
       if ((loggedIn || token) && !hasFetchedFavorites.current) {
         hasFetchedFavorites.current = true;
-         dispatch(getFavorites())
+        dispatch(getFavorites())
           .unwrap()
-          .then((result) => {
+          .then(() => {
             setIsAuthenticated(true);
             setIsLoading(false);
           })
           .catch((error) => {
+            console.log(error);
             setIsLoading(false);
           });
       } else {
-
         setIsLoading(false);
       }
     } catch (error) {
+      console.log(error);
+
       setIsLoading(false);
     }
   }, [dispatch]);
@@ -317,7 +310,7 @@ export default function UserFavorites() {
                             className="d-flex flex-wrap align-items-center py-4 px-3 border-bottom border-nature-90 mt-3 flex-lg-nowrap"
                           >
                             {/* 產品資料欄 */}
-                            <div className='mb-3 mb-lg-0'>
+                            <div className="mb-3 mb-lg-0">
                               <div className="d-flex align-items-start align-items-lg-center">
                                 <div
                                   className="me-3"
@@ -346,7 +339,7 @@ export default function UserFavorites() {
                             </div>
 
                             {/* 規格欄 */}
-                            <div className='mb-3 mb-lg-0'>
+                            <div className="mb-3 mb-lg-0">
                               <div className="product-spec gap-6 w-50 w-lg-auto gap-lg-0 me-lg-2">
                                 <select
                                   className="form-select form-select-sm mb-3 mb-lg-2"
@@ -448,7 +441,7 @@ export default function UserFavorites() {
                             </div>
 
                             {/* 數量欄 */}
-                            <div className='mb-3 mb-lg-0'>
+                            <div className="mb-3 mb-lg-0">
                               <div className="product-qty py-lg-0 ms-lg-2">
                                 <div className="d-flex align-items-center">
                                   <div className="btn-group me-2" role="group">
@@ -513,7 +506,7 @@ export default function UserFavorites() {
                             </div>
 
                             {/* 單價欄 */}
-                            <div className='d-flex align-items-center justify-content-end justify-content-lg-center'>
+                            <div className="d-flex align-items-center justify-content-end justify-content-lg-center">
                               <div className="product-price">
                                 NT$
                                 {favorite.product?.price?.toLocaleString() ||

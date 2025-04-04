@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Row } from 'react-bootstrap';
 import { useSearchParams } from 'react-router-dom';
 import useImgUrl from '../../hooks/useImgUrl';
+import PropTypes from 'prop-types';
+
 
 const Pagination = ({
   data,
@@ -153,6 +155,15 @@ const Pagination = ({
       )}
     </div>
   );
+};
+
+Pagination.propTypes = {
+  data: PropTypes.array.isRequired,
+  RenderComponent: PropTypes.func.isRequired,
+  pageLimit: PropTypes.number.isRequired,
+  dataLimit: PropTypes.number.isRequired,
+  currentPage: PropTypes.number.isRequired,
+  setCurrentPage: PropTypes.func.isRequired,
 };
 
 export default Pagination;

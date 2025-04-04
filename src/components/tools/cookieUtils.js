@@ -43,7 +43,7 @@ export const setCookie = (name, value, days = 7, options = {}) => {
     };
 
     const cookieString = Object.entries(cookieOptions)
-      .filter(([key, value]) => value !== false)
+      .filter(([, value]) => value !== false)
       .map(([key, value]) =>
         key === 'expires'
           ? `Expires=${value}`

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo, use } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useLocation, useSearchParams } from 'react-router-dom';
 import {
@@ -35,7 +35,6 @@ export default function ProductsList() {
     error = null,
     sortOption = '最新上架',
     currentPage = 1,
-    filters = {},
     currentCategory = null,
   } = useSelector((state) => state.productsList || {});
 
@@ -198,17 +197,6 @@ export default function ProductsList() {
     // 控制 body 的滾動
     document.body.style.overflow = showOffcanvas ? '' : 'hidden';
   }, [showOffcanvas]);
-
-  // 計算總篩選數量
-  const totalFilterCount = useMemo(
-    () =>
-      Object.values(filters).reduce(
-        (count, labels) =>
-          count + (labels.includes('全部') ? 0 : labels.length),
-        0
-      ),
-    [filters]
-  );
 
   // 在組件被卸載時確保header可見和body滾動恢復
   useEffect(() => {

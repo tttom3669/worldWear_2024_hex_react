@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { memo, useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { checkEmailExists, clearError } from '../slice/authSlice';
@@ -7,6 +7,7 @@ import FrontHeader from '../components/front/FrontHeader';
 import FrontFooter from '../components/front/FrontFooter';
 import useSwal from '../hooks/useSwal';
 import cookieUtils from '../components/tools/cookieUtils';
+import PropTypes from 'prop-types';
 
 // 常量定義
 const TABS = {
@@ -226,41 +227,38 @@ export default function Login() {
   );
 
   // 忘記密碼處理
-  const handleForgotPassword = useCallback(
-    async (data) => {
-      try {
-        setSubmitError(null);
-        setIsLoading(true);
-        isResetPasswordAttemptRef.current = true;
+  const handleForgotPassword = useCallback(async () => {
+    try {
+      setSubmitError(null);
+      setIsLoading(true);
+      isResetPasswordAttemptRef.current = true;
 
-        // TODO: 實現忘記密碼的具體邏輯
-        // 可能需要在 cookieUtils 中添加相應的方法
-        toastAlert({
-          icon: 'success',
-          title: '重設密碼郵件已發送',
-          text: '請檢查您的電子郵件信箱，並按照指示重設密碼',
-        });
+      // TODO: 實現忘記密碼的具體邏輯
+      // 可能需要在 cookieUtils 中添加相應的方法
+      toastAlert({
+        icon: 'success',
+        title: '重設密碼郵件已發送',
+        text: '請檢查您的電子郵件信箱，並按照指示重設密碼',
+      });
 
-        // 重置表單並返回登入視圖
-        forgotPasswordForm.reset(initialForgotPasswordData);
-        setShowForgotPassword(false);
-      } catch (error) {
-        const errorMsg =
-          typeof error === 'string' ? error : '重設密碼請求失敗，請稍後再試';
+      // 重置表單並返回登入視圖
+      forgotPasswordForm.reset(initialForgotPasswordData);
+      setShowForgotPassword(false);
+    } catch (error) {
+      const errorMsg =
+        typeof error === 'string' ? error : '重設密碼請求失敗，請稍後再試';
 
-        setSubmitError(errorMsg);
-        toastAlert({
-          icon: 'error',
-          title: '重設密碼請求失敗',
-          text: errorMsg,
-        });
-      } finally {
-        setIsLoading(false);
-        isResetPasswordAttemptRef.current = false;
-      }
-    },
-    [toastAlert, forgotPasswordForm, initialForgotPasswordData]
-  );
+      setSubmitError(errorMsg);
+      toastAlert({
+        icon: 'error',
+        title: '重設密碼請求失敗',
+        text: errorMsg,
+      });
+    } finally {
+      setIsLoading(false);
+      isResetPasswordAttemptRef.current = false;
+    }
+  }, [toastAlert, forgotPasswordForm, initialForgotPasswordData]);
 
   // 頁籤切換處理
   const handleTabChange = useCallback(
@@ -324,7 +322,7 @@ export default function Login() {
                   <div className="card-header p-0">
                     <ul className="nav nav-tabs w-100">
                       {Object.entries(TABS).map(([key, tab]) => (
-                        <li key={tab} className="nav-item w-50">
+                        <li key={key} className="nav-item w-50">
                           <button
                             className={`nav-link w-100 ${
                               activeTab === tab ? 'active' : 'inactive'
@@ -386,7 +384,7 @@ export default function Login() {
 }
 
 // 登入表單子組件保持不變
-const LoginForm = React.memo(
+const LoginForm = memo(
   ({ form, submitError, isLoading, onSubmit, onForgotPassword }) => {
     const {
       register,
@@ -478,8 +476,17 @@ const LoginForm = React.memo(
   }
 );
 
+LoginForm.displayName = 'LoginForm';
+LoginForm.propTypes = {
+  form: PropTypes.object.isRequired,
+  submitError: PropTypes.string,
+  isLoading: PropTypes.bool.isRequired,
+  onSubmit: PropTypes.func.isRequired,
+  onForgotPassword: PropTypes.func.isRequired,
+};
+
 // 忘記密碼表單子組件
-const ForgotPasswordForm = React.memo(
+const ForgotPasswordForm = memo(
   ({ form, submitError, isLoading, onSubmit, onBack }) => {
     const {
       register,
@@ -545,8 +552,17 @@ const ForgotPasswordForm = React.memo(
   }
 );
 
+ForgotPasswordForm.displayName = 'ForgotPasswordForm';
+ForgotPasswordForm.propTypes = {
+  form: PropTypes.object.isRequired,
+  submitError: PropTypes.string,
+  isLoading: PropTypes.bool.isRequired,
+  onSubmit: PropTypes.func.isRequired,
+  onBack: PropTypes.func.isRequired,
+};
+
 // 註冊表單子組件 - 更新以使用 React Hook Form
-const RegisterForm = React.memo(
+const RegisterForm = memo(
   ({ form, submitError, isLoading, isEmailChecking, onSubmit }) => {
     const {
       register,
@@ -694,3 +710,12 @@ const RegisterForm = React.memo(
     );
   }
 );
+
+RegisterForm.displayName = 'RegisterForm';
+RegisterForm.propTypes = {
+  form: PropTypes.object.isRequired,
+  submitError: PropTypes.string,
+  isLoading: PropTypes.bool.isRequired,
+  isEmailChecking: PropTypes.bool.isRequired,
+  onSubmit: PropTypes.func.isRequired,
+};
