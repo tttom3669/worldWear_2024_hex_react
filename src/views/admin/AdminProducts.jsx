@@ -136,9 +136,21 @@ useEffect(() => {
       case "edit":
         // 在編輯模式下，先重新獲取該產品的最新數據
         if (product && product.id) {
-          // 可以考慮在這裡添加一個獲取單個產品詳情的 API 調用
-          // 或者使用深拷貝來避免引用問題
-          setTempProduct(JSON.parse(JSON.stringify(product)));
+          const getProductDetail = async (productId) => {
+            try {
+              const res = await axios.get(`${API_PATH}/admin/products/${productId}`,{
+                headers: {
+                  authorization: token,
+                }
+              });
+              setTempProduct(res.data.product || res.data);
+            } catch (error) {
+              console.error("獲取產品詳情失敗", error);
+              setTempProduct(JSON.parse(JSON.stringify(product)));
+            }
+          };
+          
+          getProductDetail(product.id);
         } else {
           setTempProduct({ ...product });
         }
@@ -154,6 +166,7 @@ useEffect(() => {
     setTempProduct(product);
     setIsDeleteProductModalOpen(true);
   };
+  
 
   return (
     <>

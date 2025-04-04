@@ -4,6 +4,8 @@ import { Modal } from "bootstrap";
 import axios from "axios";
 import useSwal from "../../hooks/useSwal";
 import PropTypes from "prop-types";
+import { useOptionStore } from "../tools/useOptionStore";
+import { FaPlusCircle } from "react-icons/fa";
 
 const { VITE_API_PATH: API_PATH } = import.meta.env;
 
@@ -15,7 +17,9 @@ const ProductModal = ({
   getProducts,
 }) => {
   const token = useSelector((state) => state.authSlice.token);
+
   const [modalData, setModalData] = useState(tempProduct);
+
   useEffect(() => {
     setModalData({
       ...tempProduct,
@@ -26,19 +30,42 @@ const ProductModal = ({
 
   // 用於儲存 modal 實體
   const productModalRef = useRef(null);
+
   useEffect(() => {
     new Modal(productModalRef.current, {
       backdrop: false,
     });
   }, []);
 
-  // 監聽 isOpen 值狀態，如果為 true 則打開 modal
+  // 修改 useEffect 段落，將兩個相關的 useEffect 合併
   useEffect(() => {
+    // 初始化 modal 實例
+    if (!productModalRef.current._modal) {
+      new Modal(productModalRef.current, {
+        backdrop: false,
+      });
+    }
+
+    // 當 isOpen 為 true 時才執行
     if (isOpen) {
+      // 重置所有自訂輸入框的狀態
+      setShowCustomStatusInput(false);
+      // 深度複製 tempProduct 以確保不會共享引用
+      const deepCopy = JSON.parse(JSON.stringify(tempProduct));
+
+      // 確保必要的對象結構都存在
+      if (!deepCopy.content) deepCopy.content = {};
+      if (!deepCopy.clean) deepCopy.clean = {};
+      if (!deepCopy.imagesUrl) deepCopy.imagesUrl = [];
+
+      // 更新 modalData
+      setModalData(deepCopy);
+
+      // 顯示 modal
       const modalInstance = Modal.getInstance(productModalRef.current);
       modalInstance.show();
     }
-  }, [isOpen]);
+  }, [isOpen, tempProduct]);
 
   // 關閉 modal 方法
   const handleCloseProductModal = () => {
@@ -46,10 +73,10 @@ const ProductModal = ({
     modalInstance.hide();
     setIsOpen(false);
   };
-  
+
   const handleModalInputChange = (e) => {
     const { value, name, checked, type } = e.target;
-  
+
     // 擴展 contentFields 列表，包含所有 content 對象下的屬性
     const contentFields = [
       "material_contents",
@@ -57,35 +84,30 @@ const ProductModal = ({
       "origin",
       "shelf_life",
       "design_style",
-      "design_introduction"
+      "design_introduction",
     ];
-    
+
     // 添加 clean 字段列表
-    const cleanFields = [
-      "method1",
-      "method2",
-      "method3",
-      "method4"
-    ];
-  
+    const cleanFields = ["method1", "method2", "method3", "method4"];
+
     const isContentField = contentFields.includes(name);
     const isCleanField = cleanFields.includes(name);
-  
+
     // 設置輸入值
     const inputValue = type === "checkbox" ? checked : value;
-  
+
     // 使用回呼函式保證可取得最新狀態
     setModalData((prevProduct) => {
       // 創建新的對象，避免直接修改原對象
       const newProduct = { ...prevProduct };
-      
+
       if (isContentField) {
         // 確保 content 對象存在
         newProduct.content = newProduct.content || {};
         // 創建 content 的副本來避免直接修改
         newProduct.content = {
           ...newProduct.content,
-          [name]: inputValue
+          [name]: inputValue,
         };
       } else if (isCleanField) {
         // 確保 clean 對象存在
@@ -93,13 +115,13 @@ const ProductModal = ({
         // 創建 clean 的副本來避免直接修改
         newProduct.clean = {
           ...newProduct.clean,
-          [name]: inputValue
+          [name]: inputValue,
         };
       } else {
         // 直接更新最外層屬性
         newProduct[name] = inputValue;
       }
-      
+
       return newProduct;
     });
   };
@@ -143,12 +165,10 @@ const ProductModal = ({
       await axios.post(
         `${API_PATH}/admin/products`,
         {
-          data: {
-            ...modalData,
-            origin_price: Number(modalData.origin_price),
-            price: Number(modalData.price),
-            is_enabled: modalData.is_enabled ? 1 : 0,
-          },
+          ...modalData,
+          origin_price: Number(modalData.origin_price),
+          price: Number(modalData.price),
+          is_enabled: modalData.is_enabled ? 1 : 0,
         },
         {
           headers: {
@@ -163,9 +183,10 @@ const ProductModal = ({
       });
       handleCloseProductModal();
     } catch (error) {
+      console.error(error);
       toastAlert({
         icon: "error",
-        title: error.response?.data?.message || "新增產品失敗",
+        title: "新增產品失敗",
       });
     }
   };
@@ -173,18 +194,26 @@ const ProductModal = ({
   //編輯現有商品資料方法
   const updateProduct = async () => {
     try {
-      await axios.patch(`${API_PATH}/admin/products/${modalData.id}`, {
-        data: {
+      await getProducts(); // 刷新數據
+      await axios.patch(
+        `${API_PATH}/admin/products/${modalData.id}`,
+        {
           ...modalData,
           origin_price: Number(modalData.origin_price),
           price: Number(modalData.price),
           is_enabled: modalData.is_enabled ? 1 : 0,
         },
-      });
+        {
+          headers: {
+            authorization: token,
+          },
+        }
+      );
       toastAlert({
         icon: "success",
         title: "修改產品成功",
       });
+      await getProducts();
       handleCloseProductModal();
     } catch (error) {
       console.error(error);
@@ -200,11 +229,159 @@ const ProductModal = ({
     const apiCall = modalMode === "create" ? createProduct : updateProduct;
     try {
       await apiCall();
-      getProducts();
+      await getProducts();
+      handleCloseProductModal();
     } catch (error) {
       console.error(error);
     }
   };
+
+  // 新增控制自訂輸入框顯示的狀態
+  const [showCustomStatusInput, setShowCustomStatusInput] = useState(false);
+  const { status, addStatus, sizes, addSize, colors, addColor } =
+    useOptionStore();
+  const handleAddNewStatus = (newStatus) => {
+    if (newStatus && !status.includes(newStatus)) {
+      addStatus(newStatus);
+    }
+  };
+
+  const handleAddNewSize = (newSize) => {
+    if (newSize && !sizes.includes(newSize)) {
+      addSize(newSize);
+    }
+  };
+
+  const handleAddNewColor = (newColor) => {
+    if (newColor && !colors.includes(newColor)) {
+      addColor(newColor);
+    }
+  };
+
+  // 新增控制庫存編輯模態框中自訂輸入框顯示的狀態
+  const [showInventoryCustomColorInput, setShowInventoryCustomColorInput] =
+    useState(false);
+  const [showInventoryCustomSizeInput, setShowInventoryCustomSizeInput] =
+    useState(false);
+
+  // 新增庫存項目的狀態控制
+  const [showInventoryModal, setShowInventoryModal] = useState(false);
+  const [inventoryEdit, setInventoryEdit] = useState({
+    color: "",
+    size: "",
+    quantity: 0,
+    isEditing: false,
+    originalColor: "",
+    originalSize: "",
+  });
+
+  // 打開新增庫存表單
+  const handleAddInventoryModal = () => {
+    setInventoryEdit({
+      color: "",
+      size: "",
+      quantity: 0,
+      isEditing: false,
+      originalColor: "",
+      originalSize: "",
+    });
+    setShowInventoryCustomColorInput(false);
+    setShowInventoryCustomSizeInput(false);
+    setNewColorInput("");
+    setNewSizeInput("");
+    setShowInventoryModal(true);
+  };
+  // 打開編輯庫存表單
+  const handleEditInventory = (color, size, quantity) => {
+    setInventoryEdit({
+      color,
+      size,
+      quantity,
+      isEditing: true,
+      originalColor: color,
+      originalSize: size,
+    });
+    setShowInventoryModal(true);
+  };
+
+  // 刪除庫存項目
+  const handleRemoveInventory = (color, size) => {
+    // 創建新的 num 對象
+    const newNum = { ...modalData.num };
+
+    // 檢查是否有其他尺寸
+    const hasOtherSizes = Object.keys(newNum[color]).length > 1;
+
+    if (hasOtherSizes) {
+      // 只刪除特定尺寸
+      delete newNum[color][size];
+    } else {
+      // 如果這是該顏色的唯一尺寸，刪除整個顏色項
+      delete newNum[color];
+    }
+
+    // 更新 modalData
+    setModalData({
+      ...modalData,
+      num: newNum,
+    });
+  };
+
+  // 保存庫存項目
+  const handleSaveInventory = () => {
+    const { color, size, quantity, isEditing, originalColor, originalSize } =
+      inventoryEdit;
+
+    // 基本驗證
+    if (!color || !size || quantity <= 0) {
+      toastAlert({
+        icon: "error",
+        title: "請填寫完整的庫存資訊",
+      });
+      return;
+    }
+
+    // 複製當前的 num 對象，確保它是一個對象
+    const newNum = modalData.num ? { ...modalData.num } : {};
+
+    // 如果是編輯模式，先刪除原來的記錄
+    if (isEditing) {
+      // 如果顏色或尺寸有變化，需要刪除原來的記錄
+      if (originalColor !== color || originalSize !== size) {
+        // 檢查原始顏色是否有其他尺寸
+        if (
+          newNum[originalColor] &&
+          Object.keys(newNum[originalColor]).length > 1
+        ) {
+          // 只刪除特定尺寸
+          delete newNum[originalColor][originalSize];
+        } else {
+          // 刪除整個顏色
+          delete newNum[originalColor];
+        }
+      }
+    }
+
+    // 確保顏色對象存在
+    if (!newNum[color]) {
+      newNum[color] = {};
+    }
+
+    // 添加或更新尺寸的數量
+    newNum[color][size] = parseInt(quantity, 10);
+
+    // 更新 modalData
+    setModalData({
+      ...modalData,
+      num: newNum,
+    });
+
+    // 關閉模態框
+    setShowInventoryModal(false);
+  };
+
+  const [newColorInput, setNewColorInput] = useState("");
+  const [newSizeInput, setNewSizeInput] = useState("");
 
   return (
     <>
@@ -216,7 +393,7 @@ const ProductModal = ({
       >
         <div className="modal-dialog modal-dialog-centered modal-xl">
           <div className="modal-content border-0 shadow">
-            <div className="modal-header border-bottom">
+            <div className="modal-header border-bottom bg-light">
               <h5 className="modal-title fs-4">
                 {modalMode === "create" ? "新增產品" : "編輯產品"}
               </h5>
@@ -228,7 +405,7 @@ const ProductModal = ({
               ></button>
             </div>
 
-            <div className="modal-body p-4">
+            <div className="modal-body p-4 bg-white">
               <div className="row g-4">
                 <div className="col-md-4 mb-4">
                   <div className="mb-4">
@@ -242,7 +419,7 @@ const ProductModal = ({
                         name="imageUrl"
                         type="text"
                         id="primary-image"
-                        className="form-control"
+                        className="form-control bg-white"
                         placeholder="請輸入圖片連結"
                       />
                     </div>
@@ -285,22 +462,27 @@ const ProductModal = ({
                       </div>
                     ))}
                     <div className="btn-group w-100">
-                      {modalData &&
-                        modalData.imagesUrl &&
+                      {modalData.imagesUrl &&
                         modalData.imagesUrl.length < 5 &&
-                        modalData.imagesUrl[modalData.imagesUrl.length - 1] !==
-                          "" && (
+                        (modalData.imagesUrl.length === 0 ||
+                          (modalData.imagesUrl[
+                            modalData.imagesUrl.length - 1
+                          ] &&
+                            modalData.imagesUrl[
+                              modalData.imagesUrl.length - 1
+                            ] !== "")) && (
                           <button
+                            type="button"
                             onClick={handleAddImage}
                             className="btn btn-outline-primary btn-sm w-100"
                           >
                             新增圖片
                           </button>
                         )}
-                      {modalData &&
-                        modalData.imagesUrl &&
-                        modalData.imagesUrl.length > 1 && (
+                      {modalData.imagesUrl &&
+                        modalData.imagesUrl.length > 0 && (
                           <button
+                            type="button"
                             onClick={handleRemoveImage}
                             className="btn btn-outline-danger btn-sm w-100"
                           >
@@ -323,7 +505,7 @@ const ProductModal = ({
                         name="class"
                         id="class"
                         type="text"
-                        className="form-control"
+                        className="form-control border bg-white"
                         placeholder="請輸入商品主題"
                         min="0"
                       />
@@ -339,7 +521,7 @@ const ProductModal = ({
                       name="title"
                       id="title"
                       type="text"
-                      className="form-control"
+                      className="form-control border bg-white"
                       placeholder="請輸入商品名稱"
                     />
                   </div>
@@ -354,7 +536,7 @@ const ProductModal = ({
                         name="category"
                         id="category"
                         type="text"
-                        className="form-control"
+                        className="form-control border bg-white"
                         placeholder="請輸入商品類別"
                         min="0"
                       />
@@ -369,7 +551,7 @@ const ProductModal = ({
                         name="categoryItems"
                         id="categoryItems"
                         type="text"
-                        className="form-control"
+                        className="form-control border bg-white"
                         placeholder="請輸入商品類別細項"
                       />
                     </div>
@@ -379,12 +561,12 @@ const ProductModal = ({
                       商品穿搭風格
                     </label>
                     <input
-                      value={modalData?.content?.design_style || ''}
+                      value={modalData?.content?.design_style || ""}
                       onChange={handleModalInputChange}
                       name="design_style"
                       id="design_style"
                       type="text"
-                      className="form-control"
+                      className="form-control border bg-white"
                       placeholder="請輸入穿搭風格"
                     />
                   </div>
@@ -393,12 +575,12 @@ const ProductModal = ({
                       商品介紹
                     </label>
                     <input
-                      value={modalData?.content?.design_introduction || ''}
+                      value={modalData?.content?.design_introduction || ""}
                       onChange={handleModalInputChange}
                       name="design_introduction"
                       id="design_introduction"
                       type="text"
-                      className="form-control"
+                      className="form-control border bg-white"
                       placeholder="請輸入產品介紹"
                     />
                   </div>
@@ -407,12 +589,12 @@ const ProductModal = ({
                       產地
                     </label>
                     <input
-                      value={modalData?.content?.origin|| ''}
+                      value={modalData?.content?.origin || ""}
                       onChange={handleModalInputChange}
                       name="origin"
                       id="origin"
                       type="text"
-                      className="form-control"
+                      className="form-control border bg-white"
                       placeholder="請輸入產地"
                     />
                   </div>
@@ -426,7 +608,7 @@ const ProductModal = ({
                       name="unit"
                       id="unit"
                       type="text"
-                      className="form-control"
+                      className="form-control border bg-white"
                       placeholder="請輸入單位"
                     />
                   </div>
@@ -441,7 +623,7 @@ const ProductModal = ({
                         name="origin_price"
                         id="origin_price"
                         type="number"
-                        className="form-control"
+                        className="form-control border bg-white mb-2"
                         placeholder="請輸入原價"
                         min="0"
                       />
@@ -456,7 +638,7 @@ const ProductModal = ({
                         name="price"
                         id="price"
                         type="number"
-                        className="form-control"
+                        className="form-control border bg-white mb-2"
                         placeholder="請輸入售價"
                         min="0"
                       />
@@ -472,7 +654,7 @@ const ProductModal = ({
                       onChange={handleModalInputChange}
                       name="description"
                       id="description"
-                      className="form-control"
+                      className="form-control border bg-white mb-2"
                       rows={4}
                       placeholder="請輸入產品描述"
                     ></textarea>
@@ -487,7 +669,7 @@ const ProductModal = ({
                       onChange={handleModalInputChange}
                       name="method1"
                       id="method1"
-                      className="form-control"
+                      className="form-control border bg-white mb-2"
                       rows={1}
                       placeholder="請輸入商品清洗方式"
                     ></textarea>
@@ -499,7 +681,7 @@ const ProductModal = ({
                       onChange={handleModalInputChange}
                       name="method2"
                       id="method2"
-                      className="form-control"
+                      className="form-control border bg-white mb-2"
                       rows={1}
                       placeholder="請輸入商品清洗方式"
                     ></textarea>
@@ -511,7 +693,7 @@ const ProductModal = ({
                       onChange={handleModalInputChange}
                       name="method3"
                       id="method3"
-                      className="form-control"
+                      className="form-control border bg-white mb-2"
                       rows={1}
                       placeholder="請輸入商品清洗方式"
                     ></textarea>
@@ -523,7 +705,7 @@ const ProductModal = ({
                       onChange={handleModalInputChange}
                       name="method4"
                       id="method4"
-                      className="form-control"
+                      className="form-control border bg-white mb-2"
                       rows={1}
                       placeholder="請輸入商品清洗方式"
                     ></textarea>
@@ -532,44 +714,255 @@ const ProductModal = ({
                     <label htmlFor="status" className="form-label">
                       購買狀態
                     </label>
-                    <input
+                    <select
                       value={modalData.status}
                       onChange={handleModalInputChange}
                       name="status"
                       id="status"
-                      type="text"
-                      className="form-control"
-                      placeholder="請輸入購買狀態"
-                    />
+                      className="form-select border bg-white"
+                    >
+                      <option value="">請選擇購買狀態</option>
+                      {status.map((item) => (
+                        <option key={item} value={item}>
+                          {item}
+                        </option>
+                      ))}
+                    </select>
+
+                    {/* 新增自訂購買狀態的按鈕和輸入框 */}
+                    <div className="mt-2">
+                      {!showCustomStatusInput ? (
+                        <button
+                          type="button"
+                          className="btn btn-outline-dark btn-sm"
+                          onClick={() => setShowCustomStatusInput(true)}
+                        >
+                          + 新增自訂狀態
+                        </button>
+                      ) : (
+                        <div className="input-group">
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="請輸入新狀態"
+                            id="newStatusInput"
+                            autoFocus
+                          />
+                          <button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={() => {
+                              const input =
+                                document.getElementById("newStatusInput");
+                              if (input && input.value) {
+                                handleAddNewStatus(input.value);
+                                input.value = "";
+                                setShowCustomStatusInput(false);
+                              }
+                            }}
+                          >
+                            確定
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-outline-dark"
+                            onClick={() => setShowCustomStatusInput(false)}
+                          >
+                            取消
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
+
+                  {/* 顯示現有庫存的顏色和尺寸數量 */}
+                  <div className="mb-4 mt-3">
+                    <h6 className="fw-bold border-bottom pb-2">商品庫存管理</h6>
+                    {modalData.num && Object.keys(modalData.num).length > 0 ? (
+                      <div className="table-responsive ">
+                        <table className="table table-bordered table-hover ">
+                          <thead className="table-light">
+                            <tr>
+                              <th>顏色</th>
+                              <th>尺寸</th>
+                              <th>數量</th>
+                              <th>操作</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {Object.entries(modalData.num).map(
+                              ([color, sizes]) =>
+                                Object.entries(sizes).map(
+                                  ([size, quantity]) => (
+                                    <tr key={`${color}-${size}`}>
+                                      <td>{color}</td>
+                                      <td>{size}</td>
+                                      <td>{quantity}</td>
+                                      <td>
+                                        <div className="btn-group btn-group-sm">
+                                          <button
+                                            type="button"
+                                            className="btn btn-primary"
+                                            onClick={() =>
+                                              handleEditInventory(
+                                                color,
+                                                size,
+                                                quantity
+                                              )
+                                            }
+                                          >
+                                            編輯
+                                          </button>
+                                          <button
+                                            type="button"
+                                            className="btn btn-outline-danger"
+                                            onClick={() =>
+                                              handleRemoveInventory(color, size)
+                                            }
+                                          >
+                                            刪除
+                                          </button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  )
+                                )
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="alert alert-warning">
+                        <i className="bi bi-info-circle me-2"></i>
+                        尚未設定庫存資料
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm mt-2"
+                      onClick={handleAddInventoryModal}
+                    >
+                      <i className="bi bi-plus-circle me-1"></i>+ 新增庫存項目
+                    </button>
+                  </div>
+
                   <div className="mb-3">
-                    <label htmlFor="color" className="form-label">
-                      商品顏色
-                    </label>
-                    <input
-                      value={modalData.color}
-                      onChange={handleModalInputChange}
-                      name="color"
-                      id="color"
-                      type="text"
-                      className="form-control"
-                      placeholder="請輸入商品顏色"
-                    />
+                    <div className="mb-2 crow g-3">
+                      <div className="col-3 mb-2">
+                        新增顏色
+                        <FaPlusCircle
+                          onClick={() => setShowInventoryCustomColorInput(true)}
+                          className="text-dark align-self-center ms-2"
+                          style={{
+                            fontSize: "20px",
+                            cursor: "pointer",
+                          }}
+                        />
+                      </div>
+                      <div className="col-12 mt-2">
+                        {/* 新增自訂顏色的輸入框 */}
+                        {showInventoryCustomColorInput && (
+                          <div className="input-group mb-2">
+                            <input
+                              type="text"
+                              className="form-control"
+                              placeholder="請輸入新顏色"
+                              value={newColorInput}
+                              onChange={(e) => setNewColorInput(e.target.value)}
+                              autoFocus
+                            />
+                            <button
+                              type="button"
+                              className="btn btn-primary"
+                              onClick={() => {
+                                if (newColorInput.trim()) {
+                                  handleAddNewColor(newColorInput);
+                                  setInventoryEdit({
+                                    ...inventoryEdit,
+                                    color: newColorInput,
+                                  });
+                                  setNewColorInput("");
+                                  setShowInventoryCustomColorInput(false);
+                                }
+                              }}
+                            >
+                              確定
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-outline-dark"
+                              onClick={() => {
+                                setNewColorInput("");
+                                setShowInventoryCustomColorInput(false);
+                              }}
+                            >
+                              取消
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
+
                   <div className="mb-3">
-                    <label htmlFor="size" className="form-label">
-                      尺寸大小
-                    </label>
-                    <input
-                      value={modalData.size}
-                      onChange={handleModalInputChange}
-                      name="size"
-                      id="size"
-                      type="text"
-                      className="form-control"
-                      placeholder="請設定商品尺寸大小"
-                    />
+                    <div className="mb-2 crow g-3">
+                      <div className="col-3 mb-2">
+                        新增尺寸
+                        <FaPlusCircle
+                          onClick={() => setShowInventoryCustomSizeInput(true)}
+                          className="text-dark align-self-center ms-2"
+                          style={{
+                            fontSize: "20px",
+                            cursor: "pointer",
+                          }}
+                        />
+                      </div>
+                      <div className="col-12 mt-2">
+                        {/* 新增自訂尺寸的輸入框 */}
+                        {showInventoryCustomSizeInput && (
+                          <div className="input-group mb-2">
+                            <input
+                              type="text"
+                              className="form-control"
+                              placeholder="請輸入新尺寸"
+                              value={newSizeInput}
+                              onChange={(e) => setNewSizeInput(e.target.value)}
+                              autoFocus
+                            />
+                            <button
+                              type="button"
+                              className="btn btn-primary"
+                              onClick={() => {
+                                if (newSizeInput.trim()) {
+                                  handleAddNewSize(newSizeInput);
+                                  setInventoryEdit({
+                                    ...inventoryEdit,
+                                    size: newSizeInput,
+                                  });
+                                  setNewSizeInput("");
+                                  setShowInventoryCustomSizeInput(false);
+                                }
+                              }}
+                            >
+                              確定
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-outline-dark"
+                              onClick={() => {
+                                setNewSizeInput("");
+                                setShowInventoryCustomSizeInput(false);
+                              }}
+                            >
+                              取消
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
+
                   <div className="form-check">
                     <input
                       checked={modalData.is_enabled}
@@ -591,7 +984,7 @@ const ProductModal = ({
               <button
                 onClick={handleCloseProductModal}
                 type="button"
-                className="btn btn-secondary"
+                className="btn btn-dark"
               >
                 取消
               </button>
@@ -599,6 +992,126 @@ const ProductModal = ({
                 onClick={handleUpdateProduct}
                 type="button"
                 className="btn btn-primary"
+              >
+                確認
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 庫存編輯模態框 */}
+      <div
+        className={`modal fade ${showInventoryModal ? "show" : ""}`}
+        style={{
+          display: showInventoryModal ? "block" : "none",
+          backgroundColor: "rgba(0,0,0,0.5)",
+        }}
+        tabIndex="-1"
+        aria-labelledby="inventoryModalLabel"
+        aria-hidden={!showInventoryModal}
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content bg-white">
+            <div className="modal-header bg-light">
+              <h5 className="modal-title" id="inventoryModalLabel">
+                {inventoryEdit.isEditing ? "編輯庫存項目" : "新增庫存項目"}
+              </h5>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setShowInventoryModal(false)}
+                aria-label="Close"
+              ></button>
+            </div>
+
+            <div className="modal-body">
+              <div className="mb-3">
+                <label htmlFor="inventoryColor" className="form-label ">
+                  顏色
+                </label>
+                <div className="d-flex mb-2">
+                  <select
+                    className="form-select bg-white me-2"
+                    id="inventoryColor"
+                    value={inventoryEdit.color}
+                    onChange={(e) =>
+                      setInventoryEdit({
+                        ...inventoryEdit,
+                        color: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="">請選擇顏色</option>
+                    {colors.map((color) => (
+                      <option key={color} value={color}>
+                        {color}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="mb-3">
+                <label htmlFor="inventorySize" className="form-label">
+                  尺寸
+                </label>
+                <div className="d-flex mb-2">
+                  <select
+                    className="form-select bg-white me-2"
+                    id="inventorySize"
+                    value={inventoryEdit.size}
+                    onChange={(e) =>
+                      setInventoryEdit({
+                        ...inventoryEdit,
+                        size: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="">請選擇尺寸</option>
+                    {sizes.map((size) => (
+                      <option key={size} value={size}>
+                        {size}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="mb-3">
+                <label htmlFor="inventoryQuantity" className="form-label">
+                  數量
+                </label>
+                <input
+                  type="number"
+                  className="form-control bg-white"
+                  name="inventoryQuantity"
+                  id="inventoryQuantity"
+                  value={inventoryEdit.quantity}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setInventoryEdit({
+                      ...inventoryEdit,
+                      quantity: value === "" ? "" : value,
+                    });
+                  }}
+                  min="0"
+                />
+              </div>
+            </div>
+
+            <div className="modal-footer bg-light">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setShowInventoryModal(false)}
+              >
+                取消
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleSaveInventory}
               >
                 確認
               </button>
