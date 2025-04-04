@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
-import { Modal } from 'bootstrap';
-import axios from 'axios';
-import useSwal from '../../hooks/useSwal';
-import PropTypes from 'prop-types';
+import { useState, useEffect, useRef } from "react";
+import { useSelector } from "react-redux";
+import { Modal } from "bootstrap";
+import axios from "axios";
+import useSwal from "../../hooks/useSwal";
+import PropTypes from "prop-types";
 
 const { VITE_API_PATH: API_PATH } = import.meta.env;
 
@@ -13,6 +14,7 @@ const ProductModal = ({
   setIsOpen,
   getProducts,
 }) => {
+  const token = useSelector((state) => state.authSlice.token);
   const [modalData, setModalData] = useState(tempProduct);
   useEffect(() => {
     setModalData({
@@ -29,6 +31,7 @@ const ProductModal = ({
       backdrop: false,
     });
   }, []);
+
   // 監聽 isOpen 值狀態，如果為 true 則打開 modal
   useEffect(() => {
     if (isOpen) {
@@ -43,41 +46,61 @@ const ProductModal = ({
     modalInstance.hide();
     setIsOpen(false);
   };
-
-  // 監聽表單中各項值得狀態，用於及時寫入修改的的值到 modalData 並渲染到畫面上
+  
   const handleModalInputChange = (e) => {
     const { value, name, checked, type } = e.target;
-
-    // 用於判斷是否屬於 content 欄位更新
+  
+    // 擴展 contentFields 列表，包含所有 content 對象下的屬性
     const contentFields = [
-      'material_contents',
-      'notes',
-      'origin',
-      'shelf_life',
+      "material_contents",
+      "notes",
+      "origin",
+      "shelf_life",
+      "design_style",
+      "design_introduction"
     ];
+    
+    // 添加 clean 字段列表
+    const cleanFields = [
+      "method1",
+      "method2",
+      "method3",
+      "method4"
+    ];
+  
     const isContentField = contentFields.includes(name);
-
-    // 先定義 inputValue
-    const inputValue = type === 'checkbox' ? checked : value;
-
-    // 使用回呼函式保證可取得最新狀態（避免非同步造成的舊資料）
+    const isCleanField = cleanFields.includes(name);
+  
+    // 設置輸入值
+    const inputValue = type === "checkbox" ? checked : value;
+  
+    // 使用回呼函式保證可取得最新狀態
     setModalData((prevProduct) => {
-      // 如果是 content 中的欄位，更新 content
+      // 創建新的對象，避免直接修改原對象
+      const newProduct = { ...prevProduct };
+      
       if (isContentField) {
-        return {
-          ...prevProduct,
-          content: {
-            ...prevProduct.content,
-            [name]: inputValue,
-          },
+        // 確保 content 對象存在
+        newProduct.content = newProduct.content || {};
+        // 創建 content 的副本來避免直接修改
+        newProduct.content = {
+          ...newProduct.content,
+          [name]: inputValue
         };
+      } else if (isCleanField) {
+        // 確保 clean 對象存在
+        newProduct.clean = newProduct.clean || {};
+        // 創建 clean 的副本來避免直接修改
+        newProduct.clean = {
+          ...newProduct.clean,
+          [name]: inputValue
+        };
+      } else {
+        // 直接更新最外層屬性
+        newProduct[name] = inputValue;
       }
-
-      // 否則直接更新最外層
-      return {
-        ...prevProduct,
-        [name]: inputValue,
-      };
+      
+      return newProduct;
     });
   };
 
@@ -96,7 +119,7 @@ const ProductModal = ({
 
   // 新增商品附圖資料
   const handleAddImage = () => {
-    const newImages = [...modalData.imagesUrl, ''];
+    const newImages = [...modalData.imagesUrl, ""];
     setModalData({
       ...modalData,
       imagesUrl: newImages,
@@ -117,23 +140,32 @@ const ProductModal = ({
   //新增商品資料方法
   const createProduct = async () => {
     try {
-      await axios.post(`${API_PATH}/admin/products`, {
-        data: {
-          ...modalData,
-          origin_price: Number(modalData.origin_price),
-          price: Number(modalData.price),
-          is_enabled: modalData.is_enabled ? 1 : 0,
+      await axios.post(
+        `${API_PATH}/admin/products`,
+        {
+          data: {
+            ...modalData,
+            origin_price: Number(modalData.origin_price),
+            price: Number(modalData.price),
+            is_enabled: modalData.is_enabled ? 1 : 0,
+          },
         },
-      });
+        {
+          headers: {
+            authorization: token,
+          },
+        }
+      );
+
       toastAlert({
-        icon: 'success',
-        title: '新增產品成功',
+        icon: "success",
+        title: "新增產品成功",
       });
       handleCloseProductModal();
     } catch (error) {
       toastAlert({
-        icon: 'error',
-        title: error.response.data.message || '新增產品失敗',
+        icon: "error",
+        title: error.response?.data?.message || "新增產品失敗",
       });
     }
   };
@@ -150,22 +182,22 @@ const ProductModal = ({
         },
       });
       toastAlert({
-        icon: 'success',
-        title: '修改產品成功',
+        icon: "success",
+        title: "修改產品成功",
       });
       handleCloseProductModal();
     } catch (error) {
       console.error(error);
       toastAlert({
-        icon: 'error',
-        title: '編輯產品失敗',
+        icon: "error",
+        title: "編輯產品失敗",
       });
     }
   };
 
   // 控制商品資料 - 編輯或新增
   const handleUpdateProduct = async () => {
-    const apiCall = modalMode === 'create' ? createProduct : updateProduct;
+    const apiCall = modalMode === "create" ? createProduct : updateProduct;
     try {
       await apiCall();
       getProducts();
@@ -180,13 +212,13 @@ const ProductModal = ({
         id="productModal"
         ref={productModalRef}
         className="modal"
-        style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+        style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
       >
         <div className="modal-dialog modal-dialog-centered modal-xl">
           <div className="modal-content border-0 shadow">
             <div className="modal-header border-bottom">
               <h5 className="modal-title fs-4">
-                {modalMode === 'create' ? '新增產品' : '編輯產品'}
+                {modalMode === "create" ? "新增產品" : "編輯產品"}
               </h5>
               <button
                 onClick={handleCloseProductModal}
@@ -214,11 +246,13 @@ const ProductModal = ({
                         placeholder="請輸入圖片連結"
                       />
                     </div>
-                    <img
-                      src={modalData.imageUrl}
-                      alt={modalData.title}
-                      className="img-fluid"
-                    />
+                    {modalData.imageUrl ? (
+                      <img
+                        src={modalData.imageUrl}
+                        alt={modalData.title || "商品圖片"}
+                        className="img-fluid"
+                      />
+                    ) : null}
                   </div>
 
                   {/* 副圖 */}
@@ -241,19 +275,21 @@ const ProductModal = ({
                           placeholder={`圖片網址 ${index + 1}`}
                           className="form-control mb-2"
                         />
-                        {image && (
+                        {image && image.trim() !== "" ? (
                           <img
                             src={image}
                             alt={`副圖 ${index + 1}`}
                             className="img-fluid mb-2"
                           />
-                        )}
+                        ) : null}
                       </div>
                     ))}
                     <div className="btn-group w-100">
-                      {modalData.imagesUrl.length < 5 &&
+                      {modalData &&
+                        modalData.imagesUrl &&
+                        modalData.imagesUrl.length < 5 &&
                         modalData.imagesUrl[modalData.imagesUrl.length - 1] !==
-                          '' && (
+                          "" && (
                           <button
                             onClick={handleAddImage}
                             className="btn btn-outline-primary btn-sm w-100"
@@ -261,14 +297,16 @@ const ProductModal = ({
                             新增圖片
                           </button>
                         )}
-                      {modalData.imagesUrl.length > 1 && (
-                        <button
-                          onClick={handleRemoveImage}
-                          className="btn btn-outline-danger btn-sm w-100"
-                        >
-                          取消圖片
-                        </button>
-                      )}
+                      {modalData &&
+                        modalData.imagesUrl &&
+                        modalData.imagesUrl.length > 1 && (
+                          <button
+                            onClick={handleRemoveImage}
+                            className="btn btn-outline-danger btn-sm w-100"
+                          >
+                            取消圖片
+                          </button>
+                        )}
                     </div>
                   </div>
                 </div>
@@ -341,7 +379,7 @@ const ProductModal = ({
                       商品穿搭風格
                     </label>
                     <input
-                      value={modalData.content.design_style}
+                      value={modalData?.content?.design_style || ''}
                       onChange={handleModalInputChange}
                       name="design_style"
                       id="design_style"
@@ -355,7 +393,7 @@ const ProductModal = ({
                       商品介紹
                     </label>
                     <input
-                      value={modalData.content.design_introduction}
+                      value={modalData?.content?.design_introduction || ''}
                       onChange={handleModalInputChange}
                       name="design_introduction"
                       id="design_introduction"
@@ -369,7 +407,7 @@ const ProductModal = ({
                       產地
                     </label>
                     <input
-                      value={modalData.content.origin}
+                      value={modalData?.content?.origin|| ''}
                       onChange={handleModalInputChange}
                       name="origin"
                       id="origin"
@@ -445,7 +483,7 @@ const ProductModal = ({
                       商品清洗方式1:
                     </label>
                     <textarea
-                      value={modalData.clean.method1}
+                      value={modalData.clean?.method1}
                       onChange={handleModalInputChange}
                       name="method1"
                       id="method1"
@@ -457,7 +495,7 @@ const ProductModal = ({
                       商品清洗方式2:
                     </label>
                     <textarea
-                      value={modalData.clean.method2}
+                      value={modalData.clean?.method2}
                       onChange={handleModalInputChange}
                       name="method2"
                       id="method2"
@@ -469,7 +507,7 @@ const ProductModal = ({
                       商品清洗方式3:
                     </label>
                     <textarea
-                      value={modalData.clean.method3}
+                      value={modalData.clean?.method3}
                       onChange={handleModalInputChange}
                       name="method3"
                       id="method3"
@@ -481,7 +519,7 @@ const ProductModal = ({
                       商品清洗方式4:
                     </label>
                     <textarea
-                      value={modalData.clean.method4}
+                      value={modalData.clean?.method4}
                       onChange={handleModalInputChange}
                       name="method4"
                       id="method4"

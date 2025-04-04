@@ -1,28 +1,30 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef} from "react";
+import { useSelector } from "react-redux";
+import axios from "axios";
 import useSwal from "../../hooks/useSwal";
-import cookieUtils from "../../components/tools/cookieUtils";
 import Pagination from "../../components/layouts/Pagination";
 import ProductModal from "../../components/admin/ProductModal";
 import DeleteProductModal from "../../components/admin/DeleteProductModal";
+import ScreenLoading from "../../components/front/ScreenLoading";
 
-// const { VITE_API_PATH: API_PATH } = import.meta.env;
+const { VITE_API_PATH: API_PATH } = import.meta.env;
 
-const defaultModalState = () => ({
+const defaultModalState = {
   class: "",
   category: "",
   categoryItems: "",
   title: "",
   content: {
-    design_style:"",
-    design_introduction:"",
-    origin:"",
+    design_style: "",
+    design_introduction: "",
+    origin: "",
   },
-  description:"",
-  clean:{
+  description: "",
+  clean: {
     method1: "",
     method2: "",
     method3: "",
-    method4: ""
+    method4: "",
   },
   productSizeRef: "",
   is_enabled: 0,
@@ -32,19 +34,19 @@ const defaultModalState = () => ({
   price: "",
   unit: "",
   color: [],
-  num: [],
+  num: {},
   size: [],
   imageUrl: "",
   imagesUrl: [],
   id: "",
-});
+};
 
 const AdminProducts = () => {
   const { toastAlert } = useSwal();
   const [products, setProducts] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [searchStatus, setSearchStatus] = useState("");
-  const [tempProduct, setTempProduct] = useState(defaultModalState());
+  const [tempProduct, setTempProduct] = useState(defaultModalState);
   const [modalMode, setModalMode] = useState(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isDeleteProductModalOpen, setIsDeleteProductModalOpen] =
@@ -52,32 +54,61 @@ const AdminProducts = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
+  const token = useSelector((state) => state.authSlice.token);
 
   // 狀態選項
   const statusOptions = ["現貨", "預購", "補貨中"];
-  const getProducts = async () => {
+
+  // 使用 useRef 來存儲 token 和 toastAlert 的最新值
+const tokenRef = useRef(token);
+const toastAlertRef = useRef(toastAlert);
+
+// 當值變化時更新 refs
+useEffect(() => {
+  tokenRef.current = token;
+}, [token]);
+
+useEffect(() => {
+  toastAlertRef.current = toastAlert;
+}, [toastAlert]);
+
+  // 定義 getProducts 函數
+  const getProducts = useCallback(async () => {
     try {
       setIsLoading(true);
-      const authAxios = cookieUtils.createAuthAxios();
-      const response = await authAxios.get("/products");
-      const productsData = Array.isArray(response.data) ? response.data : [];
-      setProducts(productsData);
-    } catch (error) {
-      console.error("獲取商品列表失敗:", error);
-      toastAlert({
-        icon: "error",
-        title: "獲取商品列表失敗",
+      const res = await axios.get(`${API_PATH}/admin/products`, {
+        headers: {
+          authorization: tokenRef.current,
+        },
       });
+      console.log(res.data);
+  
+      let productsData = [];
+      if (res.data && Array.isArray(res.data)) {
+        productsData = res.data;
+      } else if (res.data && Array.isArray(res.data.products)) {
+        productsData = res.data.products;
+      } else if (res.data && typeof res.data === 'object') {
+        console.log('API 回應結構:', Object.keys(res.data));
+      }
+  
+      setProducts([...productsData]);
+    } catch (error) {    
+      toastAlertRef.current({
+        icon: "error",
+        title: error.response?.data || "獲取商品列表失敗",
+      });
+      
       setProducts([]);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  // 獲取商品列表
+  }, []); // 空依賴項，因為我們使用 ref
+  
+  // 在組件掛載時調用 getProducts
   useEffect(() => {
     getProducts();
-  }, []);
+  }, [getProducts]);
 
   // 搜尋功能
   const filteredProducts = (products || []).filter((product) => {
@@ -95,25 +126,33 @@ const AdminProducts = () => {
     setCurrentPage(page);
   };
 
-  // 處理新增/編輯商品
   const handleOpenProductModal = (mode, product) => {
     setModalMode(mode);
     switch (mode) {
-      case 'create':
-        setTempProduct(defaultModalState);
+      case "create":
+        setTempProduct({ ...defaultModalState });
         break;
-      case 'edit':
-        setTempProduct(product);
+
+      case "edit":
+        // 在編輯模式下，先重新獲取該產品的最新數據
+        if (product && product.id) {
+          // 可以考慮在這裡添加一個獲取單個產品詳情的 API 調用
+          // 或者使用深拷貝來避免引用問題
+          setTempProduct(JSON.parse(JSON.stringify(product)));
+        } else {
+          setTempProduct({ ...product });
+        }
         break;
+
       default:
         break;
     }
-    setIsProductModalOpen(true); // 傳入狀態給子原件商品 modal，透過傳入狀態打開 modal
+    setIsProductModalOpen(true);
   };
 
   const handleOpenDelProductModal = (product) => {
-    setTempProduct(product); // 將該項的商品資料寫入
-    setIsDeleteProductModalOpen(true); // 傳入狀態給子原件商品 modal，透過傳入狀態打開 modal
+    setTempProduct(product);
+    setIsDeleteProductModalOpen(true);
   };
 
   return (
@@ -151,7 +190,7 @@ const AdminProducts = () => {
             <button
               className="btn btn-primary"
               onClick={() => {
-                handleOpenProductModal('create');
+                handleOpenProductModal("create");
               }}
             >
               <i className="bi bi-plus-lg"></i> 新增商品
@@ -160,96 +199,89 @@ const AdminProducts = () => {
         </div>
         {/* 商品列表 */}
         <div className="table-responsive">
-          {isLoading ? (
-            <div className="text-center py-5">
-              <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">載入中...</span>
+          <>
+            <table className="table table-hover">
+              <thead>
+                <tr>
+                  <th style={{ width: "7%" }}>類別</th>
+                  <th style={{ width: "15%" }}>商品編號</th>
+                  <th style={{ width: "18%" }}>商品名稱</th>
+                  <th style={{ width: "9%" }}>狀態</th>
+                  <th style={{ width: "10%" }}>定價</th>
+                  <th style={{ width: "10%" }}>售價</th>
+                  <th style={{ width: "9%" }}>庫存數量</th>
+                  <th style={{ width: "9%" }}>已售數量</th>
+                  <th style={{ width: "12%" }}>編輯功能</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredProducts
+                  .slice(
+                    (currentPage - 1) * itemsPerPage,
+                    currentPage * itemsPerPage
+                  )
+                  .map((product) => (
+                    <tr key={product.id}>
+                      <td>{product.class}</td>
+                      <td>{product.id}</td>
+                      <td className="text-start">{product.title}</td>
+                      <td>{product.status}</td>
+                      <td>${product.origin_price}</td>
+                      <td>${product.price}</td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td>
+                        <button
+                          className="btn btn-sm btn-primary me-2"
+                          onClick={() => {
+                            handleOpenProductModal("edit", product);
+                          }}
+                          type="button"
+                        >
+                          修改
+                        </button>
+                        <button
+                          className="btn btn-sm btn-danger"
+                          onClick={() => handleOpenDelProductModal(product)}
+                        >
+                          刪除
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+            {Math.ceil(filteredProducts.length / itemsPerPage) > 1 && (
+              <div className="d-flex justify-content-center mt-4">
+                <Pagination
+                  data={filteredProducts}
+                  RenderComponent={() => null}
+                  pageLimit={5}
+                  dataLimit={itemsPerPage}
+                  currentPage={currentPage}
+                  setCurrentPage={handlePageChange}
+                />
               </div>
-            </div>
-          ) : (
-            <>
-              <table className="table table-hover">
-                <thead>
-                  <tr>
-                    <th style={{ width: "11%" }}>類別</th>
-                    <th style={{ width: "11%" }}>商品編號</th>
-                    <th style={{ width: "11%" }}>商品名稱</th>
-                    <th style={{ width: "11%" }}>狀態</th>
-                    <th style={{ width: "11%" }}>定價</th>
-                    <th style={{ width: "11%" }}>售價</th>
-                    <th style={{ width: "11%" }}>庫存數量</th>
-                    <th style={{ width: "11%" }}>已售數量</th>
-                    <th style={{ width: "12%" }}>編輯功能</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredProducts
-                    .slice(
-                      (currentPage - 1) * itemsPerPage,
-                      currentPage * itemsPerPage
-                    )
-                    .map((product) => (
-                      <tr key={product.id}>
-                        <td>{product.class}</td>
-                        <td>{product.id}</td>
-                        <td className="text-start">{product.title}</td>
-                        <td>{product.status}</td>
-                        <td>${product.origin_price}</td>
-                        <td>${product.price}</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>
-                          <button
-                            className="btn btn-sm btn-primary me-2"
-                            onClick={() => {
-                              handleOpenProductModal('edit', product);
-                            }}
-                            type="button"
-                          >
-                            修改
-                          </button>
-                          <button
-                            className="btn btn-sm btn-danger"
-                            onClick={() => handleOpenDelProductModal(product)}
-                          >
-                            刪除
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-              {Math.ceil(filteredProducts.length / itemsPerPage) > 1 && (
-                <div className="d-flex justify-content-center mt-4">
-                  <Pagination
-                    data={filteredProducts}
-                    RenderComponent={() => null}
-                    pageLimit={5}
-                    dataLimit={itemsPerPage}
-                    currentPage={currentPage}
-                    setCurrentPage={handlePageChange}
-                  />
-                </div>
-              )}
-            </>
-          )}
+            )}
+          </>
         </div>
         {/* 新增/編輯商品彈窗 */}
         <ProductModal
-        modalMode={modalMode}
-        tempProduct={tempProduct}
-        isOpen={isProductModalOpen}
-        setIsOpen={setIsProductModalOpen}
-        getProducts={getProducts}
-      />
+          modalMode={modalMode}
+          tempProduct={tempProduct}
+          isOpen={isProductModalOpen}
+          setIsOpen={setIsProductModalOpen}
+          getProducts={getProducts}
+        />
         {/* 刪除 modal */}
         <DeleteProductModal
-        tempProduct={tempProduct}
-        getProducts={getProducts}
-        isOpen={isDeleteProductModalOpen}
-        setIsOpen={setIsDeleteProductModalOpen}
-      />
+          tempProduct={tempProduct}
+          getProducts={getProducts}
+          isOpen={isDeleteProductModalOpen}
+          setIsOpen={setIsDeleteProductModalOpen}
+        />
       </div>
+      <ScreenLoading isLoading={isLoading} />
     </>
   );
 };

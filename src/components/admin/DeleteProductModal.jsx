@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
+import { useSelector } from 'react-redux';
 import { Modal } from 'bootstrap';
 import axios from 'axios';
+import useSwal from '../../hooks/useSwal';
 import PropTypes from 'prop-types';
 
 const { VITE_API_PATH: API_PATH } = import.meta.env;
@@ -11,6 +13,8 @@ const DeleteProductModal = ({
   isOpen,
   setIsOpen,
 }) => {
+  const token = useSelector((state) => state.authSlice.token);
+  const { toastAlert } = useSwal();
   // modal 實體
   const delProductModalRef = useRef(null);
   useEffect(() => {
@@ -37,12 +41,21 @@ const DeleteProductModal = ({
   // 刪除商品方法
   const deleteProduct = async () => {
     try {
-      await axios.delete(
-        `${API_PATH}/admin/products/${tempProduct.id}`
-      );
+      await axios.delete(`${API_PATH}/admin/products/${tempProduct.id}`, {
+        headers: {
+          authorization: token,
+        },
+      });
+      toastAlert({
+        icon: 'success',
+        title: '刪除產品成功',
+      });
     } catch (error) {
       console.error(error);
-      alert('刪除產品失敗!');
+      toastAlert({
+        icon: "error",
+        title: "刪除產品失敗",
+      });
     }
   };
   // 控制與執行刪除商品
