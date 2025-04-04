@@ -291,18 +291,6 @@ const ProductModal = ({
     setNewSizeInput("");
     setShowInventoryModal(true);
   };
-  // 打開編輯庫存表單
-  const handleEditInventory = (color, size, quantity) => {
-    setInventoryEdit({
-      color,
-      size,
-      quantity,
-      isEditing: true,
-      originalColor: color,
-      originalSize: size,
-    });
-    setShowInventoryModal(true);
-  };
 
   // 刪除庫存項目
   const handleRemoveInventory = (color, size) => {
@@ -382,6 +370,84 @@ const ProductModal = ({
 
   const [newColorInput, setNewColorInput] = useState("");
   const [newSizeInput, setNewSizeInput] = useState("");
+
+  {
+    /* 在 Component 頂部添加新的狀態 */
+  }
+  const [editingInventory, setEditingInventory] = useState({
+    isEditing: false,
+    color: "",
+    size: "",
+    quantity: 0,
+  });
+
+  {
+    /* 在 Component 中添加這些新的處理函數 */
+  }
+  // 開始內聯編輯
+  const handleInlineEditStart = (color, size, quantity) => {
+    setEditingInventory({
+      isEditing: true,
+      color,
+      size,
+      quantity,
+    });
+  };
+
+  // 確認編輯並保存
+  const handleInlineEditConfirm = () => {
+    if (editingInventory.isEditing) {
+      const { color, size, quantity } = editingInventory;
+
+      // 驗證數量
+      if (quantity <= 0) {
+        toastAlert({
+          icon: "error",
+          title: "庫存數量必須大於0",
+        });
+        return;
+      }
+
+      // 創建新的 num 對象
+      const newNum = { ...modalData.num };
+
+      // 更新數量
+      newNum[color][size] = parseInt(quantity, 10);
+
+      // 更新 modalData
+      setModalData({
+        ...modalData,
+        num: newNum,
+      });
+
+      // 重置編輯狀態
+      setEditingInventory({
+        isEditing: false,
+        color: "",
+        size: "",
+        quantity: 0,
+      });
+    }
+  };
+
+  // 取消編輯
+  const handleInlineEditCancel = () => {
+    setEditingInventory({
+      isEditing: false,
+      color: "",
+      size: "",
+      quantity: 0,
+    });
+  };
+
+  // 處理數量變更
+  const handleQuantityChange = (e) => {
+    const value = e.target.value;
+    setEditingInventory({
+      ...editingInventory,
+      quantity: value,
+    });
+  };
 
   return (
     <>
@@ -775,8 +841,8 @@ const ProductModal = ({
                     </div>
                   </div>
 
-                  {/* 顯示現有庫存的顏色和尺寸數量 */}
-                  <div className="mb-4 mt-3">
+                  {/* 完整的商品庫存管理區塊 */}
+                  {/* <div className="mb-4 mt-3">
                     <h6 className="fw-bold border-bottom pb-2">商品庫存管理</h6>
                     {modalData.num && Object.keys(modalData.num).length > 0 ? (
                       <div className="table-responsive ">
@@ -826,6 +892,126 @@ const ProductModal = ({
                                       </td>
                                     </tr>
                                   )
+                                )
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="alert alert-warning">
+                        <i className="bi bi-info-circle me-2"></i>
+                        尚未設定庫存資料
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm mt-2"
+                      onClick={handleAddInventoryModal}
+                    >
+                      <i className="bi bi-plus-circle me-1"></i>+ 新增庫存項目
+                    </button>
+                  </div> */}
+                  <div className="mb-4 mt-3">
+                    <h6 className="fw-bold border-bottom pb-2">商品庫存管理</h6>
+                    {modalData.num && Object.keys(modalData.num).length > 0 ? (
+                      <div className="table-responsive">
+                        <table className="table table-bordered table-hover">
+                          <thead className="table-light">
+                            <tr>
+                              <th>顏色</th>
+                              <th>尺寸</th>
+                              <th>數量</th>
+                              <th>操作</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {Object.entries(modalData.num).map(
+                              ([color, sizes]) =>
+                                Object.entries(sizes).map(
+                                  ([size, quantity]) => {
+                                    const isEditing =
+                                      editingInventory.isEditing &&
+                                      editingInventory.color === color &&
+                                      editingInventory.size === size;
+
+                                    return (
+                                      <tr key={`${color}-${size}`}>
+                                        <td>{color}</td>
+                                        <td>{size}</td>
+                                        <td>
+                                          {isEditing ? (
+                                            <input
+                                              type="number"
+                                              className="form-control form-control-sm"
+                                              value={editingInventory.quantity}
+                                              onChange={handleQuantityChange}
+                                              min="1"
+                                              autoFocus
+                                            />
+                                          ) : (
+                                            quantity
+                                          )}
+                                        </td>
+                                        <td>
+                                          <div className="btn-group btn-group-sm">
+                                            {isEditing ? (
+                                              // 編輯模式: 顯示確認按鈕
+                                              <button
+                                                type="button"
+                                                className="btn btn-primary"
+                                                onClick={
+                                                  handleInlineEditConfirm
+                                                }
+                                              >
+                                                確認
+                                              </button>
+                                            ) : (
+                                              // 非編輯模式: 顯示編輯按鈕
+                                              <button
+                                                type="button"
+                                                className="btn btn-primary"
+                                                onClick={() =>
+                                                  handleInlineEditStart(
+                                                    color,
+                                                    size,
+                                                    quantity
+                                                  )
+                                                }
+                                              >
+                                                編輯
+                                              </button>
+                                            )}
+
+                                            {isEditing ? (
+                                              // 編輯模式: 顯示取消按鈕
+                                              <button
+                                                type="button"
+                                                className="btn btn-outline-dark"
+                                                onClick={handleInlineEditCancel}
+                                              >
+                                                取消
+                                              </button>
+                                            ) : (
+                                              // 非編輯模式: 顯示刪除按鈕
+                                              <button
+                                                type="button"
+                                                className="btn btn-outline-danger"
+                                                onClick={() =>
+                                                  handleRemoveInventory(
+                                                    color,
+                                                    size
+                                                  )
+                                                }
+                                              >
+                                                刪除
+                                              </button>
+                                            )}
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    );
+                                  }
                                 )
                             )}
                           </tbody>
