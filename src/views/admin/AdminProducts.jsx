@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo} from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import useSwal from "../../hooks/useSwal";
@@ -82,7 +82,7 @@ const AdminProducts = () => {
         },
       });
       console.log(res.data);
-
+  
       let productsData = [];
       if (res.data && Array.isArray(res.data)) {
         productsData = res.data;
@@ -91,19 +91,22 @@ const AdminProducts = () => {
       } else if (res.data && typeof res.data === "object") {
         console.log("API 回應結構:", Object.keys(res.data));
       }
-
-      setProducts([...productsData]);
+  
+      // 反轉商品列表順序，使最新新增的商品顯示在最前面
+      const reversedProducts = [...productsData].reverse();
+      
+      setProducts(reversedProducts);
     } catch (error) {
       toastAlertRef.current({
         icon: "error",
         title: error.response?.data || "獲取商品列表失敗",
       });
-
+  
       setProducts([]);
     } finally {
       setIsLoading(false);
     }
-  }, []); // 空依賴項，因為我們使用 ref
+  }, []);
 
   // 在組件掛載時調用 getProducts
   useEffect(() => {
@@ -111,15 +114,34 @@ const AdminProducts = () => {
   }, [getProducts]);
 
   // 搜尋功能
-  const filteredProducts = (products || []).filter((product) => {
-    if (!product) return false;
-    const matchesText = searchText
-      ? product.id?.toLowerCase()?.includes(searchText.toLowerCase()) ||
-        product.title?.toLowerCase()?.includes(searchText.toLowerCase())
-      : true;
-    const matchesStatus = searchStatus ? product.status === searchStatus : true;
-    return matchesText && matchesStatus;
-  });
+  const filteredProducts = useMemo(() => {
+    return (products || []).filter((product) => {
+      if (!product) return false;
+      
+      // 文字搜尋，檢查 ID 和商品名稱
+      const matchesText = searchText
+        ? (product.id?.toString().toLowerCase().includes(searchText.toLowerCase()) ||
+           product.title?.toString().toLowerCase().includes(searchText.toLowerCase()))
+        : true;
+      
+      // 狀態篩選
+      const matchesStatus = searchStatus 
+        ? product.status === searchStatus
+        : true;
+      
+      return matchesText && matchesStatus;
+    });
+  }, [products, searchText, searchStatus]);
+
+  // 處理狀態變更
+  const handleStatusChange = (e) => {
+    setSearchStatus(e.target.value);
+  };
+
+  // 處理文字搜尋變更
+  const handleSearchTextChange = (e) => {
+    setSearchText(e.target.value);
+  };
 
   // 處理頁面變更
   const handlePageChange = (page) => {
@@ -198,14 +220,16 @@ const AdminProducts = () => {
               className="form-control"
               placeholder="搜尋商品編號或名稱"
               value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
+              // onChange={(e) => setSearchText(e.target.value)}
+              onChange={handleSearchTextChange}
             />
           </div>
           <div className="col-md-4">
             <select
               className="form-select"
               value={searchStatus}
-              onChange={(e) => setSearchStatus(e.target.value)}
+              // onChange={(e) => setSearchStatus(e.target.value)}
+              onChange={handleStatusChange}
             >
               <option value="">所有狀態</option>
               {statusOptions.map((status) => (
