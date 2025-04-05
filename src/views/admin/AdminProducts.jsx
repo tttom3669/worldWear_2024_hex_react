@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef} from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import useSwal from "../../hooks/useSwal";
@@ -60,17 +60,17 @@ const AdminProducts = () => {
   const statusOptions = ["現貨", "預購", "補貨中"];
 
   // 使用 useRef 來存儲 token 和 toastAlert 的最新值
-const tokenRef = useRef(token);
-const toastAlertRef = useRef(toastAlert);
+  const tokenRef = useRef(token);
+  const toastAlertRef = useRef(toastAlert);
 
-// 當值變化時更新 refs
-useEffect(() => {
-  tokenRef.current = token;
-}, [token]);
+  // 當值變化時更新 refs
+  useEffect(() => {
+    tokenRef.current = token;
+  }, [token]);
 
-useEffect(() => {
-  toastAlertRef.current = toastAlert;
-}, [toastAlert]);
+  useEffect(() => {
+    toastAlertRef.current = toastAlert;
+  }, [toastAlert]);
 
   // 定義 getProducts 函數
   const getProducts = useCallback(async () => {
@@ -82,29 +82,29 @@ useEffect(() => {
         },
       });
       console.log(res.data);
-  
+
       let productsData = [];
       if (res.data && Array.isArray(res.data)) {
         productsData = res.data;
       } else if (res.data && Array.isArray(res.data.products)) {
         productsData = res.data.products;
-      } else if (res.data && typeof res.data === 'object') {
-        console.log('API 回應結構:', Object.keys(res.data));
+      } else if (res.data && typeof res.data === "object") {
+        console.log("API 回應結構:", Object.keys(res.data));
       }
-  
+
       setProducts([...productsData]);
-    } catch (error) {    
+    } catch (error) {
       toastAlertRef.current({
         icon: "error",
         title: error.response?.data || "獲取商品列表失敗",
       });
-      
+
       setProducts([]);
     } finally {
       setIsLoading(false);
     }
   }, []); // 空依賴項，因為我們使用 ref
-  
+
   // 在組件掛載時調用 getProducts
   useEffect(() => {
     getProducts();
@@ -138,18 +138,21 @@ useEffect(() => {
         if (product && product.id) {
           const getProductDetail = async (productId) => {
             try {
-              const res = await axios.get(`${API_PATH}/admin/products/${productId}`,{
-                headers: {
-                  authorization: token,
+              const res = await axios.get(
+                `${API_PATH}/admin/products/${productId}`,
+                {
+                  headers: {
+                    authorization: token,
+                  },
                 }
-              });
+              );
               setTempProduct(res.data.product || res.data);
             } catch (error) {
               console.error("獲取產品詳情失敗", error);
               setTempProduct(JSON.parse(JSON.stringify(product)));
             }
           };
-          
+
           getProductDetail(product.id);
         } else {
           setTempProduct({ ...product });
@@ -166,7 +169,20 @@ useEffect(() => {
     setTempProduct(product);
     setIsDeleteProductModalOpen(true);
   };
-  
+
+  // 計算總庫存數量
+  const calculateTotalStock = (stockObj) => {
+    if (!stockObj) return 0;
+
+    let total = 0;
+    Object.keys(stockObj).forEach((color) => {
+      Object.keys(stockObj[color]).forEach((size) => {
+        total += parseInt(stockObj[color][size], 10) || 0;
+      });
+    });
+
+    return total;
+  };
 
   return (
     <>
@@ -217,13 +233,13 @@ useEffect(() => {
               <thead>
                 <tr>
                   <th style={{ width: "7%" }}>類別</th>
-                  <th style={{ width: "15%" }}>商品編號</th>
-                  <th style={{ width: "18%" }}>商品名稱</th>
-                  <th style={{ width: "9%" }}>狀態</th>
+                  <th style={{ width: "20%" }}>商品編號</th>
+                  <th style={{ width: "20%" }}>商品名稱</th>
+                  <th style={{ width: "10%" }}>狀態</th>
                   <th style={{ width: "10%" }}>定價</th>
                   <th style={{ width: "10%" }}>售價</th>
                   <th style={{ width: "9%" }}>庫存數量</th>
-                  <th style={{ width: "9%" }}>已售數量</th>
+                  {/* <th style={{ width: "9%" }}>已售數量</th> */}
                   <th style={{ width: "12%" }}>編輯功能</th>
                 </tr>
               </thead>
@@ -241,8 +257,8 @@ useEffect(() => {
                       <td>{product.status}</td>
                       <td>${product.origin_price}</td>
                       <td>${product.price}</td>
-                      <td>-</td>
-                      <td>-</td>
+                      <td>{product.num ? calculateTotalStock(product.num) : 0}</td>
+                      {/* <td>-</td> */}
                       <td>
                         <button
                           className="btn btn-sm btn-primary me-2"

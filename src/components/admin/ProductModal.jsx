@@ -16,9 +16,11 @@ const ProductModal = ({
   setIsOpen,
   getProducts,
 }) => {
+  const { toastAlert } = useSwal();
   const token = useSelector((state) => state.authSlice.token);
-
   const [modalData, setModalData] = useState(tempProduct);
+  // 總庫存數量狀態
+  const [totalStockQuantity, setTotalStockQuantity] = useState(0);
 
   useEffect(() => {
     setModalData({
@@ -26,7 +28,11 @@ const ProductModal = ({
     });
   }, [tempProduct]);
 
-  const { toastAlert } = useSwal();
+  // 計算庫存總數量
+  useEffect(() => {
+    const newTotal = calculateTotalStock(modalData.num);
+    setTotalStockQuantity(newTotal);
+  }, [modalData.num]);
 
   // 用於儲存 modal 實體
   const productModalRef = useRef(null);
@@ -37,7 +43,6 @@ const ProductModal = ({
     });
   }, []);
 
-  // 修改 useEffect 段落，將兩個相關的 useEffect 合併
   useEffect(() => {
     // 初始化 modal 實例
     if (!productModalRef.current._modal) {
@@ -77,7 +82,6 @@ const ProductModal = ({
   const handleModalInputChange = (e) => {
     const { value, name, checked, type } = e.target;
 
-    // 擴展 contentFields 列表，包含所有 content 對象下的屬性
     const contentFields = [
       "material_contents",
       "notes",
@@ -292,6 +296,20 @@ const ProductModal = ({
     setShowInventoryModal(true);
   };
 
+  // 計算總庫存數量
+  const calculateTotalStock = (stockObj) => {
+    if (!stockObj) return 0;
+
+    let total = 0;
+    Object.keys(stockObj).forEach((color) => {
+      Object.keys(stockObj[color]).forEach((size) => {
+        total += parseInt(stockObj[color][size], 10) || 0;
+      });
+    });
+
+    return total;
+  };
+
   // 刪除庫存項目
   const handleRemoveInventory = (color, size) => {
     // 創建新的 num 對象
@@ -313,6 +331,10 @@ const ProductModal = ({
       ...modalData,
       num: newNum,
     });
+
+    // 計算並更新總庫存數量
+    const newTotal = calculateTotalStock(newNum);
+    setTotalStockQuantity(newTotal);
   };
 
   // 保存庫存項目
@@ -371,39 +393,38 @@ const ProductModal = ({
   const [newColorInput, setNewColorInput] = useState("");
   const [newSizeInput, setNewSizeInput] = useState("");
 
-  {
-    /* 在 Component 頂部添加新的狀態 */
-  }
   const [editingInventory, setEditingInventory] = useState({
     isEditing: false,
     color: "",
     size: "",
     quantity: 0,
+    originalColor: "",
+    originalSize: "",
   });
 
-  {
-    /* 在 Component 中添加這些新的處理函數 */
-  }
-  // 開始內聯編輯
+  // 修改編輯開始函數，增加原始顏色和尺寸的保存
   const handleInlineEditStart = (color, size, quantity) => {
     setEditingInventory({
       isEditing: true,
       color,
       size,
       quantity,
+      originalColor: color, // 保存原始顏色
+      originalSize: size, // 保存原始尺寸
     });
   };
 
-  // 確認編輯並保存
+  // 修改確認編輯函數，處理顏色或尺寸變更的情況
   const handleInlineEditConfirm = () => {
     if (editingInventory.isEditing) {
-      const { color, size, quantity } = editingInventory;
+      const { color, size, quantity, originalColor, originalSize } =
+        editingInventory;
 
-      // 驗證數量
-      if (quantity <= 0) {
+      // 驗證數量和必填項
+      if (!color || !size || quantity <= 0) {
         toastAlert({
           icon: "error",
-          title: "庫存數量必須大於0",
+          title: "請確保顏色、尺寸已填寫，且數量必須大於0",
         });
         return;
       }
@@ -411,7 +432,27 @@ const ProductModal = ({
       // 創建新的 num 對象
       const newNum = { ...modalData.num };
 
-      // 更新數量
+      // 檢查是否有更改顏色或尺寸
+      if (originalColor !== color || originalSize !== size) {
+        // 檢查原始顏色是否有其他尺寸
+        if (
+          newNum[originalColor] &&
+          Object.keys(newNum[originalColor]).length > 1
+        ) {
+          // 只刪除特定尺寸
+          delete newNum[originalColor][originalSize];
+        } else {
+          // 刪除整個顏色
+          delete newNum[originalColor];
+        }
+
+        // 確保新顏色對象存在
+        if (!newNum[color]) {
+          newNum[color] = {};
+        }
+      }
+
+      // 更新或新增數量
       newNum[color][size] = parseInt(quantity, 10);
 
       // 更新 modalData
@@ -426,8 +467,18 @@ const ProductModal = ({
         color: "",
         size: "",
         quantity: 0,
+        originalColor: "",
+        originalSize: "",
       });
     }
+  };
+
+  // 修改處理顏色和尺寸變更的函數
+  const handleEditingInventoryChange = (field, value) => {
+    setEditingInventory({
+      ...editingInventory,
+      [field]: value,
+    });
   };
 
   // 取消編輯
@@ -446,6 +497,103 @@ const ProductModal = ({
     setEditingInventory({
       ...editingInventory,
       quantity: value,
+    });
+  };
+
+  // 批量庫存管理功能
+  const [showBatchStockModal, setShowBatchStockModal] = useState(false);
+  const [batchStockData, setBatchStockData] = useState({
+    selectedColors: [],
+    selectedSizes: [],
+    quantity: 1,
+  });
+
+  // 批量設置庫存的函數
+  const handleBatchStockChange = (field, value) => {
+    setBatchStockData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  // 處理多選顏色變更
+  const handleColorSelectionChange = (e) => {
+    const options = e.target.options;
+    const selectedValues = [];
+
+    for (let i = 0; i < options.length; i++) {
+      if (options[i].selected) {
+        selectedValues.push(options[i].value);
+      }
+    }
+
+    setBatchStockData((prev) => ({
+      ...prev,
+      selectedColors: selectedValues,
+    }));
+  };
+
+  // 處理多選尺寸變更
+  const handleSizeSelectionChange = (e) => {
+    const options = e.target.options;
+    const selectedValues = [];
+
+    for (let i = 0; i < options.length; i++) {
+      if (options[i].selected) {
+        selectedValues.push(options[i].value);
+      }
+    }
+
+    setBatchStockData((prev) => ({
+      ...prev,
+      selectedSizes: selectedValues,
+    }));
+  };
+
+  // 批量保存庫存
+  const handleSaveBatchStock = () => {
+    const { selectedColors, selectedSizes, quantity } = batchStockData;
+
+    // 驗證
+    if (
+      selectedColors.length === 0 ||
+      selectedSizes.length === 0 ||
+      quantity <= 0
+    ) {
+      toastAlert({
+        icon: "error",
+        title: "請選擇顏色、尺寸，並設定有效的數量",
+      });
+      return;
+    }
+
+    // 複製當前庫存
+    const newNum = { ...(modalData.num || {}) };
+
+    // 更新所有選定的顏色和尺寸組合
+    selectedColors.forEach((color) => {
+      if (!newNum[color]) {
+        newNum[color] = {};
+      }
+
+      selectedSizes.forEach((size) => {
+        newNum[color][size] = parseInt(quantity, 10);
+      });
+    });
+
+    // 更新 modalData
+    setModalData({
+      ...modalData,
+      num: newNum,
+    });
+
+    // 關閉模態框
+    setShowBatchStockModal(false);
+
+    // 提示成功
+    toastAlert({
+      icon: "success",
+      title: "批量更新庫存成功",
     });
   };
 
@@ -841,79 +989,18 @@ const ProductModal = ({
                     </div>
                   </div>
 
-                  {/* 完整的商品庫存管理區塊 */}
-                  {/* <div className="mb-4 mt-3">
-                    <h6 className="fw-bold border-bottom pb-2">商品庫存管理</h6>
-                    {modalData.num && Object.keys(modalData.num).length > 0 ? (
-                      <div className="table-responsive ">
-                        <table className="table table-bordered table-hover ">
-                          <thead className="table-light">
-                            <tr>
-                              <th>顏色</th>
-                              <th>尺寸</th>
-                              <th>數量</th>
-                              <th>操作</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {Object.entries(modalData.num).map(
-                              ([color, sizes]) =>
-                                Object.entries(sizes).map(
-                                  ([size, quantity]) => (
-                                    <tr key={`${color}-${size}`}>
-                                      <td>{color}</td>
-                                      <td>{size}</td>
-                                      <td>{quantity}</td>
-                                      <td>
-                                        <div className="btn-group btn-group-sm">
-                                          <button
-                                            type="button"
-                                            className="btn btn-primary"
-                                            onClick={() =>
-                                              handleEditInventory(
-                                                color,
-                                                size,
-                                                quantity
-                                              )
-                                            }
-                                          >
-                                            編輯
-                                          </button>
-                                          <button
-                                            type="button"
-                                            className="btn btn-outline-danger"
-                                            onClick={() =>
-                                              handleRemoveInventory(color, size)
-                                            }
-                                          >
-                                            刪除
-                                          </button>
-                                        </div>
-                                      </td>
-                                    </tr>
-                                  )
-                                )
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                    ) : (
-                      <div className="alert alert-warning">
-                        <i className="bi bi-info-circle me-2"></i>
-                        尚未設定庫存資料
-                      </div>
-                    )}
-
-                    <button
-                      type="button"
-                      className="btn btn-primary btn-sm mt-2"
-                      onClick={handleAddInventoryModal}
-                    >
-                      <i className="bi bi-plus-circle me-1"></i>+ 新增庫存項目
-                    </button>
-                  </div> */}
+                  {/* 商品庫存管理 */}
                   <div className="mb-4 mt-3">
-                    <h6 className="fw-bold border-bottom pb-2">商品庫存管理</h6>
+                    <div className="d-flex justify-content-between align-items-center">
+                      <h6 className="fw-bold border-bottom pb-2">
+                        商品庫存管理
+                      </h6>
+                      <div className="badge bg-black text-white p-2 mb-2">
+                        總庫存數量:{" "}
+                        <span className="fs-6">{totalStockQuantity}</span>
+                      </div>
+                    </div>
+
                     {modalData.num && Object.keys(modalData.num).length > 0 ? (
                       <div className="table-responsive">
                         <table className="table table-bordered table-hover">
@@ -927,18 +1014,69 @@ const ProductModal = ({
                           </thead>
                           <tbody>
                             {Object.entries(modalData.num).map(
-                              ([color, sizes]) =>
-                                Object.entries(sizes).map(
+                              ([color, sizeData]) =>
+                                Object.entries(sizeData).map(
                                   ([size, quantity]) => {
                                     const isEditing =
                                       editingInventory.isEditing &&
-                                      editingInventory.color === color &&
-                                      editingInventory.size === size;
+                                      editingInventory.originalColor ===
+                                        color &&
+                                      editingInventory.originalSize === size;
 
                                     return (
                                       <tr key={`${color}-${size}`}>
-                                        <td>{color}</td>
-                                        <td>{size}</td>
+                                        <td>
+                                          {isEditing ? (
+                                            <select
+                                              className="form-select form-select-sm"
+                                              value={editingInventory.color}
+                                              onChange={(e) =>
+                                                handleEditingInventoryChange(
+                                                  "color",
+                                                  e.target.value
+                                                )
+                                              }
+                                            >
+                                              {colors.map((colorOption) => (
+                                                <option
+                                                  key={colorOption}
+                                                  value={colorOption}
+                                                >
+                                                  {colorOption}
+                                                </option>
+                                              ))}
+                                            </select>
+                                          ) : (
+                                            color
+                                          )}
+                                        </td>
+
+                                        <td>
+                                          {isEditing ? (
+                                            <select
+                                              className="form-select form-select-sm"
+                                              value={editingInventory.size}
+                                              onChange={(e) =>
+                                                handleEditingInventoryChange(
+                                                  "size",
+                                                  e.target.value
+                                                )
+                                              }
+                                            >
+                                              {sizes.map((sizeOption) => (
+                                                <option
+                                                  key={sizeOption}
+                                                  value={sizeOption}
+                                                >
+                                                  {sizeOption}
+                                                </option>
+                                              ))}
+                                            </select>
+                                          ) : (
+                                            size
+                                          )}
+                                        </td>
+
                                         <td>
                                           {isEditing ? (
                                             <input
@@ -1024,13 +1162,23 @@ const ProductModal = ({
                       </div>
                     )}
 
-                    <button
-                      type="button"
-                      className="btn btn-primary btn-sm mt-2"
-                      onClick={handleAddInventoryModal}
-                    >
-                      <i className="bi bi-plus-circle me-1"></i>+ 新增庫存項目
-                    </button>
+                    <div className="mt-2">
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                        onClick={handleAddInventoryModal}
+                      >
+                        <i className="bi bi-plus-circle me-1"></i>+ 新增庫存項目
+                      </button>
+
+                      <button
+                        type="button"
+                        className="btn btn-outline-primary btn-sm ms-2"
+                        onClick={() => setShowBatchStockModal(true)}
+                      >
+                        <i className="bi bi-grid me-1"></i> 批量設定庫存
+                      </button>
+                    </div>
                   </div>
 
                   <div className="mb-3">
@@ -1187,6 +1335,124 @@ const ProductModal = ({
       </div>
 
       {/* 庫存編輯模態框 */}
+      {/* <div
+        className={`modal fade ${showInventoryModal ? "show" : ""}`}
+        style={{
+          display: showInventoryModal ? "block" : "none",
+          backgroundColor: "rgba(0,0,0,0.5)",
+        }}
+        tabIndex="-1"
+        aria-labelledby="inventoryModalLabel"
+        aria-hidden={!showInventoryModal}
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content bg-white">
+            <div className="modal-header bg-light">
+              <h5 className="modal-title" id="inventoryModalLabel">
+                {inventoryEdit.isEditing ? "編輯庫存項目" : "新增庫存項目"}
+              </h5>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setShowInventoryModal(false)}
+                aria-label="Close"
+              ></button>
+            </div>
+
+            <div className="modal-body">
+              <div className="mb-3">
+                <label htmlFor="inventoryColor" className="form-label ">
+                  顏色
+                </label>
+                <div className="d-flex mb-2">
+                  <select
+                    className="form-select bg-white me-2"
+                    id="inventoryColor"
+                    value={inventoryEdit.color}
+                    onChange={(e) =>
+                      setInventoryEdit({
+                        ...inventoryEdit,
+                        color: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="">請選擇顏色</option>
+                    {colors.map((color) => (
+                      <option key={color} value={color}>
+                        {color}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="mb-3">
+                <label htmlFor="inventorySize" className="form-label">
+                  尺寸
+                </label>
+                <div className="d-flex mb-2">
+                  <select
+                    className="form-select bg-white me-2"
+                    id="inventorySize"
+                    value={inventoryEdit.size}
+                    onChange={(e) =>
+                      setInventoryEdit({
+                        ...inventoryEdit,
+                        size: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="">請選擇尺寸</option>
+                    {sizes.map((size) => (
+                      <option key={size} value={size}>
+                        {size}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="mb-3">
+                <label htmlFor="inventoryQuantity" className="form-label">
+                  數量
+                </label>
+                <input
+                  type="number"
+                  className="form-control bg-white"
+                  name="inventoryQuantity"
+                  id="inventoryQuantity"
+                  value={inventoryEdit.quantity}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setInventoryEdit({
+                      ...inventoryEdit,
+                      quantity: value === "" ? "" : value,
+                    });
+                  }}
+                  min="0"
+                />
+              </div>
+            </div>
+
+            <div className="modal-footer bg-light">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setShowInventoryModal(false)}
+              >
+                取消
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleSaveInventory}
+              >
+                確認
+              </button>
+            </div>
+          </div>
+        </div>
+      </div> */}
       <div
         className={`modal fade ${showInventoryModal ? "show" : ""}`}
         style={{
@@ -1300,6 +1566,102 @@ const ProductModal = ({
                 onClick={handleSaveInventory}
               >
                 確認
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 批量庫存設定模態框 */}
+      <div
+        className={`modal fade ${showBatchStockModal ? "show" : ""}`}
+        style={{
+          display: showBatchStockModal ? "block" : "none",
+          backgroundColor: "rgba(0,0,0,0.5)",
+        }}
+        tabIndex="-1"
+        aria-hidden={!showBatchStockModal}
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content bg-white">
+            <div className="modal-header bg-light">
+              <h5 className="modal-title">批量設定庫存</h5>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setShowBatchStockModal(false)}
+                aria-label="Close"
+              ></button>
+            </div>
+
+            <div className="modal-body">
+              <div className="mb-3">
+                <label className="form-label">選擇顏色 (可多選)</label>
+                <select
+                  className="form-select bg-white"
+                  multiple
+                  size={Math.min(5, colors.length)}
+                  value={batchStockData.selectedColors}
+                  onChange={handleColorSelectionChange}
+                >
+                  {colors.map((color) => (
+                    <option key={color} value={color}>
+                      {color}
+                    </option>
+                  ))}
+                </select>
+                <small className="text-muted">按住 Ctrl 鍵可多選</small>
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label">選擇尺寸 (可多選)</label>
+                <select
+                  className="form-select bg-white"
+                  multiple
+                  size={Math.min(5, sizes.length)}
+                  value={batchStockData.selectedSizes}
+                  onChange={handleSizeSelectionChange}
+                >
+                  {sizes.map((size) => (
+                    <option key={size} value={size}>
+                      {size}
+                    </option>
+                  ))}
+                </select>
+                <small className="text-muted">按住 Ctrl 鍵可多選</small>
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label">設定數量</label>
+                <input
+                  type="number"
+                  className="form-control bg-white"
+                  value={batchStockData.quantity}
+                  onChange={(e) =>
+                    handleBatchStockChange(
+                      "quantity",
+                      parseInt(e.target.value, 10) || 0
+                    )
+                  }
+                  min="0"
+                />
+              </div>
+            </div>
+
+            <div className="modal-footer bg-light">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setShowBatchStockModal(false)}
+              >
+                取消
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleSaveBatchStock}
+              >
+                確認設定
               </button>
             </div>
           </div>
