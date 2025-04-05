@@ -347,8 +347,9 @@ const productsListSlice = createSlice({
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        // 為每個產品添加收藏屬性
-        state.items = action.payload.map((product) => ({
+        state.items = action.payload
+        .filter(product => product.is_enabled === 1)
+        .map(product => ({
           ...product,
           isFavorite: false,
         }));
