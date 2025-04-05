@@ -1,14 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-
 import {
   addToFavorites,
   removeFromFavorites,
   getFavorites,
-  // checkProductFavoriteStatus,
-  // selectProductFavoriteStatus,
 } from '../../slice/favoritesSlice';
 import useSwal from '../../hooks/useSwal';
 import cookieUtils from '../../components/tools/cookieUtils';
@@ -23,42 +20,24 @@ const ProductCard = ({ data }) => {
   const navigate = useNavigate();
   const favoriteData = useSelector((state) => state.favorites.favoritesData);
 
-  // 使用自定義的 SweetAlert2 提示
   const { toastAlert } = useSwal();
 
-  const checkProductFavoriteStatus = (id) => {
-    const foundProduct = favoriteData.products.find(
+  const checkProductFavoriteStatus = useCallback((id) => {
+    const foundProduct = favoriteData.products?.find(
       (item) => item.productId === id
     );
     // 如果找到產品，則返回 true，否則返回 false
-    return foundProduct ? true : false;
-  };
-  // 獲取該商品的收藏狀態
-  // const favoriteStatus = useSelector((state) =>
-  //   state.favorites?.favoritesData?.products?.find(
-  //     (item) => item.productId === data.id
-  //   )
-  // );
-
-  // // 判斷是否已收藏
-  // const isFavorite = favoriteStatus !== undefined;
-
-  // 組件加載時檢查產品的收藏狀態
+    return !!foundProduct;
+  }, [favoriteData]);
+  
   useEffect(() => {
     // 使用 cookieUtils 檢查登入狀態
     if (cookieUtils.isUserLoggedIn() && data.id) {
       const status = checkProductFavoriteStatus(data.id);
       setIsFavorite(status);
     }
-  }, [dispatch, data.id, favoriteData]);
+  }, [checkProductFavoriteStatus, data.id]);
 
-  // useEffect(() => {
-  //   console.log("收藏狀態更新:", {
-  //     productId: data.id,
-  //     isFavorite,
-  //     favoriteStatus
-  //   });
-  // }, [data.id, isFavorite, favoriteStatus]);
 
   const handleToggleFavorite = async (e) => {
     e.preventDefault();
