@@ -1,32 +1,33 @@
-import { useState, useEffect, useCallback, useMemo, memo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useParams, useNavigate } from 'react-router-dom';
-import { productCategories } from '../../slice/productsSlice';
+import { useState, useEffect, useCallback, useMemo, memo } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useParams, useNavigate } from "react-router-dom";
+import { productCategories } from "../../slice/productsSlice";
 
 import {
   setCurrentCategory,
   filterProducts,
   resetFilters,
   fetchProducts,
-} from '../../slice/productsListSlice';
-import PropTypes from 'prop-types';
-import useImgUrl from '../../hooks/useImgUrl';
+} from "../../slice/productsListSlice";
+import PropTypes from "prop-types";
+import useImgUrl from "../../hooks/useImgUrl";
+// import { getUniqueValues, PRODUCT_STATUS_OPTIONS } from "../tools/filterUtils";
 
-// 安全地從對象中提取唯一值的實用函數
-const getUniqueValues = (array, key) => {
-  if (!Array.isArray(array)) return [];
-  return [...new Set(array.map((item) => item?.[key]).filter(Boolean))];
-};
+// // 安全地從對象中提取唯一值的實用函數
+// const getUniqueValues = (array, key) => {
+//   if (!Array.isArray(array)) return [];
+//   return [...new Set(array.map((item) => item?.[key]).filter(Boolean))];
+// };
 
 // 創建一個全局變量來存儲最後選擇的分類路徑
-let lastSelectedCategoryPath = '';
+let lastSelectedCategoryPath = "";
 
 // 定義固定的狀態選項
-const PRODUCT_STATUS_OPTIONS = [
-  { slug: 'in-stock', title: '現貨' },
-  { slug: 'pre-order', title: '預購' },
-  { slug: 'restocking', title: '補貨中' },
-];
+// const PRODUCT_STATUS_OPTIONS = [
+//   { slug: "in-stock", title: "現貨" },
+//   { slug: "pre-order", title: "預購" },
+//   { slug: "restocking", title: "補貨中" },
+// ];
 
 // CategoryItem 組件，用於一般類別顯示
 const CategoryItem = memo(
@@ -41,7 +42,7 @@ const CategoryItem = memo(
     selectedSubCategory,
   }) => {
     // 從 currentCategory 獲取當前選中的路徑信息
-    const pathParts = currentCategory ? currentCategory.split('/') : [];
+    const pathParts = currentCategory ? currentCategory.split("/") : [];
     const isCategorySelected =
       pathParts.length >= 2 && pathParts[1] === category.slug;
 
@@ -51,17 +52,17 @@ const CategoryItem = memo(
         <div
           className="text-decoration-none d-flex justify-content-between align-items-center w-100 py-2"
           onClick={() => toggleExpand(category.slug)}
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: "pointer" }}
         >
           <span
             className={`fw-bold ${
-              isCategorySelected ? 'text-primary' : 'text-dark'
+              isCategorySelected ? "text-primary" : "text-dark"
             }`}
           >
             {category.title}
           </span>
           <span className="dropdown-icon">
-            <i className={`bi bi-chevron-${isExpanded ? 'up' : 'down'}`}></i>
+            <i className={`bi bi-chevron-${isExpanded ? "up" : "down"}`}></i>
           </span>
         </div>
 
@@ -73,11 +74,11 @@ const CategoryItem = memo(
               <div
                 className={`text-decoration-none ${
                   isCategorySelected && !selectedSubCategory
-                    ? 'text-primary fw-bold'
-                    : 'text-dark'
+                    ? "text-primary fw-bold"
+                    : "text-dark"
                 }`}
                 onClick={() => handleCategoryClick(gender, category)}
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: "pointer" }}
               >
                 全部
               </div>
@@ -96,13 +97,13 @@ const CategoryItem = memo(
                   <div
                     className={`text-decoration-none ${
                       isSubCategorySelected
-                        ? 'text-primary fw-bold'
-                        : 'text-dark'
+                        ? "text-primary fw-bold"
+                        : "text-dark"
                     }`}
                     onClick={() =>
                       handleSubCategoryClick(gender, category, subCategory)
                     }
-                    style={{ cursor: 'pointer' }}
+                    style={{ cursor: "pointer" }}
                   >
                     {subCategory.title}
                   </div>
@@ -116,7 +117,7 @@ const CategoryItem = memo(
   }
 );
 
-CategoryItem.displayName = 'CategoryItem';
+CategoryItem.displayName = "CategoryItem";
 CategoryItem.propTypes = {
   gender: PropTypes.string.isRequired,
   category: PropTypes.object.isRequired,
@@ -143,11 +144,11 @@ const StatusFilterItem = memo(
         <div
           className="text-decoration-none text-dark fw-bold d-flex justify-content-between align-items-center w-100 py-2"
           onClick={() => toggleExpand(category.slug)}
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: "pointer" }}
         >
           <span>{category.title}</span>
           <span className="dropdown-icon">
-            <i className={`bi bi-chevron-${isExpanded ? 'up' : 'down'}`}></i>
+            <i className={`bi bi-chevron-${isExpanded ? "up" : "down"}`}></i>
           </span>
         </div>
 
@@ -179,7 +180,7 @@ const StatusFilterItem = memo(
                   <label
                     className="text-decoration-none text-dark"
                     htmlFor={`status-${subCategory.slug}`}
-                    style={{ cursor: 'pointer' }}
+                    style={{ cursor: "pointer" }}
                   >
                     {subCategory.title}
                   </label>
@@ -193,7 +194,7 @@ const StatusFilterItem = memo(
   }
 );
 
-StatusFilterItem.displayName = 'StatusFilterItem';
+StatusFilterItem.displayName = "StatusFilterItem";
 StatusFilterItem.propTypes = {
   category: PropTypes.object.isRequired,
   isExpanded: PropTypes.bool.isRequired,
@@ -217,15 +218,15 @@ const FilterMenu = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
   // 篩選器的活動狀態
   const [activeFilters, setActiveFilters] = useState(reduxFilters);
   // 存儲選擇的分類路徑（用於手機版的"查看品項"按鈕）
-  const [selectedPath, setSelectedPath] = useState('');
+  const [selectedPath, setSelectedPath] = useState("");
   // 追蹤展開的類別
   const [expandedCategories, setExpandedCategories] = useState({
-    'product-status': true, // 確保「狀態」類別預設展開
+    "product-status": true, // 確保「狀態」類別預設展開
   });
   // 狀態來跟踪「商品狀態」的過濾選項
   const [productStatusFilter, setProductStatusFilter] = useState([]);
   // 選中的子類別
-  const [selectedSubCategory, setSelectedSubCategory] = useState('');
+  const [selectedSubCategory, setSelectedSubCategory] = useState("");
 
   // 確定當前選擇的性別
   const currentGender = useMemo(() => {
@@ -236,14 +237,14 @@ const FilterMenu = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
 
     // 從currentCategory確定
     if (currentCategory) {
-      const parts = currentCategory.split('/');
-      if (parts.length > 0 && (parts[0] === 'men' || parts[0] === 'women')) {
+      const parts = currentCategory.split("/");
+      if (parts.length > 0 && (parts[0] === "men" || parts[0] === "women")) {
         return parts[0];
       }
     }
 
     // 預設顯示女裝
-    return 'women';
+    return "women";
   }, [urlGender, currentCategory]);
 
   // 過濾出當前性別的分類
@@ -257,11 +258,11 @@ const FilterMenu = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
   // 從當前分類路徑中解析出子類別
   useEffect(() => {
     if (currentCategory) {
-      const parts = currentCategory.split('/');
+      const parts = currentCategory.split("/");
       if (parts.length >= 3) {
         setSelectedSubCategory(parts[2]);
       } else {
-        setSelectedSubCategory('');
+        setSelectedSubCategory("");
       }
     }
   }, [currentCategory]);
@@ -275,7 +276,7 @@ const FilterMenu = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
     // 同步狀態過濾器
     if (reduxFilters?.productStatus) {
       const newStatusFilter = reduxFilters.productStatus.filter(
-        (status) => status !== '全部'
+        (status) => status !== "全部"
       );
       // 只有當真正需要更新時才更新狀態
       if (
@@ -294,7 +295,7 @@ const FilterMenu = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
     (category, selectedLabels) => {
       const newFilters = {
         ...activeFilters,
-        [category]: selectedLabels.length ? selectedLabels : ['全部'],
+        [category]: selectedLabels.length ? selectedLabels : ["全部"],
       };
 
       // 移除空值的類別
@@ -316,7 +317,7 @@ const FilterMenu = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
     (newFilter) => {
       if (JSON.stringify(productStatusFilter) !== JSON.stringify(newFilter)) {
         setProductStatusFilter(newFilter);
-        handleFilterChange('productStatus', newFilter);
+        handleFilterChange("productStatus", newFilter);
       }
     },
     [productStatusFilter, handleFilterChange]
@@ -343,7 +344,7 @@ const FilterMenu = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
       lastSelectedCategoryPath = fullPath;
 
       // 清除選中的子類別
-      setSelectedSubCategory('');
+      setSelectedSubCategory("");
 
       // 同時更新組件狀態
       setSelectedPath(fullPath);
@@ -406,7 +407,7 @@ const FilterMenu = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
   const handleResetFilters = useCallback(() => {
     setActiveFilters({});
     setProductStatusFilter([]);
-    setSelectedSubCategory('');
+    setSelectedSubCategory("");
     dispatch(resetFilters());
   }, [dispatch]);
 
@@ -414,7 +415,7 @@ const FilterMenu = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
   const handleViewItems = useCallback(() => {
     if (lastSelectedCategoryPath) {
       // 從路徑中提取分類信息
-      const pathParts = lastSelectedCategoryPath.split('/').filter(Boolean);
+      const pathParts = lastSelectedCategoryPath.split("/").filter(Boolean);
 
       if (pathParts.length >= 3) {
         const gender = pathParts[1]; // 'women' 或 'men'
@@ -462,7 +463,7 @@ const FilterMenu = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
     () =>
       Object.values(activeFilters).reduce(
         (count, labels) =>
-          count + (labels.includes('全部') ? 0 : labels.length),
+          count + (labels.includes("全部") ? 0 : labels.length),
         0
       ),
     [activeFilters]
@@ -493,12 +494,12 @@ const FilterMenu = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
     // 確保「狀態」類別始終保持展開狀態
     setExpandedCategories((prev) => {
       // 只有在狀態需要更改時才更新
-      if (prev['product-status'] === true) {
+      if (prev["product-status"] === true) {
         return prev;
       }
       return {
         ...prev,
-        'product-status': true,
+        "product-status": true,
       };
     });
   }, [urlGender, category, subcategory, selectedPath]);
@@ -527,7 +528,7 @@ const FilterMenu = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
             <ul className="list-unstyled">
               {gender.categories.map((category) => {
                 // 判斷是否為狀態分類
-                const isStatusCategory = category.slug === 'product-status';
+                const isStatusCategory = category.slug === "product-status";
                 // 檢查類別是否展開
                 const isExpanded = !!expandedCategories[category.slug];
 
@@ -583,7 +584,7 @@ const FilterMenu = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
   );
 });
 
-FilterMenu.displayName = 'FilterMenu';
+FilterMenu.displayName = "FilterMenu";
 FilterMenu.propTypes = {
   isOffcanvas: PropTypes.bool,
   toggleOffcanvas: PropTypes.func.isRequired,
@@ -594,16 +595,16 @@ const FilterSortButton = memo(
   ({ toggleOffcanvas, sortOption, handleSortChange }) => {
     const filters = useSelector((state) => state.productsList.filters || {});
     const totalFilterCount = Object.values(filters).reduce(
-      (count, labels) => count + (labels.includes('全部') ? 0 : labels.length),
+      (count, labels) => count + (labels.includes("全部") ? 0 : labels.length),
       0
     );
     const getImgUrl = useImgUrl();
     // 定義排序選項
     const sortOptions = [
-      '最新上架',
-      '熱門商品',
-      '價格由低至高',
-      '價格由高至低',
+      "最新上架",
+      "熱門商品",
+      "價格由低至高",
+      "價格由高至低",
     ];
 
     return (
@@ -619,12 +620,12 @@ const FilterSortButton = memo(
             <h6>
               類別
               {totalFilterCount > 0 && (
-                <span className="ms-1">{'(' + totalFilterCount + ')'}</span>
+                <span className="ms-1">{"(" + totalFilterCount + ")"}</span>
               )}
             </h6>
             <span className="dropdown-icon ms-2">
               <img
-                src={getImgUrl('/icons/dropdownIcon.svg')}
+                src={getImgUrl("/icons/dropdownIcon.svg")}
                 alt="dropdown-Icon"
               />
             </span>
@@ -659,7 +660,7 @@ const FilterSortButton = memo(
   }
 );
 
-FilterSortButton.displayName = 'FilterSortButton';
+FilterSortButton.displayName = "FilterSortButton";
 FilterSortButton.propTypes = {
   toggleOffcanvas: PropTypes.func.isRequired,
   sortOption: PropTypes.string.isRequired,
@@ -668,7 +669,7 @@ FilterSortButton.propTypes = {
 
 // SortFilter 組件 - 僅電腦版排序
 const SortFilter = memo(({ sortOption, handleSortChange }) => {
-  const sortOptions = ['最新上架', '熱門商品', '價格由低至高', '價格由高至低'];
+  const sortOptions = ["最新上架", "熱門商品", "價格由低至高", "價格由高至低"];
 
   return (
     <div className="sortList fs-6 d-none d-md-block">
@@ -696,7 +697,7 @@ const SortFilter = memo(({ sortOption, handleSortChange }) => {
   );
 });
 
-SortFilter.displayName = 'SortFilter';
+SortFilter.displayName = "SortFilter";
 SortFilter.propTypes = {
   sortOption: PropTypes.string.isRequired,
   handleSortChange: PropTypes.func.isRequired,
@@ -706,6 +707,6 @@ export default FilterMenu;
 export {
   FilterSortButton,
   SortFilter,
-  getUniqueValues,
-  PRODUCT_STATUS_OPTIONS,
+  // getUniqueValues,
+  // PRODUCT_STATUS_OPTIONS,
 };

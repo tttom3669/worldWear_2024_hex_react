@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, useMemo} from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import useSwal from "../../hooks/useSwal";
@@ -6,6 +6,7 @@ import Pagination from "../../components/layouts/Pagination";
 import ProductModal from "../../components/admin/ProductModal";
 import DeleteProductModal from "../../components/admin/DeleteProductModal";
 import ScreenLoading from "../../components/front/ScreenLoading";
+import { currency } from "../../components/tools/format";
 
 const { VITE_API_PATH: API_PATH } = import.meta.env;
 
@@ -81,27 +82,24 @@ const AdminProducts = () => {
           authorization: tokenRef.current,
         },
       });
-      console.log(res.data);
-  
+
       let productsData = [];
       if (res.data && Array.isArray(res.data)) {
         productsData = res.data;
       } else if (res.data && Array.isArray(res.data.products)) {
         productsData = res.data.products;
-      } else if (res.data && typeof res.data === "object") {
-        console.log("API 回應結構:", Object.keys(res.data));
       }
-  
+
       // 反轉商品列表順序，使最新新增的商品顯示在最前面
       const reversedProducts = [...productsData].reverse();
-      
+
       setProducts(reversedProducts);
     } catch (error) {
       toastAlertRef.current({
         icon: "error",
         title: error.response?.data || "獲取商品列表失敗",
       });
-  
+
       setProducts([]);
     } finally {
       setIsLoading(false);
@@ -117,18 +115,24 @@ const AdminProducts = () => {
   const filteredProducts = useMemo(() => {
     return (products || []).filter((product) => {
       if (!product) return false;
-      
+
       // 文字搜尋，檢查 ID 和商品名稱
       const matchesText = searchText
-        ? (product.id?.toString().toLowerCase().includes(searchText.toLowerCase()) ||
-           product.title?.toString().toLowerCase().includes(searchText.toLowerCase()))
+        ? product.id
+            ?.toString()
+            .toLowerCase()
+            .includes(searchText.toLowerCase()) ||
+          product.title
+            ?.toString()
+            .toLowerCase()
+            .includes(searchText.toLowerCase())
         : true;
-      
+
       // 狀態篩選
-      const matchesStatus = searchStatus 
+      const matchesStatus = searchStatus
         ? product.status === searchStatus
         : true;
-      
+
       return matchesText && matchesStatus;
     });
   }, [products, searchText, searchStatus]);
@@ -169,8 +173,9 @@ const AdminProducts = () => {
                 }
               );
               setTempProduct(res.data.product || res.data);
+              // eslint-disable-next-line no-unused-vars
             } catch (error) {
-              console.error("獲取產品詳情失敗", error);
+              // console.error("獲取產品詳情失敗", error);
               setTempProduct(JSON.parse(JSON.stringify(product)));
             }
           };
@@ -279,9 +284,11 @@ const AdminProducts = () => {
                       <td>{product.id}</td>
                       <td className="text-start">{product.title}</td>
                       <td>{product.status}</td>
-                      <td>${product.origin_price}</td>
-                      <td>${product.price}</td>
-                      <td>{product.num ? calculateTotalStock(product.num) : 0}</td>
+                      <td>${currency(product.origin_price)}</td>
+                      <td>${currency(product.price)}</td>
+                      <td>
+                        {product.num ? calculateTotalStock(product.num) : 0}
+                      </td>
                       {/* <td>-</td> */}
                       <td>
                         <button
