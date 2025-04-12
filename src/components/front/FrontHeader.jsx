@@ -225,9 +225,11 @@ function FrontHeader({ defaultType }) {
                           <svg width="16" height="16">
                             <use href={getImgUrl('/icons/cart.svg#cart')}></use>
                           </svg>
-                          <span className="header__cart-badge d-flex justify-content-center align-items-center position-absolute top-0 start-100 translate-middle  rounded-circle bg-danger text-white fs-xxs">
-                            {cartsData?.products.length}
-                          </span>
+                          {cartsData?.products.length > 0 && (
+                            <span className="header__cart-badge d-flex justify-content-center align-items-center position-absolute top-0 start-100 translate-middle  rounded-circle bg-danger text-white fs-xxs">
+                              {cartsData?.products.length}
+                            </span>
+                          )}
                         </Link>
                       </li>
                       <li className="d-flex justify-content-center align-items-center">
@@ -286,8 +288,16 @@ function FrontHeader({ defaultType }) {
                     }`}
                   >
                     <li>
-                      <Link className="nav-link l-menu__link" to="/cart">
-                        購物車
+                      <Link
+                        className="nav-link l-menu__link d-flex justify-content-start align-items-center gap-4"
+                        to="/cart"
+                      >
+                        <span>購物車</span> 
+                        {cartsData?.products.length > 0 && (
+                          <span className="header__cart-badge d-flex justify-content-center align-items-center rounded-circle bg-danger text-white fs-xxs">
+                            {cartsData?.products.length}
+                          </span>
+                        )}
                       </Link>
                     </li>
                     <li>

@@ -51,14 +51,14 @@ export default function AdminLayout() {
         return Promise.reject(error);
       }
     );
-  }, []);
+  }, [dispatch, navigate]);
 
   // 未登入及不是後台管理員導入登入頁面
   useEffect(() => {
     if (status === 'idle' || userData?.role !== 'admin') {
       navigate('/login');
     }
-  }, [userData, status]);
+  }, [userData, status, navigate]);
 
   return (
     <>

@@ -1,37 +1,54 @@
+import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
-
 import useImgUrl from '../../hooks/useImgUrl';
-import { useRef } from 'react';
+
+// 在元件外部註冊插件，只需執行一次
+gsap.registerPlugin(ScrollTrigger);
 
 export default function FrontFooter() {
   const getImgUrl = useImgUrl();
   const topBtnRef = useRef(null);
-  gsap.registerPlugin(ScrollTrigger);
-  gsap.registerPlugin(useGSAP);
+  const gsapStart =
+    window <= 768 ? 'bottom bottom-=32px' : 'bottom bottom-=12vh';
 
   useGSAP(() => {
     const main = document.querySelector('main');
-    gsap.timeline({
+    if (!main) {
+      return;
+    }
+    const tl = gsap.timeline({
       scrollTrigger: {
         trigger: main,
-        start: '100% 80%',
-        // markers: true,
+        start: gsapStart,
+        //markers: true, // 保持啟用以方便除錯
+        invalidateOnRefresh: true, // 確保 refresh 時重新計算所有值
         onEnter: () => {
-          // 向下滾動到達時移除 class
-          topBtnRef.current.classList.remove('opacity-0');
-          topBtnRef.current.classList.remove('pe-none');
+          if (topBtnRef.current) {
+            topBtnRef.current.classList.remove('opacity-0', 'pe-none');
+          }
         },
         onLeaveBack: () => {
-          // 向上滾動回來時添加 class
-          topBtnRef.current.classList.add('opacity-0');
-          topBtnRef.current.classList.add('pe-none');
+          if (topBtnRef.current) {
+            topBtnRef.current.classList.add('opacity-0', 'pe-none');
+          }
         },
       },
     });
-  });
+
+    // 給予 Swiper 或其他動態內容一點時間載入和調整高度
+    const refreshTimeout = setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 500);
+
+    // 清理函數
+    return () => {
+      tl.kill();
+      clearTimeout(refreshTimeout);
+    };
+  }, []);
 
   return (
     <footer className="bg-black py-6 py-md-3">

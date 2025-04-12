@@ -317,14 +317,16 @@ export default function Cart() {
                   >
                     繼續逛逛
                   </Link>
-                  <Link
-                    className={`btn btn-lg btn-primary ${
-                      tempCartsData.length ? '' : 'disabled'
-                    }`}
-                    to="/checkout"
-                  >
-                    前往結賬
-                  </Link>
+                  {tempCartsData?.length > 0 && (
+                    <Link
+                      className={`btn btn-lg btn-primary ${
+                        tempCartsData.length ? '' : 'disabled'
+                      }`}
+                      to="/checkout"
+                    >
+                      前往結賬
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>

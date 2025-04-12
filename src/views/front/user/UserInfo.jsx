@@ -5,7 +5,7 @@ import UserAside from '../../../components/front/UserAside';
 import useImgUrl from '../../../hooks/useImgUrl';
 import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import ScreenLoading from '../../../components/front/ScreenLoading';
 import useSwal from '../../../hooks/useSwal';
 const { VITE_API_PATH: API_PATH } = import.meta.env;
@@ -19,7 +19,7 @@ export default function UserInfo() {
   const [isLoading, setIsLoading] = useState(false);
   const { modalAlert } = useSwal();
 
-  const getUser = async () => {
+  const getUser = useCallback(async () => {
     try {
       setIsLoading(true);
       const res = await axios.get(
@@ -55,7 +55,7 @@ export default function UserInfo() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [token, userData.id]);
 
   const onSubmit = async (data) => {
     const result = await modalAlert({
@@ -63,6 +63,8 @@ export default function UserInfo() {
       imageUrl: getImgUrl('/images/shared/ic_warning.png'),
       showCancel: true,
     });
+
+    console.log(data);
 
     try {
       if (result.isConfirmed) {
@@ -148,7 +150,8 @@ export default function UserInfo() {
     handleSubmit: handleSubmitUserInfo,
     formState: { errors: errorsUserInfo },
     reset: resetUserInfo,
-  } = useForm({ mode: 'onChange', defaultValues: defaultUserData });
+    watch: watchUserInfo,
+  } = useForm({ mode: 'onChange' });
 
   // 密碼修改表單的 useForm
   const {
@@ -161,13 +164,23 @@ export default function UserInfo() {
 
   useEffect(() => {
     getUser();
-  }, []);
+  }, [getUser]);
 
   useEffect(() => {
     if (defaultUserData) {
       resetUserInfo(defaultUserData);
     }
-  }, [defaultUserData]);
+  }, [defaultUserData, resetUserInfo]);
+
+  useEffect(() => {
+    console.log('AddressForm errors:', errorsUserInfo);
+  }, [errorsUserInfo]);
+
+  const watchedUserErrors = watchUserInfo(); 
+
+  useEffect(() => {
+    console.log('Watched errors:', errorsUserInfo);
+  }, [watchedUserErrors, errorsUserInfo]);
 
   return (
     <>
@@ -211,9 +224,9 @@ export default function UserInfo() {
                     className="d-flex flex-column gap-5 bg-white py-8 px-5 border border-nature-95"
                     onSubmit={handleSubmitUserInfo(onSubmit)}
                   >
-                    <div className="d-flex flex-column align-items-start align-items-md-center gap-md-6 flex-md-row">
+                    <div className="d-flex flex-column align-items-start gap-md-6 flex-md-row">
                       <label htmlFor="username" className="form-label">
-                        會員姓名
+                        會員姓名*
                       </label>
                       <div className="userInfo__col">
                         <input
@@ -232,9 +245,9 @@ export default function UserInfo() {
                         </p>
                       </div>
                     </div>
-                    <div className="d-flex flex-column align-items-start align-items-md-center gap-md-6 flex-md-row">
+                    <div className="d-flex flex-column align-items-start  gap-md-6 flex-md-row">
                       <label htmlFor="tel" className="form-label">
-                        會員電話
+                        會員電話*
                       </label>
                       <div className="userInfo__col">
                         <input
@@ -264,9 +277,9 @@ export default function UserInfo() {
                         </p>
                       </div>
                     </div>
-                    <div className="d-flex flex-column align-items-start align-items-md-center gap-md-6 flex-md-row">
+                    <div className="d-flex flex-column align-items-start  gap-md-6 flex-md-row">
                       <label htmlFor="email" className="form-label">
-                        電子郵件
+                        電子郵件*
                       </label>
                       <div className="userInfo__col">
                         <input
@@ -295,9 +308,9 @@ export default function UserInfo() {
                         </p>
                       </div>
                     </div>
-                    <div className="d-flex flex-column align-items-start align-items-md-center gap-md-6 flex-md-row">
+                    <div className="d-flex flex-column align-items-start  gap-md-6 flex-md-row">
                       <label htmlFor="birthday" className="form-label">
-                        生日
+                        生日*
                       </label>
                       <div className="userInfo__col">
                         <input
@@ -321,7 +334,7 @@ export default function UserInfo() {
                     </div>
                     <AddressForm
                       register={registerUserInfo}
-                      errors={errorsUserInfo}
+                      errors={{ ...errorsUserInfo }}
                       defaultRegion={defaultUserData?.region}
                       defaultCounty={defaultUserData?.county}
                     />
@@ -340,20 +353,9 @@ export default function UserInfo() {
                     className="d-flex flex-column gap-5 bg-white py-8 px-5 border border-nature-95"
                     onSubmit={handleSubmitPassword(onPasswordSubmit)}
                   >
-                    {/* 添加隱藏的使用者名稱欄位 */}
-                    <div style={{ display: 'none' }}>
-                      <label htmlFor="username">使用者名稱</label>
-                      <input
-                        type="text"
-                        id="username"
-                        name="username"
-                        autoComplete="username"
-                        className="form-control"
-                      />
-                    </div>
-                    <div className="d-flex flex-column align-items-start align-items-md-center gap-md-6 flex-md-row">
+                    <div className="d-flex flex-column align-items-start gap-md-6 flex-md-row">
                       <label htmlFor="oldPassword" className="form-label">
-                        輸入舊密碼
+                        輸入舊密碼*
                       </label>
                       <div className="userInfo__col">
                         <input
@@ -380,9 +382,9 @@ export default function UserInfo() {
                         </p>
                       </div>
                     </div>
-                    <div className="d-flex flex-column align-items-start align-items-md-center gap-md-6 flex-md-row">
+                    <div className="d-flex flex-column align-items-start gap-md-6 flex-md-row">
                       <label htmlFor="newPassword" className="form-label">
-                        輸入新密碼
+                        輸入新密碼*
                       </label>
                       <div className="userInfo__col">
                         <input
@@ -409,12 +411,12 @@ export default function UserInfo() {
                         </p>
                       </div>
                     </div>
-                    <div className="d-flex flex-column align-items-start align-items-md-center gap-md-6 flex-md-row">
+                    <div className="d-flex flex-column align-items-start gap-md-6 flex-md-row">
                       <label
                         htmlFor="confirmNewPassword"
                         className="form-label"
                       >
-                        確認新密碼
+                        確認新密碼*
                       </label>
                       <div className="userInfo__col">
                         <input

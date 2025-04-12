@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 const { VITE_API_PATH: API_PATH } = import.meta.env;
 import { Modal } from 'bootstrap';
@@ -21,6 +21,7 @@ export default function AdminOrders() {
 
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
+  const pageParam = queryParams.get('page');
   const [paginationData, setPaginationData] = useState({
     totalPage: 0,
     currentPage: 0,
@@ -33,7 +34,7 @@ export default function AdminOrders() {
     orderStatus: '',
   });
 
-  const getOrder = async () => {
+  const getOrder = useCallback(async () => {
     try {
       setIsLoading(true);
       const res = await axios.get(`${API_PATH}/admin/orders/?_expand=user`, {
@@ -41,41 +42,40 @@ export default function AdminOrders() {
           authorization: token,
         },
       });
-      console.log(res.data);
-
       setOrderData(res.data);
       setFilterOrderData(res.data);
-      // if (tempUserData.id) {
-      //   setTempUserData(res.data.find((user) => user.id === tempUserData.id));
-      // }
     } catch (error) {
       console.log(error);
     } finally {
       setIsLoading(false);
     }
-  };
-  const handlePageChange = async (page = 1) => {
-    try {
-      setIsLoading(true);
-      const res = await axios.get(
-        `${API_PATH}/admin/orders/?_expand=user&_page=${page}&_limit=${pageLimit}`,
-        {
-          headers: {
-            authorization: token,
-          },
-        }
-      );
-      setFilterOrderData(res.data);
+  }, [token]);
 
-      // if (tempUserData.id) {
-      //   setTempUserData(res.data.find((user) => user.id === tempUserData.id));
-      // }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const handlePageChange = useCallback(
+    async (page = 1) => {
+      try {
+        setIsLoading(true);
+        const res = await axios.get(
+          `${API_PATH}/admin/orders/?_expand=user&_page=${page}&_limit=${pageLimit}`,
+          {
+            headers: {
+              authorization: token,
+            },
+          }
+        );
+        setFilterOrderData(res.data);
+
+        // if (tempUserData.id) {
+        //   setTempUserData(res.data.find((user) => user.id === tempUserData.id));
+        // }
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [token]
+  );
   const openModal = (user) => {
     adminOrderModal.current.show();
     setTempOrderData(user);
@@ -154,27 +154,27 @@ export default function AdminOrders() {
   useEffect(() => {
     getOrder();
     adminOrderModal.current = new Modal(orderModalRef.current);
-  }, []);
+  }, [getOrder]);
 
+  // 初次載入時，設置總頁數和當前頁數
   useEffect(() => {
-    const page = queryParams.get('page') || 1;
     setPaginationData({
       totalPage: Math.ceil(orderData.length / pageLimit),
-      currentPage: Number(page),
+      currentPage: 1,
     });
-    if (page) {
-      handlePageChange(page);
-    }
-  }, [orderData]);
+    handlePageChange(1);
+  }, [orderData, handlePageChange]);
 
   useEffect(() => {
-    const page = queryParams.get('page');
-    if (!page) {
+    if (!pageParam) {
       return;
     }
-    setPaginationData({ ...paginationData, currentPage: Number(page) });
-    handlePageChange(page);
-  }, [queryParams.get('page')]);
+    setPaginationData((prevData) => ({
+      ...prevData,
+      currentPage: Number(pageParam),
+    }));
+    handlePageChange(pageParam);
+  }, [pageParam, handlePageChange]);
 
   return (
     <>
