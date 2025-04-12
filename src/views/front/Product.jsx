@@ -4,6 +4,8 @@ import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
 import useSwal from "../../hooks/useSwal";
 import { asyncGetCarts } from "../../slice/cartsSlice";
+import { currency } from "../../components/tools/format";
+
 
 // Import Swiper React components
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -230,8 +232,8 @@ export default function Product() {
           <div className="col-md-4">
             <h1 className="mb-3">{product.title}</h1>
             <p className="mb-3 fs-h6">
-              ${product.price}{" "}
-              <s className="origin-price">${product.origin_price}</s>
+              ${currency(product.price)}{" "}
+              <s className="origin-price">${currency(product.origin_price)}</s>
             </p>
 
             <div className="mb-1">
