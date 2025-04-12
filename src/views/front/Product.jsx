@@ -50,7 +50,11 @@ export default function Product() {
         productId: productId,
       }));
     } catch (error) {
-      console.log(error);
+      // console.log(error);
+      toastAlert({
+        icon: "error",
+        title: error,
+      });
     }
   }, [productId]);
 
@@ -131,7 +135,11 @@ export default function Product() {
       dispatch(asyncGetCarts());
       setIsPostCartLoding(false);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
+      toastAlert({
+        icon: "error",
+        title: error,
+      });
     }
   };
 
