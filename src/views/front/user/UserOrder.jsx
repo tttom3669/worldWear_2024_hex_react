@@ -29,6 +29,7 @@ export default function UserOrder() {
           Authorization: `Bearer ${token}`,
         },
       });
+      
       setOrderData(res.data);
     } catch (error) {
       console.log(error);
@@ -216,10 +217,43 @@ export default function UserOrder() {
                                         {order.invoiceInfo.invoiceType}
                                       </span>
                                     </div>
-                                    <div className="d-flex gap-1">
-                                      <span>發票載具 : </span>
-                                      <span>{order.invoiceInfo.carrier}</span>
-                                    </div>
+                                    {order.invoiceInfo.invoiceType ===
+                                      '電子發票' && (
+                                      <div className="d-flex gap-1">
+                                        <span className="text-nowrap">
+                                          發票載具 :
+                                        </span>
+                                        <span>{order.invoiceInfo.carrier}</span>
+                                      </div>
+                                    )}
+                                    {order.invoiceInfo.invoiceType ===
+                                      '電子發票' &&
+                                      order.invoiceInfo.carrier ===
+                                        '手機條碼載具' && (
+                                        <div className="d-flex gap-1">
+                                          <span>手機條碼 :</span>
+                                          <span>
+                                            {order.invoiceInfo.athleteBarcode}
+                                          </span>
+                                        </div>
+                                      )}
+                                    {order.invoiceInfo.invoiceType ===
+                                      '統編發票' && (
+                                      <>
+                                        <div className="d-flex gap-1">
+                                          <span> 公司抬頭 :</span>
+                                          <span>
+                                            {order.invoiceInfo.companyTitle}
+                                          </span>
+                                        </div>
+                                        <div className="d-flex gap-1">
+                                          <span> 公司統編 :</span>
+                                          <span>
+                                            {order.invoiceInfo.companyId}
+                                          </span>
+                                        </div>
+                                      </>
+                                    )}
                                   </li>
                                 </ul>
                               </div>

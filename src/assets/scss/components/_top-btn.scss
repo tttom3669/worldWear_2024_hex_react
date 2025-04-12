@@ -1,7 +1,7 @@
 .c-topBtn {
   position: fixed;
   right: 12px;
-  bottom: 61.6vw;
+  bottom: 242px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -24,11 +24,17 @@
   z-index: 1000;
   box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
   @include media-breakpoint-up(md) {
-    right: 10.2vw;
-    bottom: 12.81vw;
+    right: 5vw;
+    bottom: 265px;
     padding-top: 20px;
     font-size: 24px;
     width: 92px;
+  }
+  @include media-breakpoint-up(lg) {
+    bottom: 12.81vw;
+  }
+  @include media-breakpoint-up(xl) {
+    right: 10.2vw;
   }
   &__icon {
     display: flex;
