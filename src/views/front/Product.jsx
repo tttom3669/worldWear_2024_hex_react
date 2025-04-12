@@ -39,6 +39,7 @@ export default function Product() {
     productId: "",
   });
   const [popularProducts, setPopularProducts] = useState([]);
+  const [swiperNavState, setSwiperNavState] = useState({});
   const swiperRefs = useRef({});
 
   const getProduct = useCallback(async () => {
@@ -190,6 +191,17 @@ export default function Product() {
   };
   const handlePrevSlide = (swiperSlug) => {
     swiperRefs.current[swiperSlug].slidePrev();
+  };
+
+  // 更新 Swiper 狀態的函數
+  const updateSwiperNavState = (slug, swiper) => {
+    setSwiperNavState((prevState) => ({
+      ...prevState,
+      [slug]: {
+        isBeginning: swiper.isBeginning,
+        isEnd: swiper.isEnd,
+      },
+    }));
   };
 
   const getPopularProducts = useCallback(async () => {
@@ -460,63 +472,78 @@ export default function Product() {
         <div className="container-sm">
           <h2 className="fs-h5 fs-md-h2 fw-bold mb-6 text-center">推薦穿搭</h2>
           <div className="swiper-container swiper__popularProducts-container">
-            <Swiper
-              className="swiper__popularProducts"
-              modules={[Pagination]}
-              slidesPerView={1.375}
-              spaceBetween={24}
-              breakpoints={{
-                576: {
-                  slidesPerGroup: 2,
-                  slidesPerView: 2,
-                },
-                768: {
-                  slidesPerGroup: 3,
-                  slidesPerView: 3,
-                },
-              }}
-              pagination={{ clickable: true }}
-              onSwiper={(swiper) => {
-                swiperRefs.current["popularProducts"] = swiper;
-              }}
-            >
-              {" "}
-              {popularProducts.map((product) => (
-                <SwiperSlide className="position-relative" key={product.id}>
-                  <img
-                    className="w-100 img-fluid object-fit-cover mb-3"
-                    src={product.imageUrl}
-                    alt={product.title}
-                  />
-                  <Link
-                    to={`/product/${product.id}`}
-                    className="stretched-link link-black"
+                <div className="overflow-hidden pb-12">
+                  <Swiper
+                    className="swiper__popularProducts"
+                    modules={[Pagination]}
+                    slidesPerView={1.375}
+                    spaceBetween={24}
+                    breakpoints={{
+                      576: {
+                        slidesPerGroup: 2,
+                        slidesPerView: 2,
+                      },
+                      768: {
+                        slidesPerGroup: 3,
+                        slidesPerView: 3,
+                      },
+                    }}
+                    pagination={{ clickable: true }}
+                    onSwiper={(swiper) => {
+                      swiperRefs.current['popularProducts'] = swiper;
+                    }}
+                    onSlideChange={(swiper) => {
+                      updateSwiperNavState('popularProducts', swiper);
+                    }}
                   >
-                    <h3 className="d-flex flex-column gap-0 gap-md-1 tracking-sm fs-sm fs-md-base lh-base fw-normal">
-                      <span>{product.title}</span>
-                      <span>{product.categoryItems}</span>
-                    </h3>
-                  </Link>
-                </SwiperSlide>
-              ))}
-            </Swiper>
-            <div
-              className="swiper-button-prev"
-              onClick={() => handlePrevSlide("popularProducts")}
-            >
-              <svg className="pe-none" width="18" height="32">
-                <use href={getImgUrl("/icons/prev.svg#prev")}></use>
-              </svg>
-            </div>
-            <div
-              className="swiper-button-next"
-              onClick={() => handleNextSlide("popularProducts")}
-            >
-              <svg className="pe-none" width="18" height="32">
-                <use href={getImgUrl("/icons/next.svg#next")}></use>
-              </svg>
-            </div>
-          </div>
+                    {popularProducts.map((product) => (
+                      <SwiperSlide
+                        className="position-relative"
+                        key={product.id}
+                      >
+                        <img
+                          className="w-100 img-fluid object-fit-cover mb-3"
+                          src={product.imageUrl}
+                          alt={product.title}
+                        />
+                        <Link
+                          to={`/product/${product.id}`}
+                          className="stretched-link link-black"
+                        >
+                          <h3 className="d-flex flex-column gap-0 gap-md-1 tracking-sm fs-sm fs-md-base lh-base fw-normal">
+                            <span>{product.title}</span>
+                            <span>{product.categoryItems}</span>
+                          </h3>
+                        </Link>
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
+                  <div
+                    className={`swiper-button-prev ${
+                      swiperNavState.popularProducts?.isBeginning
+                        ? 'text-nature-95 pe-none'
+                        : ''
+                    }`}
+                    onClick={() => handlePrevSlide('popularProducts')}
+                  >
+                    <svg className="pe-none" width="18" height="32">
+                      <use href={getImgUrl('/icons/prev.svg#prev')}></use>
+                    </svg>
+                  </div>
+                  <div
+                    className={`swiper-button-next ${
+                      swiperNavState.popularProducts?.isEnd
+                        ? 'text-nature-95 pe-none '
+                        : ''
+                    }`}
+                    onClick={() => handleNextSlide('popularProducts')}
+                  >
+                    <svg className="pe-none" width="18" height="32">
+                      <use href={getImgUrl('/icons/next.svg#next')}></use>
+                    </svg>
+                  </div>
+                </div>
+              </div>
         </div>
       </section>
     </>
