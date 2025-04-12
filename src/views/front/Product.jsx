@@ -229,7 +229,7 @@ export default function Product() {
       <main className="mb-20 product container">
         <div className="row justify-content-center">
           {/* 左側區塊：商品圖片區 */}
-          <div className="col-md-5">
+          <div className="col-md-5 d-none d-md-block">
             <img
               src={product.imageUrl}
               className="img-fluid mb-6"
@@ -250,11 +250,50 @@ export default function Product() {
 
           {/* 右側區塊：商品資訊與購物功能 */}
           <div className="col-md-4">
-            <h1 className="mb-3">{product.title}</h1>
+            <h1 className="mb-3 mt-3 mt-md-0 fs-h5 fs-md-h1">{product.title}</h1>
             <p className="mb-3 fs-h6">
               ${currency(product.price)}{" "}
               <s className="origin-price">${currency(product.origin_price)}</s>
             </p>
+            {/* 手機版輪播商品圖片 */}
+            <div className="d-md-none mb-6">
+            <Swiper
+              modules={[Pagination]}
+              slidesPerView={1}
+              pagination={{ clickable: true }}
+              className="product-image-swiper"
+            >
+              {product.imageUrl && (
+                <SwiperSlide>
+                  <img
+                    src={product.imageUrl}
+                    className="object-fit-cover mx-auto"
+                    style={{
+                      width: "350px",
+                      height: "350px",
+                    }}
+                    alt="商品主圖"
+                  />
+                </SwiperSlide>
+              )}
+              {product.imagesUrl &&
+                product.imagesUrl.map((url, index) =>
+                  url ? (
+                    <SwiperSlide key={index}>
+                      <img
+                        src={url}
+                        className="object-fit-cover mx-auto"
+                        style={{
+                          width: "350px",
+                          height: "350px",
+                        }}
+                        alt={`商品圖片 ${index}`}
+                      />
+                    </SwiperSlide>
+                  ) : null
+                )}
+            </Swiper>
+          </div>
 
             <div className="mb-1">
               <span className="fs-base">顏色：</span>
