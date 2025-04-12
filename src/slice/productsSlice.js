@@ -11,7 +11,7 @@ export const productsSlice = createSlice({
           {
             slug: 'top',
             title: '上衣',
-            imageUrl: '/images/home/category-top.png',
+            imageUrl: '/images/home/category-top.webp',
             subCategories: [
               { slug: 'shirt', title: '襯衫' },
               { slug: 'knitwear', title: '針織衫' },
@@ -22,7 +22,7 @@ export const productsSlice = createSlice({
           {
             slug: 'jacket',
             title: '外套',
-            imageUrl: '/images/home/category-jacket.png',
+            imageUrl: '/images/home/category-jacket.webp',
             subCategories: [
               { slug: 'jacket', title: '夾克外套' },
               { slug: 'coat', title: '大衣' },
@@ -36,7 +36,7 @@ export const productsSlice = createSlice({
           {
             slug: 'dress',
             title: '洋裝',
-            imageUrl: '/images/home/category-dress.png',
+            imageUrl: '/images/home/category-dress.webp',
             subCategories: [
               { slug: 'dress', title: '洋裝' },
               { slug: 'long-dress', title: '長洋裝' },
@@ -46,7 +46,7 @@ export const productsSlice = createSlice({
           {
             slug: 'pants',
             title: '褲子',
-            imageUrl: '/images/home/category-pants.png',
+            imageUrl: '/images/home/category-pants.webp',
             subCategories: [
               { slug: 'short-pants', title: '短褲' },
               { slug: 'skirt-pants', title: '褲裙' },
@@ -56,16 +56,16 @@ export const productsSlice = createSlice({
           {
             slug: 'skirts',
             title: '裙子',
-            imageUrl: '/images/home/category-skirt.png',
+            imageUrl: '/images/home/category-skirt.webp',
             subCategories: [
               { slug: 'short-skirt', title: '短裙' },
               { slug: 'denim-skirt', title: '牛仔裙' }
             ]
           },
           {
-            slug: 'accessories',
+            slug: 'accessory',
             title: '配件',
-            imageUrl: '/images/home/category-accessories.png',
+            imageUrl: '/images/home/category-accessories.webp',
             subCategories: [
               { slug: 'hat', title: '帽子' },
               { slug: 'shawl', title: '披肩' },
@@ -92,7 +92,7 @@ export const productsSlice = createSlice({
           {
             slug: 'top',
             title: '上衣',
-            imageUrl: '/images/home/category-top-m.png',
+            imageUrl: '/images/home/category-top-m.webp',
             subCategories: [
               { slug: 'long-sleeve', title: '長袖' },
               { slug: 'short-sleeve', title: '短袖' }
@@ -101,7 +101,7 @@ export const productsSlice = createSlice({
           {
             slug: 'jacket',
             title: '外套',
-            imageUrl: '/images/home/category-jacket-m.png',
+            imageUrl: '/images/home/category-jacket-m.webp',
             subCategories: [
               { slug: 'casual-jacket', title: '休閒外套' },
               { slug: 'jacket', title: '夾克外套' },
@@ -114,7 +114,7 @@ export const productsSlice = createSlice({
           {
             slug: 'pants',
             title: '褲子',
-            imageUrl: '/images/home/category-pants-m.png',
+            imageUrl: '/images/home/category-pants-m.webp',
             subCategories: [
               { slug: 'jeans', title: '牛仔褲' },
               { slug: 'suit-pants', title: '西裝長褲' },
@@ -124,9 +124,9 @@ export const productsSlice = createSlice({
             ]
           },
           {
-            slug: 'accessories',
+            slug: 'accessory',
             title: '配件',
-            imageUrl: '/images/home/category-accessories-m.png',
+            imageUrl: '/images/home/category-accessories-m.webp',
             subCategories: [
               { slug: 'hat', title: '帽子' },
               { slug: 'belt', title: '皮帶' },
