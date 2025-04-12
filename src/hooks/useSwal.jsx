@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import Swal from 'sweetalert2';
 
 const useSwal = () => {
@@ -20,15 +21,18 @@ const useSwal = () => {
     },
     buttonsStyling: false,
   });
-  return {
-    toastAlert({ icon, title }) {
+  const toastAlert = useCallback(
+    ({ icon, title }) => {
       Toast.fire({
         icon,
         title,
       });
     },
-    modalAlert({ title, text, icon, imageUrl, showCancel }) {
-     return  swalWithBootstrapButtons.fire({
+    [Toast]
+  );
+  const modalAlert = useCallback(
+    ({ title, text, icon, imageUrl, showCancel }) => {
+      return swalWithBootstrapButtons.fire({
         title,
         imageUrl,
         icon,
@@ -39,6 +43,11 @@ const useSwal = () => {
         reverseButtons: true,
       });
     },
+    [swalWithBootstrapButtons]
+  );
+  return {
+    toastAlert,
+    modalAlert,
   };
 };
 

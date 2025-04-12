@@ -163,18 +163,21 @@ $header-aside-height-mobile: 29px;
     background-color: $white;
     border: none;
     border-radius: 0;
+    visibility: hidden;
     transition: opacity 0.3s ease;
     opacity: 0;
     pointer-events: none;
     padding-bottom: 8px;
     top: 100%;
     left: 0;
-    right: 0;
+    right: 0;  
 
     &.show {
       margin: 0;
       opacity: 1;
+      visibility: visible;
       pointer-events: auto;
+      transition: opacity 0.3s ease, visibility 0s;
     }
     &-menu {
       display: flex;
@@ -225,7 +228,6 @@ $header-aside-height-mobile: 29px;
     @include media-breakpoint-down(lg) {
       & > .l-menu {
         flex-direction: column;
-        // align-items: stretch;
         gap: 0;
         li {
           display: flex;

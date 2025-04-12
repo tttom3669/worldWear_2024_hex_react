@@ -6,12 +6,15 @@ import { useSelector, useDispatch } from 'react-redux';
 import { productCategories as productCategoriesData } from '../../slice/productsSlice';
 import useImgUrl from '../../hooks/useImgUrl';
 import { useEffect, useRef, useState } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { checkLogin, logoutUser } from '../../slice/authSlice';
 import {
   asyncGetCarts,
   cartsData as sliceCartsData,
 } from '../../slice/cartsSlice';
+import useSwal from '../../hooks/useSwal';
+import axios from 'axios';
+
 function FrontHeader({ defaultType }) {
   const getImgUrl = useImgUrl();
   const dispatch = useDispatch();
@@ -25,6 +28,8 @@ function FrontHeader({ defaultType }) {
   const productCategories = useSelector(productCategoriesData);
   const cartsData = useSelector(sliceCartsData);
   const userData = useSelector((state) => state.authSlice.user);
+  const { toastAlert } = useSwal();
+  const { pathname } = useLocation();
 
   gsap.registerPlugin(ScrollTrigger);
   gsap.registerPlugin(useGSAP);
@@ -45,10 +50,6 @@ function FrontHeader({ defaultType }) {
     if (isInitialized) {
       const loggedIn = auth.status === 'logged-in' && auth.user !== null;
       setIsLogin(loggedIn);
-
-      if (loggedIn) {
-        console.log('FrontHeader: 用戶已登入');
-      }
     }
   }, [isInitialized, auth.status, auth.user]);
 
@@ -77,6 +78,13 @@ function FrontHeader({ defaultType }) {
     return window.innerWidth > 992;
   };
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+
+    console.log(pathname);
+    
+  }, [pathname]); // 依賴 pathname，當路徑改變時觸發
+
   function mainMenuHandler(e) {
     e.preventDefault();
     const name = e.target.name || e.target.parentElement.name;
@@ -89,40 +97,41 @@ function FrontHeader({ defaultType }) {
   // 處理登出功能 - 使用 logoutUser action
   const handleLogout = async () => {
     try {
-      console.log('登出按鈕被點擊'); // 添加除錯訊息
-
       // 執行登出 action 並等待完成
       await dispatch(logoutUser()).unwrap();
-
-      console.log('登出成功，準備導航回首頁');
-
       // 登出成功後導航回首頁
       navigate('/');
     } catch (error) {
-      console.error('登出失敗:', error);
       // 即使登出失敗，也嘗試導航回首頁
+      toastAlert({
+        icon: 'error',
+        title: error.response.data.message || '登出失敗',
+      });
       navigate('/');
     }
   };
 
-  // useEffect(() => {
-  //   // 在 Axios 攔截器中處理
-  //   axios.interceptors.response.use(
-  //     (response) => response,
-  //     (error) => {
-  //       // 在某些需要 token 的情况下，取到舊 Token ，造成取資料錯誤
-  //       // Request failed with status code 401
-  //       if (error.response && error.response.status === 401) {
-  //         //   登出程式碼
-  //         dispatch(logoutUser()).unwrap();
-  //         // 導入登入頁面
-  //         navigate('/login');
-  //       }
-
-  //       return Promise.reject(error);
-  //     }
-  //   );
-  // }, []);
+  useEffect(() => {
+    // 在 Axios 攔截器中處理
+    axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        // 在某些需要 token 的情况下，取到舊 Token ，造成取資料錯誤
+        // Request failed with status code 401
+        if (error.response && error.response.status === 401) {
+          toastAlert({
+            icon: 'error',
+            title: '登入逾期，請重新登入',
+          });
+          //   登出程式碼
+          dispatch(logoutUser()).unwrap();
+          // 導入登入頁面
+          navigate('/login');
+        }
+        return Promise.reject(error);
+      }
+    );
+  }, [dispatch, navigate, toastAlert]);
 
   return (
     <>
@@ -292,7 +301,7 @@ function FrontHeader({ defaultType }) {
                         className="nav-link l-menu__link d-flex justify-content-start align-items-center gap-4"
                         to="/cart"
                       >
-                        <span>購物車</span> 
+                        <span>購物車</span>
                         {cartsData?.products.length > 0 && (
                           <span className="header__cart-badge d-flex justify-content-center align-items-center rounded-circle bg-danger text-white fs-xxs">
                             {cartsData?.products.length}
@@ -432,16 +441,6 @@ function FrontHeader({ defaultType }) {
                       所有商品
                     </Link>
                   </li>
-                  {/* {gender.categories.map((category) => (
-                    <li key={category.slug}>
-                      <Link
-                        className="l-menu__dropdown-link"
-                        to={`/products/${gender.slug}/${category.slug}`}
-                      >
-                        {category.title}
-                      </Link>
-                    </li>
-                  ))} */}
                   {gender.categories
                     .filter((category) => category.slug !== 'product-status')
                     .map((category) => (
