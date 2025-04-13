@@ -244,15 +244,18 @@ export default function UserFavorites() {
           .unwrap()
           .then(() => {
             setIsAuthenticated(true);
-            setIsLoading(false);
+            // setIsLoading(false);
           })
           // eslint-disable-next-line no-unused-vars
           .catch((error) => {
+            // setIsLoading(false);
+          })
+          .finally(() => {
             setIsLoading(false);
           });
       } else {
         setIsAuthenticated(false);
-        setIsLoading(false);
+        // setIsLoading(false);
       }
       // eslint-disable-next-line no-unused-vars
     } catch (error) {
@@ -314,7 +317,10 @@ export default function UserFavorites() {
                                     alt={favorite.product?.title || '產品圖片'}
                                   />
                                 </div>
-                                <Link to={`/product/${favorite.product.id}`} className="product-title link-black">
+                                <Link
+                                  to={`/product/${favorite.product.id}`}
+                                  className="product-title link-black"
+                                >
                                   {favorite.product?.title ||
                                     favorite.product?.name ||
                                     '未知產品'}
