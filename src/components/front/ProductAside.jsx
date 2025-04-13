@@ -69,54 +69,54 @@ export const FilterSortButton = memo(
   ({ toggleOffcanvas, sortOption, handleSortChange }) => {
     const getImgUrl = useImgUrl();
     // 直接從 Redux 獲取原始 filters 數據和當前類別
-    const filters = useSelector((state) => state.productsList?.filters || {});
+    // const filters = useSelector((state) => state.productsList?.filters || {});
     const currentCategory = useSelector(
       (state) => state.productsList?.currentCategory || ""
     );
 
     // 從當前類別路徑中提取類別信息
-    const categoryInfo = useMemo(() => {
-      if (!currentCategory)
-        return { gender: "", mainCategory: "", subCategories: [] };
+    // const categoryInfo = useMemo(() => {
+    //   if (!currentCategory)
+    //     return { gender: "", mainCategory: "", subCategories: [] };
 
-      const parts = currentCategory.split("/");
-      if (parts.length >= 2) {
-        const gender = parts[0];
-        const mainCategory = parts[1];
+    //   const parts = currentCategory.split("/");
+    //   if (parts.length >= 2) {
+    //     const gender = parts[0];
+    //     const mainCategory = parts[1];
 
-        if (parts.length >= 3) {
-          // 處理可能的多個子類別 (用逗號分隔的子類別列表)
-          const subCategories = parts[2].split(",");
-          return { gender, mainCategory, subCategories };
-        }
+    //     if (parts.length >= 3) {
+    //       // 處理可能的多個子類別 (用逗號分隔的子類別列表)
+    //       const subCategories = parts[2].split(",");
+    //       return { gender, mainCategory, subCategories };
+    //     }
 
-        return { gender, mainCategory, subCategories: [] };
-      }
+    //     return { gender, mainCategory, subCategories: [] };
+    //   }
 
-      return { gender: "", mainCategory: "", subCategories: [] };
-    }, [currentCategory]);
+    //   return { gender: "", mainCategory: "", subCategories: [] };
+    // }, [currentCategory]);
 
-    // 計算當前類別中已選擇的篩選條件數量 - 避免累加計算
-    const totalCount = useMemo(() => {
-      // 細項類別數量 - 只計算當前類別路徑下的細項
-      const subCategoriesCount = categoryInfo.subCategories.length;
+    // // 計算當前類別中已選擇的篩選條件數量 - 避免累加計算
+    // const totalCount = useMemo(() => {
+    //   // 細項類別數量 - 只計算當前類別路徑下的細項
+    //   const subCategoriesCount = categoryInfo.subCategories.length;
 
-      // 篩選條件數量 - 只計算當前類別下的篩選條件
-      let filtersCount = 0;
+    //   // 篩選條件數量 - 只計算當前類別下的篩選條件
+    //   let filtersCount = 0;
 
-      // 只計算篩選條件
-      if (filters && typeof filters === "object") {
-        Object.keys(filters).forEach((key) => {
-          const labels = filters[key];
-          if (Array.isArray(labels) && !labels.includes("全部")) {
-            filtersCount += labels.length;
-          }
-        });
-      }
+    //   // 只計算篩選條件
+    //   if (filters && typeof filters === "object") {
+    //     Object.keys(filters).forEach((key) => {
+    //       const labels = filters[key];
+    //       if (Array.isArray(labels) && !labels.includes("全部")) {
+    //         filtersCount += labels.length;
+    //       }
+    //     });
+    //   }
 
-      // 返回總計數，避免重複計算
-      return subCategoriesCount + filtersCount;
-    }, [filters, categoryInfo]);
+    //   // 返回總計數，避免重複計算
+    //   return subCategoriesCount + filtersCount;
+    // }, [filters, categoryInfo]);
 
     // 記錄上次類別路徑，用於偵測類別變化
     const [lastCategoryPath, setLastCategoryPath] = useState("");
@@ -148,12 +148,7 @@ export const FilterSortButton = memo(
             onClick={toggleOffcanvas}
             aria-controls="offcanvasCategoryMenu"
           >
-            <h6 className="mb-0">
-              類別
-              {totalCount > 0 && (
-                <span className="ms-1">{"(" + totalCount + ")"}</span>
-              )}
-            </h6>
+            <h6 className="mb-0">類別</h6>
             <span className="dropdown-icon ms-2">
               <img
                 src={getImgUrl("/icons/dropdownIcon.svg")}
@@ -783,7 +778,7 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
               }
             }}
           >
-            清除全部({totalFilterCount})
+            清除全部
           </button>
         )}
       </div>
@@ -967,9 +962,7 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
             className="checkItem w-100 btn btn-primary"
             onClick={handleViewItems}
           >
-            <h6 className="mb-0">
-              查看品項 {totalFilterCount > 0 && `(${totalFilterCount})`}
-            </h6>
+            <h6 className="mb-0">查看品項</h6>
           </button>
         </div>
       )}
