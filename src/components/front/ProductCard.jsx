@@ -86,7 +86,6 @@ const ProductCard = ({ data }) => {
         });
         // eslint-disable-next-line no-unused-vars
       } catch (error) {
-        // console.error("移除收藏失敗:", error);
         toastAlert({
           icon: "error",
           title: "移除收藏失敗，請稍後再試",
@@ -115,7 +114,6 @@ const ProductCard = ({ data }) => {
           dispatch(getFavorites());
         })
         .catch((error) => {
-          // console.error('加入收藏失敗:', error);
           toastAlert({
             icon: "error",
             title: error.response.data.message || "加入收藏失敗，請稍後再試",
@@ -218,16 +216,16 @@ const ProductCard = ({ data }) => {
           <div className="mobile-favorite-container">
             <button
               type="button"
-              className={`btn btn favorite-button ${
+              className={`btn btn favorite-button -flex justify-content-center align-items-center ${
                 isFavorite ? "isLike" : ""
               }`}
-              onClick={handleToggleFavorite} // 這裡已包含 preventDefault 和 stopPropagation
+              onClick={handleToggleFavorite}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="17"
-                height="17"
-                fill="currentColor"
+                width="16"
+                height="16"
+                fill="#93908F"
                 className="bi bi-heart heartIcon"
                 viewBox="0 0 16 16"
               >
@@ -251,7 +249,7 @@ const ProductCard = ({ data }) => {
                 xmlns="http://www.w3.org/2000/svg"
                 width="17"
                 height="17"
-                fill="currentColor"
+                fill="#93908F"
                 className="bi bi-heart heartIcon"
                 viewBox="0 0 16 16"
               >

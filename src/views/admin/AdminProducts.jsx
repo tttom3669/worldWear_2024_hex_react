@@ -175,7 +175,6 @@ const AdminProducts = () => {
               setTempProduct(res.data.product || res.data);
               // eslint-disable-next-line no-unused-vars
             } catch (error) {
-              // console.error("獲取產品詳情失敗", error);
               setTempProduct(JSON.parse(JSON.stringify(product)));
             }
           };

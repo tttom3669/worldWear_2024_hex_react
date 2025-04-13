@@ -1,15 +1,15 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import axios from 'axios';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import axios from "axios";
 
-import FrontHeader from '../../components/front/FrontHeader';
-import CartFlow from '../../components/front/CartFlow';
-import FormTitle from '../../components/front/FormTitle';
-import ScreenLoading from '../../components/front/ScreenLoading';
-import useImgUrl from '../../hooks/useImgUrl';
-import { useForm } from 'react-hook-form';
-import AddressForm from '../../components/front/AddressForm';
+import FrontHeader from "../../components/front/FrontHeader";
+import CartFlow from "../../components/front/CartFlow";
+import FormTitle from "../../components/front/FormTitle";
+import ScreenLoading from "../../components/front/ScreenLoading";
+import useImgUrl from "../../hooks/useImgUrl";
+import { useForm } from "react-hook-form";
+import AddressForm from "../../components/front/AddressForm";
 const { VITE_API_PATH: API_PATH } = import.meta.env;
 
 export default function Checkout() {
@@ -22,10 +22,10 @@ export default function Checkout() {
 
   const formatDate = (date) => {
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
     return `${year}/${month}/${day} ${hours}:${minutes}`;
   };
 
@@ -38,13 +38,13 @@ export default function Checkout() {
     reset,
     getValues,
   } = useForm({
-    mode: 'onChange',
+    mode: "onChange",
     defaultValues: {
-      shipping: '宅配', // 預設選擇宅配
-      payment: '信用卡', // 預設選擇信用卡
-      athleteBarcode: '/TESTEST', // 預設手機載具條碼
-      companyTitle: '測試服飾貿易有限公司', // 預設公司抬頭
-      companyId: '12345678', // 預設公司統編
+      shipping: "宅配", // 預設選擇宅配
+      payment: "信用卡", // 預設選擇信用卡
+      athleteBarcode: "/TESTEST", // 預設手機載具條碼
+      companyTitle: "測試服飾貿易有限公司", // 預設公司抬頭
+      companyId: "12345678", // 預設公司統編
     },
   });
 
@@ -53,7 +53,7 @@ export default function Checkout() {
       setIsLoading(true);
       const orderData = {
         is_paid: true,
-        status: '未出貨',
+        status: "未出貨",
         products: carts.products,
         orderDate: formatDate(new Date()),
         paymentInfo: {
@@ -65,7 +65,7 @@ export default function Checkout() {
           recipient: data.deliveryName,
           deliveryMethod: data.shipping,
           address:
-            shippingType === '宅配'
+            shippingType === "宅配"
               ? data.county + data.region + data.address
               : data.storePickup,
           phone: data.deliveryPhone,
@@ -84,10 +84,10 @@ export default function Checkout() {
       await axios.post(`${API_PATH}/orders`, orderData);
       setTimeout(() => {
         setIsLoading(false);
-        navigate('/checkout-success');
+        navigate("/checkout-success");
       }, 1000);
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      console.log(error);
       setIsLoading(false);
     }
   };
@@ -101,10 +101,10 @@ export default function Checkout() {
     }
   };
 
-  const paymentMethod = watch('payment');
-  const shippingType = watch('shipping');
-  const invoiceType = watch('invoiceType');
-  const carrierType = watch('carrier');
+  const paymentMethod = watch("payment");
+  const shippingType = watch("shipping");
+  const invoiceType = watch("invoiceType");
+  const carrierType = watch("carrier");
 
   const handleSameAsBuyer = (e) => {
     if (!e.target.checked) {
@@ -148,8 +148,6 @@ export default function Checkout() {
     const companyId = lastOrder.invoiceInfo.companyId;
     const carrier = lastOrder.invoiceInfo.carrier;
 
-    console.log(lastOrder);
-
     reset({
       deliveryName: buyerName,
       deliveryPhone: buyerPhone,
@@ -164,15 +162,15 @@ export default function Checkout() {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     }
   }, []);
 
   useEffect(() => {
     if (carts.final_total === 0) {
-      navigate('/cart');
+      navigate("/cart");
     }
   }, [carts.final_total, navigate]);
 
@@ -183,7 +181,7 @@ export default function Checkout() {
   return (
     <>
       <title>結帳資訊</title>
-      <FrontHeader defaultType={'light'} />
+      <FrontHeader defaultType={"light"} />
       <main>
         <div className="pt-5 pb-10 pt-md-12 pb-md-30">
           <CartFlow step={2} className={`mb-10`} />
@@ -208,13 +206,13 @@ export default function Checkout() {
                           <input
                             type="text"
                             className={`form-control  w-100 form-input bg-white ${
-                              errors.buyerName && 'is-invalid'
+                              errors.buyerName && "is-invalid"
                             }`}
                             placeholder="請輸入訂購人姓名"
-                            {...register('buyerName', {
+                            {...register("buyerName", {
                               required: {
                                 value: true,
-                                message: '請輸入訂購人姓名',
+                                message: "請輸入訂購人姓名",
                               },
                             })}
                           />
@@ -233,21 +231,21 @@ export default function Checkout() {
                           <input
                             type="text"
                             className={`form-control  w-100 form-input bg-white ${
-                              errors.buyerPhone && 'is-invalid'
+                              errors.buyerPhone && "is-invalid"
                             }`}
                             placeholder="請輸入訂購人手機號碼"
-                            {...register('buyerPhone', {
+                            {...register("buyerPhone", {
                               required: {
                                 value: true,
-                                message: '請輸入訂購人手機號碼',
+                                message: "請輸入訂購人手機號碼",
                               },
                               pattern: {
                                 value: /^(0[2-8]\d{7}|09\d{8})$/,
-                                message: '電話格式不正確',
+                                message: "電話格式不正確",
                               },
                               minLength: {
                                 value: 8,
-                                message: '電話不少於 8 碼',
+                                message: "電話不少於 8 碼",
                               },
                             })}
                           />
@@ -266,18 +264,18 @@ export default function Checkout() {
                           <input
                             type="email"
                             className={`form-control  w-100 form-input bg-white ${
-                              errors.buyerEmail && 'is-invalid'
+                              errors.buyerEmail && "is-invalid"
                             }`}
                             placeholder="請輸入訂購人電子郵件"
-                            {...register('buyerEmail', {
+                            {...register("buyerEmail", {
                               required: {
                                 value: true,
-                                message: '請輸入訂購人電子郵件',
+                                message: "請輸入訂購人電子郵件",
                               },
                               pattern: {
                                 value:
                                   /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$/,
-                                message: '請輸入正確的電子郵件',
+                                message: "請輸入正確的電子郵件",
                               },
                             })}
                           />
@@ -319,13 +317,13 @@ export default function Checkout() {
                           <input
                             type="text"
                             className={`form-control w-100 form-input bg-white ${
-                              errors.deliveryName && 'is-invalid'
+                              errors.deliveryName && "is-invalid"
                             }`}
                             placeholder="請輸入訂購人姓名"
-                            {...register('deliveryName', {
+                            {...register("deliveryName", {
                               required: {
                                 value: true,
-                                message: '請輸入收貨人姓名',
+                                message: "請輸入收貨人姓名",
                               },
                             })}
                           />
@@ -342,21 +340,21 @@ export default function Checkout() {
                           <input
                             type="text"
                             className={`form-control  w-100 form-input bg-white ${
-                              errors.deliveryPhone && 'is-invalid'
+                              errors.deliveryPhone && "is-invalid"
                             }`}
                             placeholder="請輸入收貨人手機號碼"
-                            {...register('deliveryPhone', {
+                            {...register("deliveryPhone", {
                               required: {
                                 value: true,
-                                message: '請輸入收貨人手機號碼',
+                                message: "請輸入收貨人手機號碼",
                               },
                               pattern: {
                                 value: /^(0[2-8]\d{7}|09\d{8})$/,
-                                message: '電話格式不正確',
+                                message: "電話格式不正確",
                               },
                               minLength: {
                                 value: 8,
-                                message: '電話不少於 8 碼',
+                                message: "電話不少於 8 碼",
                               },
                             })}
                           />
@@ -373,7 +371,7 @@ export default function Checkout() {
                             name="shipping"
                             className="form-check-input"
                             value="超商取貨"
-                            {...register('shipping')}
+                            {...register("shipping")}
                           />
                           <label
                             className="form-check-label ms-2"
@@ -389,7 +387,7 @@ export default function Checkout() {
                             name="shipping"
                             className="form-check-input"
                             value="宅配"
-                            {...register('shipping')}
+                            {...register("shipping")}
                           />
                           <label
                             className="form-check-label ms-2"
@@ -399,13 +397,13 @@ export default function Checkout() {
                           </label>
                         </div>
                       </div>
-                      {shippingType === '宅配' && (
+                      {shippingType === "宅配" && (
                         <AddressForm
                           register={register}
                           errors={{ ...errors }}
                         />
                       )}
-                      {shippingType === '超商取貨' && (
+                      {shippingType === "超商取貨" && (
                         <div className="d-flex flex-column mb-3 flex-md-row">
                           <label className="form-label form-label-text me-6">
                             取貨門市*
@@ -414,13 +412,13 @@ export default function Checkout() {
                             <input
                               type="text"
                               className={`form-control  w-100 form-input bg-white ${
-                                errors.storePickup && 'is-invalid'
+                                errors.storePickup && "is-invalid"
                               }`}
                               placeholder="請輸入取貨門市"
-                              {...register('storePickup', {
+                              {...register("storePickup", {
                                 required: {
                                   value: true,
-                                  message: '請輸入取貨門市',
+                                  message: "請輸入取貨門市",
                                 },
                               })}
                             />
@@ -444,7 +442,7 @@ export default function Checkout() {
                       <ul className="paymentList">
                         <li
                           className={`paymentList__item ${
-                            paymentMethod === '信用卡' ? 'active' : ''
+                            paymentMethod === "信用卡" ? "active" : ""
                           }`}
                         >
                           <div className="paymentList__item-header custom-radio d-flex align-items-center gap-8 px-5 py-6">
@@ -455,7 +453,7 @@ export default function Checkout() {
                                 name="payment"
                                 id="creditCard"
                                 value="信用卡"
-                                {...register('payment')}
+                                {...register("payment")}
                               />
                               <label
                                 className="form-check-label"
@@ -466,25 +464,25 @@ export default function Checkout() {
                             </div>
                             <div className="d-flex gap-1">
                               <img
-                                src={getImgUrl('/images/checkout/ic_visa.png')}
+                                src={getImgUrl("/images/checkout/ic_visa.png")}
                                 alt="ic_visa"
                                 width="30"
                               />
                               <img
                                 src={getImgUrl(
-                                  '/images/checkout/ic_master.png'
+                                  "/images/checkout/ic_master.png"
                                 )}
                                 alt="ic_master"
                                 width="30"
                               />
                               <img
-                                src={getImgUrl('/images/checkout/ic_jcb.png')}
+                                src={getImgUrl("/images/checkout/ic_jcb.png")}
                                 alt="ic_jcb"
                                 width="30"
                               />
                             </div>
                           </div>
-                          {paymentMethod === '信用卡' && (
+                          {paymentMethod === "信用卡" && (
                             <div className="paymentList__item-content">
                               <div className="p-5">
                                 <div className="d-flex flex-column  flex-md-row mb-3">
@@ -495,15 +493,15 @@ export default function Checkout() {
                                     <input
                                       type="text"
                                       className={`form-control w-100  form-input ${
-                                        errors.cardNumber && 'is-invalid'
+                                        errors.cardNumber && "is-invalid"
                                       }`}
                                       defaultValue="0920912091281234"
                                       placeholder="請輸入信用卡卡號"
-                                      {...register('cardNumber', {
-                                        required: '卡號為必填',
+                                      {...register("cardNumber", {
+                                        required: "卡號為必填",
                                         pattern: {
                                           value: /^\d{16}$/,
-                                          message: '卡號格式錯誤 (16 碼數字)',
+                                          message: "卡號格式錯誤 (16 碼數字)",
                                         },
                                       })}
                                     />
@@ -520,15 +518,15 @@ export default function Checkout() {
                                     <input
                                       type="text"
                                       className={`form-control  w-100 form-input ${
-                                        errors.cardExpiry && 'is-invalid'
+                                        errors.cardExpiry && "is-invalid"
                                       } `}
                                       defaultValue="08/30"
                                       placeholder="請輸入信用卡有效期限"
-                                      {...register('cardExpiry', {
-                                        required: '有效期限為必填',
+                                      {...register("cardExpiry", {
+                                        required: "有效期限為必填",
                                         pattern: {
                                           value: /^\d{2}\/\d{2}$/,
-                                          message: '有效期限格式錯誤',
+                                          message: "有效期限格式錯誤",
                                         },
                                       })}
                                     />
@@ -545,16 +543,16 @@ export default function Checkout() {
                                     <input
                                       type="text"
                                       className={`form-control  w-100 form-input ${
-                                        errors.cardCode && 'is-invalid'
+                                        errors.cardCode && "is-invalid"
                                       }`}
                                       defaultValue="801"
                                       placeholder="請輸入信用卡卡片後三碼"
-                                      {...register('cardCode', {
-                                        required: '卡片後三碼為必填',
+                                      {...register("cardCode", {
+                                        required: "卡片後三碼為必填",
                                         pattern: {
                                           value: /^\d{3}$/,
                                           message:
-                                            '卡片後三碼格式錯誤 (3 碼數字)',
+                                            "卡片後三碼格式錯誤 (3 碼數字)",
                                         },
                                       })}
                                     />
@@ -569,7 +567,7 @@ export default function Checkout() {
                         </li>
                         <li
                           className={`paymentList__item ${
-                            paymentMethod === '街口支付' ? 'active' : ''
+                            paymentMethod === "街口支付" ? "active" : ""
                           }`}
                         >
                           <div className="paymentList__item-header custom-radio d-flex align-items-center gap-8 px-5 py-6">
@@ -580,7 +578,7 @@ export default function Checkout() {
                                 name="payment"
                                 id="jkPay"
                                 value="街口支付"
-                                {...register('payment')}
+                                {...register("payment")}
                               />
                               <label
                                 className="form-check-label"
@@ -591,7 +589,7 @@ export default function Checkout() {
                             </div>
                             <div className="d-flex gap-1">
                               <img
-                                src={getImgUrl('/images/checkout/jk-pay.png')}
+                                src={getImgUrl("/images/checkout/jk-pay.png")}
                                 alt="jk-pay"
                                 width="59"
                               />
@@ -600,7 +598,7 @@ export default function Checkout() {
                         </li>
                         <li
                           className={`paymentList__item ${
-                            paymentMethod === 'LINE Pay' ? 'active' : ''
+                            paymentMethod === "LINE Pay" ? "active" : ""
                           }`}
                         >
                           <div className="paymentList__item-header custom-radio d-flex align-items-center gap-8 px-5 py-6">
@@ -611,7 +609,7 @@ export default function Checkout() {
                                 name="payment"
                                 id="linePay"
                                 value="LINE Pay"
-                                {...register('payment')}
+                                {...register("payment")}
                               />
                               <label
                                 className="form-check-label"
@@ -622,7 +620,7 @@ export default function Checkout() {
                             </div>
                             <div className="d-flex gap-1">
                               <img
-                                src={getImgUrl('/images/checkout/linepay.png')}
+                                src={getImgUrl("/images/checkout/linepay.png")}
                                 alt="linepay"
                                 width="82"
                               />
@@ -631,7 +629,7 @@ export default function Checkout() {
                         </li>
                         <li
                           className={`paymentList__item ${
-                            paymentMethod === 'ATM 轉帳' ? 'active' : ''
+                            paymentMethod === "ATM 轉帳" ? "active" : ""
                           }`}
                         >
                           <div className="paymentList__item-header custom-radio d-flex align-items-center gap-8 px-5 py-6">
@@ -642,7 +640,7 @@ export default function Checkout() {
                                 name="atm"
                                 id="atm"
                                 value="ATM 轉帳"
-                                {...register('payment')}
+                                {...register("payment")}
                               />
                               <label className="form-check-label" htmlFor="atm">
                                 ATM 轉帳
@@ -652,9 +650,9 @@ export default function Checkout() {
                         </li>
                         <li
                           className={`paymentList__item ${
-                            paymentMethod === '貨到付款(僅限超商取貨)'
-                              ? 'active'
-                              : ''
+                            paymentMethod === "貨到付款(僅限超商取貨)"
+                              ? "active"
+                              : ""
                           }`}
                         >
                           <div className="paymentList__item-header custom-radio d-flex align-items-center gap-8 px-5 py-6">
@@ -665,7 +663,7 @@ export default function Checkout() {
                                 name="cash-delivery"
                                 id="cash-delivery"
                                 value="貨到付款(僅限超商取貨)"
-                                {...register('payment')}
+                                {...register("payment")}
                               />
                               <label
                                 className="form-check-label"
@@ -708,20 +706,20 @@ export default function Checkout() {
                         </label>
                         <select
                           className="form-select bg-white"
-                          {...register('invoiceType')}
+                          {...register("invoiceType")}
                         >
                           <option>電子發票</option>
                           <option>統編發票</option>
                         </select>
                       </div>
-                      {invoiceType === '電子發票' && (
+                      {invoiceType === "電子發票" && (
                         <div className="mb-3">
                           <label className="form-label form-label-text">
                             發票載具
                           </label>
                           <select
                             className="form-select bg-white"
-                            {...register('carrier')}
+                            {...register("carrier")}
                           >
                             <option>存入會員載具，中獎後通知</option>
                             <option>手機條碼載具</option>
@@ -729,7 +727,7 @@ export default function Checkout() {
                         </div>
                       )}
 
-                      {carrierType === '手機條碼載具' && (
+                      {carrierType === "手機條碼載具" && (
                         <div className="d-flex flex-column mb-3 flex-md-row">
                           <label className="form-label form-label-text me-6">
                             手機載具條碼*
@@ -738,17 +736,17 @@ export default function Checkout() {
                             <input
                               type="text"
                               className={`form-control  w-100 form-input bg-white ${
-                                errors.athleteBarcode && 'is-invalid'
+                                errors.athleteBarcode && "is-invalid"
                               }`}
                               placeholder="前面加上 / ，加上 7 個數字及大寫字母字元"
-                              {...register('athleteBarcode', {
+                              {...register("athleteBarcode", {
                                 required: {
                                   value: true,
-                                  message: '請輸入手機載具條碼',
+                                  message: "請輸入手機載具條碼",
                                 },
                                 pattern: {
                                   value: /^\/[A-Z0-9]{7}$/,
-                                  message: '條碼格式錯誤',
+                                  message: "條碼格式錯誤",
                                 },
                               })}
                             />
@@ -759,7 +757,7 @@ export default function Checkout() {
                         </div>
                       )}
 
-                      {invoiceType === '統編發票' && (
+                      {invoiceType === "統編發票" && (
                         <div className="d-flex flex-column mb-3 flex-md-row">
                           <label className="form-label form-label-text me-6">
                             公司抬頭*
@@ -768,18 +766,18 @@ export default function Checkout() {
                             <input
                               type="text"
                               className={`form-control  w-100 form-input bg-white ${
-                                errors.companyTitle && 'is-invalid'
+                                errors.companyTitle && "is-invalid"
                               }`}
                               placeholder="請輸入公司抬頭"
-                              {...register('companyTitle', {
+                              {...register("companyTitle", {
                                 required: {
                                   value: true,
-                                  message: '請輸入公司抬頭',
+                                  message: "請輸入公司抬頭",
                                 },
                                 pattern: {
                                   value: /^[\u4e00-\u9fa5a-zA-Z0-9&\s-]{2,50}$/,
                                   message:
-                                    '公司抬頭格式錯誤，請輸入 2 到 50 個字元的有效名稱',
+                                    "公司抬頭格式錯誤，請輸入 2 到 50 個字元的有效名稱",
                                 },
                               })}
                             />
@@ -789,7 +787,7 @@ export default function Checkout() {
                           </div>
                         </div>
                       )}
-                      {invoiceType === '統編發票' && (
+                      {invoiceType === "統編發票" && (
                         <div className="d-flex flex-column mb-3 flex-md-row">
                           <label className="form-label form-label-text me-6">
                             公司統編*
@@ -798,17 +796,17 @@ export default function Checkout() {
                             <input
                               type="text"
                               className={`form-control  w-100 form-input bg-white ${
-                                errors.companyId && 'is-invalid'
+                                errors.companyId && "is-invalid"
                               }`}
                               placeholder="請輸入公司統編"
-                              {...register('companyId', {
+                              {...register("companyId", {
                                 required: {
                                   value: true,
-                                  message: '請輸入公司統編',
+                                  message: "請輸入公司統編",
                                 },
                                 pattern: {
                                   value: /^\d{8}$/,
-                                  message: '統編格式錯誤，必須是 8 位數字',
+                                  message: "統編格式錯誤，必須是 8 位數字",
                                 },
                               })}
                             />
@@ -833,12 +831,14 @@ export default function Checkout() {
                     <div className="bg-white p-4">
                       <div className="d-flex justify-content-between">
                         <span>商品原價金額</span>
-                        <span className="fw-bold">NT {carts.total.toLocaleString('zh-TW')}</span>
+                        <span className="fw-bold">
+                          NT {carts.total.toLocaleString("zh-TW")}
+                        </span>
                       </div>
                       <div className="d-flex justify-content-between mt-2">
                         <span>結帳金額</span>
                         <span className="fw-bold text-danger">
-                          NT {carts.final_total.toLocaleString('zh-TW')}
+                          NT {carts.final_total.toLocaleString("zh-TW")}
                         </span>
                       </div>
                       <button className="btn btn-warning w-100 mt-3">
