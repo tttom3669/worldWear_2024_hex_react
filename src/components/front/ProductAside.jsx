@@ -271,37 +271,6 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
     return genderCategory ? [genderCategory] : [];
   }, [categoriesList, currentGender]);
 
-  // 取得狀態分類的參考，用於狀態過濾時使用標題而不是slug
-  // const statusCategory = useMemo(() => {
-  //   const gender = categoriesList.find((cat) => cat.slug === currentGender);
-  //   if (gender) {
-  //     return gender.categories.find((cat) => cat.slug === 'product-status');
-  //   }
-  //   return null;
-  // }, [categoriesList, currentGender]);
-
-  // 將狀態slug轉換為title的映射
-  // const statusSlugToTitle = useMemo(() => {
-  //   if (statusCategory && statusCategory.subCategories) {
-  //     return statusCategory.subCategories.reduce((map, status) => {
-  //       map[status.slug] = status.title;
-  //       return map;
-  //     }, {});
-  //   }
-  //   return {};
-  // }, [statusCategory]);
-
-  // 將狀態title轉換為slug的映射
-  // const statusTitleToSlug = useMemo(() => {
-  //   if (statusCategory && statusCategory.subCategories) {
-  //     return statusCategory.subCategories.reduce((map, status) => {
-  //       map[status.title] = status.slug;
-  //       return map;
-  //     }, {});
-  //   }
-  //   return {};
-  // }, [statusCategory]);
-
   // 從當前分類路徑中解析出主類別和子類別
   useEffect(() => {
     if (currentCategory) {
