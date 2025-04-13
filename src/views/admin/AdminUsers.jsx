@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 const { VITE_API_PATH: API_PATH } = import.meta.env;
 import { Modal } from 'bootstrap';
@@ -24,6 +24,7 @@ export default function AdminUsers() {
 
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
+  const pageParam = queryParams.get('page');
   const [paginationData, setPaginationData] = useState({
     totalPage: 0,
     currentPage: 0,
@@ -43,7 +44,7 @@ export default function AdminUsers() {
         }, 0)
       : 0;
   };
-  const getUser = async () => {
+  const getUser = useCallback(async () => {
     try {
       setIsLoading(true);
       const res = await axios.get(`${API_PATH}/admin/users/?_embed=orders`, {
@@ -65,32 +66,36 @@ export default function AdminUsers() {
     } finally {
       setIsLoading(false);
     }
-  };
-  const handlePageChange = async (page = 1) => {
-    try {
-      setIsLoading(true);
-      const res = await axios.get(
-        `${API_PATH}/admin/users/?_embed=orders&_page=${page}&_limit=${pageLimit}`,
-        {
-          headers: {
-            authorization: token,
-          },
-        }
-      );
-      setFilterUserData(res.data);
+  }, [token, tempUserData.id, toastAlert]);
+  const handlePageChange = useCallback(
+    async (page = 1) => {
+      try {
+        setIsLoading(true);
+        const res = await axios.get(
+          `${API_PATH}/admin/users/?_embed=orders&_page=${page}&_limit=${pageLimit}`,
+          {
+            headers: {
+              authorization: token,
+            },
+          }
+        );
+        setFilterUserData(res.data);
 
-      if (tempUserData.id) {
-        setTempUserData(res.data.find((user) => user.id === tempUserData.id));
+        if (tempUserData.id) {
+          setTempUserData(res.data.find((user) => user.id === tempUserData.id));
+        }
+      } catch (error) {
+        toastAlert({
+          icon: 'error',
+          title: error?.message || '取得使用者資料失敗',
+        });
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      toastAlert({
-        icon: 'error',
-        title: error?.message || '取得使用者資料失敗',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    [token, tempUserData.id, toastAlert, pageLimit]
+  );
+
   const openModal = (user) => {
     adminUserModal.current.show();
     setTempUserData(user);
@@ -176,27 +181,21 @@ export default function AdminUsers() {
     getUser();
     adminUserModal.current = new Modal(modalRef.current);
     adminOrderModal.current = new Modal(orderModalRef.current);
-  }, []);
+  }, [getUser, token]);
 
   useEffect(() => {
-    const page = queryParams.get('page') || 1;
     setPaginationData({
       totalPage: Math.ceil(userData.length / pageLimit),
-      currentPage: Number(page),
+      currentPage: 1,
     });
-    if (page) {
-      handlePageChange(page);
-    }
-  }, [userData]);
+    handlePageChange(1);
+  }, [userData, handlePageChange]);
 
   useEffect(() => {
-    const page = queryParams.get('page');
-    if (!page) {
-      return;
-    }
-    setPaginationData({ ...paginationData, currentPage: Number(page) });
-    handlePageChange(page);
-  }, [queryParams.get('page')]);
+    if (!pageParam) return;
+    setPaginationData({ ...paginationData, currentPage: Number(pageParam) });
+    handlePageChange(pageParam);
+  }, [pageParam, paginationData, handlePageChange]);
 
   return (
     <>

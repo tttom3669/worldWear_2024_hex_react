@@ -1,6 +1,6 @@
 import axios from 'axios';
 import useImgUrl from '../../hooks/useImgUrl';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import useSwal from '../../hooks/useSwal';
 import { useDispatch } from 'react-redux';
@@ -29,16 +29,17 @@ export default function Cart() {
     try {
       setIsLoading(true);
       const res = await axios.get(`${API_PATH}/coupons?code=${tempCouponData}`);
-      toastAlert({ icon: 'success', title: '已套用優惠券代碼' });
       if (res.data.length <= 0) {
-        throw new Error('No coupon data found');
+        toastAlert({ icon: 'error', title: '輸入錯誤優惠券代碼' });
+      } else {
+        toastAlert({ icon: 'success', title: '已套用優惠券代碼' });
       }
       setCouponData(res.data[0]);
     } catch (error) {
       setCouponData({});
       toastAlert({
         icon: 'error',
-        title: error || '輸入錯誤優惠券代碼',
+        title: error?.response.data?.message || '輸入錯誤優惠券代碼',
       });
     } finally {
       setIsLoading(false);
@@ -48,7 +49,7 @@ export default function Cart() {
   const calDiscount = (total, percent) => {
     return percent ? (total * percent) / 100 : 0;
   };
-  const getCarts = async () => {
+  const getCarts = useCallback(async () => {
     const userId =
       document.cookie
         .split('; ')
@@ -60,11 +61,14 @@ export default function Cart() {
       );
       setTempCartsData(res.data);
     } catch (error) {
-      console.log(error);
+      toastAlert({
+        icon: 'error',
+        title: error?.response.data?.message || '取得購物車失敗，請稍後再試',
+      });
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toastAlert]);
   const updateCarts = async (cartId, qty) => {
     const method = qty <= 0 ? 'DELETE' : 'PATCH';
     const alertTitle = qty <= 0 ? '已從購物車中刪除' : '已更新購物車';
@@ -85,7 +89,7 @@ export default function Cart() {
     } catch (error) {
       toastAlert({
         icon: 'error',
-        title: error.response.data.message || '更新購物車失敗，請稍後再試',
+        title: error?.response.data?.message || '更新購物車失敗，請稍後再試',
       });
     } finally {
       setUpdateCartData({
@@ -110,7 +114,7 @@ export default function Cart() {
   useEffect(() => {
     setIsLoading(true);
     getCarts();
-  }, []);
+  }, [getCarts]);
 
   const cartsTotal = useMemo(() => {
     return tempCartsData
@@ -130,7 +134,7 @@ export default function Cart() {
         products: [...tempCartsData],
       })
     );
-  }, [cartsTotal, cartsDiscount]);
+  }, [cartsTotal, cartsDiscount, dispatch, tempCartsData]);
 
   return (
     <>
