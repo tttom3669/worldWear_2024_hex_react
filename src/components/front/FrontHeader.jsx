@@ -1,24 +1,24 @@
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
-import PropTypes from "prop-types";
-import { useSelector, useDispatch } from "react-redux";
-import { productCategories as productCategoriesData } from "../../slice/productsSlice";
-import useImgUrl from "../../hooks/useImgUrl";
-import { useEffect, useRef, useState } from "react";
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { checkLogin, logoutUser } from "../../slice/authSlice";
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
+import PropTypes from 'prop-types';
+import { useSelector, useDispatch } from 'react-redux';
+import { productCategories as productCategoriesData } from '../../slice/productsSlice';
+import useImgUrl from '../../hooks/useImgUrl';
+import { useEffect, useRef, useState } from 'react';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { checkLogin, logoutUser } from '../../slice/authSlice';
 import {
   asyncGetCarts,
   cartsData as sliceCartsData,
-} from "../../slice/cartsSlice";
-import useSwal from "../../hooks/useSwal";
-import axios from "axios";
+} from '../../slice/cartsSlice';
+import useSwal from '../../hooks/useSwal';
+import axios from 'axios';
 
 function FrontHeader({ defaultType }) {
   const getImgUrl = useImgUrl();
   const dispatch = useDispatch();
-  const [headerType, setHeaderType] = useState("");
+  const [headerType, setHeaderType] = useState('');
   const [isHeaderScroll, setIsHeaderScroll] = useState(false);
   const [menuData, setMenuData] = useState({ isOpen: false });
   const [isLogin, setIsLogin] = useState(false);
@@ -48,7 +48,7 @@ function FrontHeader({ defaultType }) {
   // 更新登入狀態
   useEffect(() => {
     if (isInitialized) {
-      const loggedIn = auth.status === "logged-in" && auth.user !== null;
+      const loggedIn = auth.status === 'logged-in' && auth.user !== null;
       setIsLogin(loggedIn);
     }
   }, [isInitialized, auth.status, auth.user]);
@@ -61,8 +61,8 @@ function FrontHeader({ defaultType }) {
     gsap.timeline({
       scrollTrigger: {
         trigger: headerRef.current,
-        start: "top top",
-        end: "bottom top",
+        start: 'top top',
+        end: 'bottom top',
         // markers: true,
         onEnter: () => {
           setIsHeaderScroll(true);
@@ -97,14 +97,14 @@ function FrontHeader({ defaultType }) {
       // 執行登出 action 並等待完成
       await dispatch(logoutUser()).unwrap();
       // 登出成功後導航回首頁
-      navigate("/");
+      navigate('/');
     } catch (error) {
       // 即使登出失敗，也嘗試導航回首頁
       toastAlert({
-        icon: "error",
-        title: error.response.data.message || "登出失敗",
+        icon: 'error',
+        title: error.response.data.message || '登出失敗',
       });
-      navigate("/");
+      navigate('/');
     }
   };
 
@@ -117,13 +117,13 @@ function FrontHeader({ defaultType }) {
         // Request failed with status code 401
         if (error.response && error.response.status === 401) {
           toastAlert({
-            icon: "error",
-            title: "登入逾期，請重新登入",
+            icon: 'error',
+            title: '登入逾期，請重新登入',
           });
           //   登出程式碼
           dispatch(logoutUser()).unwrap();
           // 導入登入頁面
-          navigate("/login");
+          navigate('/login');
         }
         return Promise.reject(error);
       }
@@ -136,15 +136,15 @@ function FrontHeader({ defaultType }) {
         與世界共舞，與時尚同步 - WorldWear
       </aside>
       <header
-        className={`header ${isLogin ? "header--login" : "header--logout"}
+        className={`header ${isLogin ? 'header--login' : 'header--logout'}
         ${
           isHeaderScroll
-            ? "header--scroll"
-            : headerType === "dark"
-            ? "header--dark"
-            : "header--light"
+            ? 'header--scroll'
+            : headerType === 'dark'
+            ? 'header--dark'
+            : 'header--light'
         }
-        ${menuData.isOpen ? "isOpen" : ""}`}
+        ${menuData.isOpen ? 'isOpen' : ''}`}
         ref={headerRef}
         onMouseLeave={() => setMenuData({ ...menuData, isOpen: false })}
       >
@@ -155,7 +155,7 @@ function FrontHeader({ defaultType }) {
                 <Link className="text-reset me-auto m-lg-0" to="/">
                   <h1 className="d-flex">
                     <svg className="l-logo" width="120" height="72">
-                      <use href={getImgUrl("/icons/Logo.svg#logo")}></use>
+                      <use href={getImgUrl('/icons/Logo.svg#logo')}></use>
                     </svg>
                   </h1>
                 </Link>
@@ -168,8 +168,8 @@ function FrontHeader({ defaultType }) {
                         onClick={(e) => mainMenuHandler(e)}
                         className={`l-menu__link ${
                           menuData.type === gender.slug && menuData.isOpen
-                            ? "active"
-                            : ""
+                            ? 'active'
+                            : ''
                         }`}
                       >
                         {gender.title[0].toUpperCase() + gender.title.slice(1)}
@@ -182,9 +182,9 @@ function FrontHeader({ defaultType }) {
                 <div className="position-lg-relative d-flex align-items-center">
                   <div
                     className={`header__searchBar-container ${
-                      menuData.type === "search" && menuData.isOpen
-                        ? "show"
-                        : ""
+                      menuData.type === 'search' && menuData.isOpen
+                        ? 'show'
+                        : ''
                     }`}
                   >
                     <div className="container px-lg-0">
@@ -195,7 +195,7 @@ function FrontHeader({ defaultType }) {
                           placeholder="Search"
                           aria-label="Search"
                           onKeyDown={(e) => {
-                            if (e.key === "Enter") {
+                            if (e.key === 'Enter') {
                               navigate(`/search/?s=${e.target.value}`);
                             }
                           }}
@@ -208,15 +208,15 @@ function FrontHeader({ defaultType }) {
                     name="search"
                     onClick={(e) => mainMenuHandler(e)}
                     className={`header__searchIcon border-0 bg-transparent justify-content-center align-items-center p-3 p-lg-0  ${
-                      menuData.type === "search" &&
+                      menuData.type === 'search' &&
                       menuData.isOpen &&
                       isDesktop()
-                        ? "d-none"
-                        : "d-flex"
+                        ? 'd-none'
+                        : 'd-flex'
                     }`}
                   >
                     <svg width="16" height="16" className="pe-none">
-                      <use href={getImgUrl("/icons/search.svg#search")}></use>
+                      <use href={getImgUrl('/icons/search.svg#search')}></use>
                     </svg>
                   </button>
                 </div>
@@ -229,7 +229,7 @@ function FrontHeader({ defaultType }) {
                           to="/cart"
                         >
                           <svg width="16" height="16">
-                            <use href={getImgUrl("/icons/cart.svg#cart")}></use>
+                            <use href={getImgUrl('/icons/cart.svg#cart')}></use>
                           </svg>
                           {cartsData?.products.length > 0 && (
                             <span className="header__cart-badge d-flex justify-content-center align-items-center position-absolute top-0 start-100 translate-middle  rounded-circle bg-danger text-white fs-xxs">
@@ -245,7 +245,7 @@ function FrontHeader({ defaultType }) {
                         >
                           <svg width="16" height="16">
                             <use
-                              href={getImgUrl("/icons/heart.svg#heart")}
+                              href={getImgUrl('/icons/heart.svg#heart')}
                             ></use>
                           </svg>
                         </Link>
@@ -253,7 +253,7 @@ function FrontHeader({ defaultType }) {
                       <li>
                         <Link to="/user">
                           <img
-                            src={getImgUrl("/images/shared/user.png")}
+                            src={getImgUrl('/images/shared/user.png')}
                             alt="user"
                             width="24"
                             height="24"
@@ -265,7 +265,7 @@ function FrontHeader({ defaultType }) {
                 </div>
                 <div
                   className={`l-menu__collapse ${
-                    menuData.type === "user" && menuData.isOpen ? "show" : ""
+                    menuData.type === 'user' && menuData.isOpen ? 'show' : ''
                   }`}
                 >
                   <ul className="navbar-nav l-menu header--logout__item ">
@@ -273,7 +273,7 @@ function FrontHeader({ defaultType }) {
                       <Link
                         className="l-menu__link"
                         to="/login"
-                        state={{ activeTab: "login" }}
+                        state={{ activeTab: 'login' }}
                       >
                         登入
                       </Link>
@@ -281,8 +281,8 @@ function FrontHeader({ defaultType }) {
                     <li>
                       <Link
                         className="l-menu__link"
-                        to="/login"
-                        state={{ activeTab: "register" }}
+                        to="/signup"
+                        state={{ activeTab: 'register' }}
                       >
                         註冊
                       </Link>
@@ -290,7 +290,7 @@ function FrontHeader({ defaultType }) {
                   </ul>
                   <ul
                     className={`navbar-nav l-menu d-lg-none header--login__item ${
-                      isLogin ? "align-items-stretch align-items-lg-center" : ""
+                      isLogin ? 'align-items-stretch align-items-lg-center' : ''
                     }`}
                   >
                     <li>
@@ -324,16 +324,16 @@ function FrontHeader({ defaultType }) {
                         <div className="d-flex justify-content-between align-items-center">
                           會員中心
                           <img
-                            style={{ transition: "all .3s" }}
-                            className={`${isSubmenuActive ? "rotate-180" : ""}`}
-                            src={getImgUrl("/icons/dropdown_up.svg")}
+                            style={{ transition: 'all .3s' }}
+                            className={`${isSubmenuActive ? 'rotate-180' : ''}`}
+                            src={getImgUrl('/icons/dropdown_up.svg')}
                             alt=""
                           />
                         </div>
                       </Link>
                       <div
                         className={`l-menu__submenu ${
-                          isSubmenuActive ? "active" : ""
+                          isSubmenuActive ? 'active' : ''
                         }`}
                       >
                         <ul>
@@ -372,7 +372,7 @@ function FrontHeader({ defaultType }) {
                             </Link>
                           </li>
 
-                          {userData?.role === "admin" && (
+                          {userData?.role === 'admin' && (
                             <li>
                               <Link
                                 className="nav-link l-menu__link fw-normal"
@@ -404,15 +404,15 @@ function FrontHeader({ defaultType }) {
               >
                 <div className="header--logout__item">
                   <svg className="pe-none" width="24" height="24">
-                    <use href={getImgUrl("/icons/list.svg#list")}></use>
+                    <use href={getImgUrl('/icons/list.svg#list')}></use>
                   </svg>
                   <svg className="pe-none d-none" width="24" height="24">
-                    <use href={getImgUrl("/icons/close.svg#close")}></use>
+                    <use href={getImgUrl('/icons/close.svg#close')}></use>
                   </svg>
                 </div>
                 <img
                   className="header--login__item"
-                  src={getImgUrl("/images/shared/user.png")}
+                  src={getImgUrl('/images/shared/user.png')}
                   alt="user"
                   width="24"
                   height="24"
@@ -425,7 +425,7 @@ function FrontHeader({ defaultType }) {
             <div
               key={gender.slug}
               className={`l-menu__dropdown ${
-                menuData.type === gender.slug && menuData.isOpen ? "show" : ""
+                menuData.type === gender.slug && menuData.isOpen ? 'show' : ''
               }`}
             >
               <div className="container">
@@ -439,7 +439,7 @@ function FrontHeader({ defaultType }) {
                     </Link>
                   </li>
                   {gender.categories
-                    .filter((category) => category.slug !== "product-status")
+                    .filter((category) => category.slug !== 'product-status')
                     .map((category) => (
                       <li key={category.slug}>
                         <Link

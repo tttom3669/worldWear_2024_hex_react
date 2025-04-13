@@ -5,25 +5,38 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import useImgUrl from '../../hooks/useImgUrl';
 
-// 在元件外部註冊插件，只需執行一次
 gsap.registerPlugin(ScrollTrigger);
 
 export default function FrontFooter() {
   const getImgUrl = useImgUrl();
   const topBtnRef = useRef(null);
-  const gsapStart =
-    window <= 768 ? 'bottom bottom-=32px' : 'bottom bottom-=12vh';
 
-  useGSAP(() => {
+  // debounce 函數
+  const debounce = (func, delay) => {
+    let timeout;
+    return (...args) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        func(...args);
+      }, delay);
+    };
+  };
+
+  // GSAP 動畫設定
+  const setupScrollTrigger = () => {
     const main = document.querySelector('main');
+    const footer = document.querySelector('footer');
     if (!main) {
       return;
     }
+
+    const startValue = `bottom bottom-=${footer.offsetHeight - 32}px`;
+
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: main,
-        start: gsapStart,
-        //markers: true, // 保持啟用以方便除錯
+        start: startValue,
+        // markers: true,
         invalidateOnRefresh: true, // 確保 refresh 時重新計算所有值
         onEnter: () => {
           if (topBtnRef.current) {
@@ -38,15 +51,33 @@ export default function FrontFooter() {
       },
     });
 
+    // 返回清理函數
+    return () => {
+      tl.kill();
+    };
+  };
+
+  useGSAP(() => {
+    const cleanup = setupScrollTrigger();
+
     // 給予 Swiper 或其他動態內容一點時間載入和調整高度
     const refreshTimeout = setTimeout(() => {
       ScrollTrigger.refresh();
-    }, 500);
+    }, 1000);
 
-    // 清理函數
+    // 監聽螢幕尺寸變化，並在變化後重新初始化 ScrollTrigger
+    const handleResize = debounce(() => {
+      ScrollTrigger.getAll().forEach((trigger) => trigger.kill()); // 清理所有 ScrollTrigger
+      setupScrollTrigger(); // 重新初始化
+      ScrollTrigger.refresh(); // 刷新 ScrollTrigger
+    }, 300);
+
+    window.addEventListener('resize', handleResize);
+
     return () => {
-      tl.kill();
+      cleanup(); // 清理 GSAP timeline
       clearTimeout(refreshTimeout);
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 
@@ -79,28 +110,28 @@ export default function FrontFooter() {
               />
             </Link>
             <div className="d-flex align-items-start align-items-md-center flex-column gap-2 flex-lg-row gap-lg-0">
-              <ul className="d-flex align-items-center gap-2 text-white">
-                <li>
-                  <Link className="footer__link" to="/">
-                    代購流程
-                  </Link>
-                </li>
-                <li>
-                  <Link className="footer__link " to="/">
-                    常見問題
-                  </Link>
-                </li>
-                <li>
-                  <Link className="footer__link " to="/">
-                    聯繫我們
-                  </Link>
-                </li>
-                <li>
-                  <Link className="footer__link " to="/">
-                    隱私權政策
-                  </Link>
-                </li>
-              </ul>
+                {/* <ul className="d-flex align-items-center gap-2 text-white">
+                  <li>
+                    <Link className="footer__link" to="/">
+                      代購流程
+                    </Link>
+                  </li>
+                  <li>
+                    <Link className="footer__link " to="/">
+                      常見問題
+                    </Link>
+                  </li>
+                  <li>
+                    <Link className="footer__link " to="/">
+                      聯繫我們
+                    </Link>
+                  </li>
+                  <li>
+                    <Link className="footer__link " to="/">
+                      隱私權政策
+                    </Link>
+                  </li>
+                </ul> */}
               <ul className="d-flex align-items-center px-md-2 py-md-3 gap-6">
                 <li>
                   <Link to="/" className="footer__social">
