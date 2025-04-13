@@ -32,6 +32,7 @@ export default function Product() {
   const [product, setProduct] = useState({});
   const [isPostCartLoding, setIsPostCartLoding] = useState(false);
   const [isPostFavoritesLoding, setIsPostFavoritesLoding] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const [cart, setCart] = useState({
     qty: 1,
     color: "",
@@ -393,16 +394,28 @@ export default function Product() {
             </button>
             <button
               onClick={postFavorites}
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
               id="favorite-button"
               className="d-flex justify-content-center align-items-center mb-3 p-4 fs-base fw-bold btn btn-outline-primary w-100"
               disabled={isPostFavoritesLoding}
             >
-              <img
-                id="favorite-icon"
-                className="product-icon me-2"
-                src={getImgUrl("/images/product/icon-heart-outline.png")}
-                alt="icon-heart-outline"
-              />
+              {
+                isHovered
+                ? <img
+                    id="favorite-icon-fill"
+                    className="product-icon me-2"
+                    src={getImgUrl("/images/product/icon-heart-fill.png")}
+                    alt="icon-heart-outline"
+                  />
+                : <img
+                    id="favorite-icon"
+                    className="product-icon me-2"
+                    src={getImgUrl("/images/product/icon-heart-outline.png")}
+                    alt="icon-heart-outline"
+                  />
+              }
+              
               加入喜愛收藏
             </button>
             <div className="mb-10 px-2 py-1 fs-sm tag">
