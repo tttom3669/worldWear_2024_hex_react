@@ -17,7 +17,7 @@ export default function UserInfo() {
   const [ordersData, setOrdersData] = useState([]);
   const [defaultUserData, setDefaultUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { modalAlert } = useSwal();
+  const { modalAlert, toastAlert } = useSwal();
 
   const getUser = useCallback(async () => {
     try {
@@ -51,11 +51,14 @@ export default function UserInfo() {
       });
       setOrdersData(orders);
     } catch (error) {
-      console.log(error);
+      toastAlert({
+        icon: 'error',
+        title: error?.message || '取得會員資料失敗',
+      });
     } finally {
       setIsLoading(false);
     }
-  }, [token, userData.id]);
+  }, [token, userData.id, toastAlert]);
 
   const onSubmit = async (data) => {
     const result = await modalAlert({
@@ -63,8 +66,6 @@ export default function UserInfo() {
       imageUrl: getImgUrl('/images/shared/ic_warning.png'),
       showCancel: true,
     });
-
-    console.log(data);
 
     try {
       if (result.isConfirmed) {
@@ -81,7 +82,10 @@ export default function UserInfo() {
         });
       }
     } catch (error) {
-      console.log(error);
+      toastAlert({
+        icon: 'error',
+        title: error?.message || '修改會員資料失敗',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -126,10 +130,9 @@ export default function UserInfo() {
         }
       }
     } catch (error) {
-      console.log(error);
       await modalAlert({
         icon: 'error',
-        title: '舊密碼錯誤',
+        title: error?.message || '舊密碼錯誤',
         text: '請檢查舊密碼是否正確',
         showCancel: false,
       });
@@ -150,7 +153,6 @@ export default function UserInfo() {
     handleSubmit: handleSubmitUserInfo,
     formState: { errors: errorsUserInfo },
     reset: resetUserInfo,
-    watch: watchUserInfo,
   } = useForm({ mode: 'onChange' });
 
   // 密碼修改表單的 useForm
@@ -171,16 +173,6 @@ export default function UserInfo() {
       resetUserInfo(defaultUserData);
     }
   }, [defaultUserData, resetUserInfo]);
-
-  useEffect(() => {
-    console.log('AddressForm errors:', errorsUserInfo);
-  }, [errorsUserInfo]);
-
-  const watchedUserErrors = watchUserInfo(); 
-
-  useEffect(() => {
-    console.log('Watched errors:', errorsUserInfo);
-  }, [watchedUserErrors, errorsUserInfo]);
 
   return (
     <>

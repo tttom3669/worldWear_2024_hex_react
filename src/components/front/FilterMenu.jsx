@@ -11,23 +11,9 @@ import {
 } from "../../slice/productsListSlice";
 import PropTypes from "prop-types";
 import useImgUrl from "../../hooks/useImgUrl";
-// import { getUniqueValues, PRODUCT_STATUS_OPTIONS } from "../tools/filterUtils";
-
-// // 安全地從對象中提取唯一值的實用函數
-// const getUniqueValues = (array, key) => {
-//   if (!Array.isArray(array)) return [];
-//   return [...new Set(array.map((item) => item?.[key]).filter(Boolean))];
-// };
 
 // 創建一個全局變量來存儲最後選擇的分類路徑
 let lastSelectedCategoryPath = "";
-
-// 定義固定的狀態選項
-// const PRODUCT_STATUS_OPTIONS = [
-//   { slug: "in-stock", title: "現貨" },
-//   { slug: "pre-order", title: "預購" },
-//   { slug: "restocking", title: "補貨中" },
-// ];
 
 // CategoryItem 組件，用於一般類別顯示
 const CategoryItem = memo(

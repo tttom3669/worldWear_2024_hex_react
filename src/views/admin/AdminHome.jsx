@@ -5,6 +5,6 @@ export default function AdminHome() {
   const navigate = useNavigate();
   useEffect(() => {
     navigate('/admin/products');
-  }, []);
+  }, [navigate]);
   return <>後台首頁</>;
 }

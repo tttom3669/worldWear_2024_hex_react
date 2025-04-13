@@ -1,36 +1,36 @@
-import { useState, useEffect, useCallback, useMemo, memo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { productCategories } from '../../slice/productsSlice';
+import { useState, useEffect, useCallback, useMemo, memo } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { productCategories } from "../../slice/productsSlice";
 import {
   setCurrentCategory,
   filterProducts,
   resetFilters,
   fetchProducts,
   setFilterProducts,
-} from '../../slice/productsListSlice';
-import useImgUrl from '../../hooks/useImgUrl';
-import useSwal from '../../hooks/useSwal';
-import { FiChevronUp, FiChevronDown } from 'react-icons/fi';
-import axios from 'axios';
-import PropTypes from 'prop-types';
+} from "../../slice/productsListSlice";
+import useImgUrl from "../../hooks/useImgUrl";
+import useSwal from "../../hooks/useSwal";
+import { FiChevronUp, FiChevronDown } from "react-icons/fi";
+import axios from "axios";
+import PropTypes from "prop-types";
 
 // 在組件內部定義常量，避免多餘的渲染
 const STATUS_MAP = {
-  'in-stock': '現貨',
-  'pre-order': '預購',
-  restocking: '補貨中',
+  "in-stock": "現貨",
+  "pre-order": "預購",
+  restocking: "補貨中",
 };
 
 // 安全地從對象中提取唯一值的實用函數
-const getUniqueValues = (array, key) => {
-  if (!Array.isArray(array)) return [];
-  return [...new Set(array.map((item) => item?.[key]).filter(Boolean))];
-};
+// const getUniqueValues = (array, key) => {
+//   if (!Array.isArray(array)) return [];
+//   return [...new Set(array.map((item) => item?.[key]).filter(Boolean))];
+// };
 
 // 先定義並導出 SortFilter 組件
 export const SortFilter = memo(({ sortOption, handleSortChange }) => {
-  const sortOptions = ['最新上架', '熱門商品', '價格由低至高', '價格由高至低'];
+  const sortOptions = ["最新上架", "熱門商品", "價格由低至高", "價格由高至低"];
 
   return (
     <div className="sortList fs-6 d-none d-md-block">
@@ -58,7 +58,7 @@ export const SortFilter = memo(({ sortOption, handleSortChange }) => {
   );
 });
 
-SortFilter.displayName = 'SortFilter';
+SortFilter.displayName = "SortFilter";
 SortFilter.propTypes = {
   sortOption: PropTypes.string.isRequired,
   handleSortChange: PropTypes.func.isRequired,
@@ -71,29 +71,29 @@ export const FilterSortButton = memo(
     // 直接從 Redux 獲取原始 filters 數據和當前類別
     const filters = useSelector((state) => state.productsList?.filters || {});
     const currentCategory = useSelector(
-      (state) => state.productsList?.currentCategory || ''
+      (state) => state.productsList?.currentCategory || ""
     );
 
     // 從當前類別路徑中提取類別信息
     const categoryInfo = useMemo(() => {
       if (!currentCategory)
-        return { gender: '', mainCategory: '', subCategories: [] };
+        return { gender: "", mainCategory: "", subCategories: [] };
 
-      const parts = currentCategory.split('/');
+      const parts = currentCategory.split("/");
       if (parts.length >= 2) {
         const gender = parts[0];
         const mainCategory = parts[1];
 
         if (parts.length >= 3) {
           // 處理可能的多個子類別 (用逗號分隔的子類別列表)
-          const subCategories = parts[2].split(',');
+          const subCategories = parts[2].split(",");
           return { gender, mainCategory, subCategories };
         }
 
         return { gender, mainCategory, subCategories: [] };
       }
 
-      return { gender: '', mainCategory: '', subCategories: [] };
+      return { gender: "", mainCategory: "", subCategories: [] };
     }, [currentCategory]);
 
     // 計算當前類別中已選擇的篩選條件數量 - 避免累加計算
@@ -105,10 +105,10 @@ export const FilterSortButton = memo(
       let filtersCount = 0;
 
       // 只計算篩選條件
-      if (filters && typeof filters === 'object') {
+      if (filters && typeof filters === "object") {
         Object.keys(filters).forEach((key) => {
           const labels = filters[key];
-          if (Array.isArray(labels) && !labels.includes('全部')) {
+          if (Array.isArray(labels) && !labels.includes("全部")) {
             filtersCount += labels.length;
           }
         });
@@ -119,7 +119,7 @@ export const FilterSortButton = memo(
     }, [filters, categoryInfo]);
 
     // 記錄上次類別路徑，用於偵測類別變化
-    const [lastCategoryPath, setLastCategoryPath] = useState('');
+    const [lastCategoryPath, setLastCategoryPath] = useState("");
 
     // 當類別路徑變化時，確保計數被重置
     useEffect(() => {
@@ -132,10 +132,10 @@ export const FilterSortButton = memo(
 
     // 定義排序選項
     const sortOptions = [
-      '最新上架',
-      '熱門商品',
-      '價格由低至高',
-      '價格由高至低',
+      "最新上架",
+      "熱門商品",
+      "價格由低至高",
+      "價格由高至低",
     ];
 
     return (
@@ -151,12 +151,12 @@ export const FilterSortButton = memo(
             <h6 className="mb-0">
               類別
               {totalCount > 0 && (
-                <span className="ms-1">{'(' + totalCount + ')'}</span>
+                <span className="ms-1">{"(" + totalCount + ")"}</span>
               )}
             </h6>
             <span className="dropdown-icon ms-2">
               <img
-                src={getImgUrl('/icons/dropdownIcon.svg')}
+                src={getImgUrl("/icons/dropdownIcon.svg")}
                 alt="dropdown-Icon"
               />
             </span>
@@ -191,7 +191,7 @@ export const FilterSortButton = memo(
   }
 );
 
-FilterSortButton.displayName = 'FilterSortButton';
+FilterSortButton.displayName = "FilterSortButton";
 FilterSortButton.propTypes = {
   toggleOffcanvas: PropTypes.func.isRequired,
   sortOption: PropTypes.string.isRequired,
@@ -199,7 +199,7 @@ FilterSortButton.propTypes = {
 };
 
 // 全局變量來存儲最後選擇的分類路徑
-let lastSelectedCategoryPath = '';
+let lastSelectedCategoryPath = "";
 
 // 定義主要的 ProductAside 組件
 const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
@@ -210,9 +210,9 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
   const { toastAlert } = useSwal();
   // const [isLoading, setIsLoading] = useState(false);
   // const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('全部商品');
-  const [selectedPriceRange, setSelectedPriceRange] = useState('全部價格');
-  const [selectedSort, setSelectedSort] = useState('預設排序');
+  const [selectedCategory, setSelectedCategory] = useState("全部商品");
+  const [selectedPriceRange, setSelectedPriceRange] = useState("全部價格");
+  const [selectedSort, setSelectedSort] = useState("預設排序");
 
   // 從 Redux 獲取產品分類和篩選狀態
   const categoriesList = useSelector(productCategories);
@@ -223,13 +223,13 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
   // 篩選器的活動狀態
   const [activeFilters, setActiveFilters] = useState(reduxFilters);
   // 存儲選擇的分類路徑（用於手機版的"查看品項"按鈕）
-  const [selectedPath, setSelectedPath] = useState('');
+  const [selectedPath, setSelectedPath] = useState("");
   // 追蹤展開的類別
   const [expandedCategories, setExpandedCategories] = useState({});
   // 跟踪「商品狀態」的過濾選項
   const [productStatusFilter, setProductStatusFilter] = useState([]);
   // 選中的主類別
-  const [selectedMainCategory, setSelectedMainCategory] = useState('');
+  const [selectedMainCategory, setSelectedMainCategory] = useState("");
   // 選中的多個細項類別 (改為數組，支持多選)
   const [selectedSubCategories, setSelectedSubCategories] = useState([]);
 
@@ -245,8 +245,8 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
 
     // 從currentCategory確定
     if (currentCategory) {
-      const parts = currentCategory.split('/');
-      if (parts.length > 0 && (parts[0] === 'men' || parts[0] === 'women')) {
+      const parts = currentCategory.split("/");
+      if (parts.length > 0 && (parts[0] === "men" || parts[0] === "women")) {
         return parts[0];
       }
     }
@@ -254,18 +254,18 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
     // 從hash路徑確定
     const hashPath = location.hash;
     if (hashPath) {
-      const path = hashPath.replace('#', '');
-      const pathSegments = path.split('/').filter(Boolean);
+      const path = hashPath.replace("#", "");
+      const pathSegments = path.split("/").filter(Boolean);
 
-      if (pathSegments.length >= 2 && pathSegments[0] === 'products') {
-        if (pathSegments[1] === 'men' || pathSegments[1] === 'women') {
+      if (pathSegments.length >= 2 && pathSegments[0] === "products") {
+        if (pathSegments[1] === "men" || pathSegments[1] === "women") {
           return pathSegments[1];
         }
       }
     }
 
     // 預設顯示女裝
-    return 'women';
+    return "women";
   }, [urlGender, currentCategory, location.hash]);
 
   // 過濾出當前性別的分類
@@ -310,20 +310,20 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
   // 從當前分類路徑中解析出主類別和子類別
   useEffect(() => {
     if (currentCategory) {
-      const parts = currentCategory.split('/');
+      const parts = currentCategory.split("/");
       if (parts.length >= 2) {
         // 儲存主類別，但不顯示選中樣式
         setSelectedMainCategory(parts[1]); // 設置主類別 (如 'top', 'jacket')
 
         if (parts.length >= 3) {
           // 處理可能的多個子類別 (用逗號分隔的子類別列表)
-          const subCats = parts[2].split(',');
+          const subCats = parts[2].split(",");
           setSelectedSubCategories(subCats); // 設置多個子類別
         } else {
           setSelectedSubCategories([]); // 如果沒有子類別，清空選中狀態
         }
       } else {
-        setSelectedMainCategory('');
+        setSelectedMainCategory("");
         setSelectedSubCategories([]);
       }
     }
@@ -336,7 +336,7 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
 
       if (subcategory) {
         // 處理可能的多個子類別 (用逗號分隔的子類別列表)
-        const subCats = subcategory.split(',');
+        const subCats = subcategory.split(",");
         setSelectedSubCategories(subCats);
       } else {
         setSelectedSubCategories([]);
@@ -358,7 +358,7 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
     if (reduxFilters?.productStatus) {
       // 過濾掉"全部"選項
       const statusFilters = reduxFilters.productStatus
-        .filter((status) => status !== '全部')
+        .filter((status) => status !== "全部")
         // 將 slug 轉換為實際的資料庫值
         .map((status) => {
           // 檢查是否為 slug，如果是則轉換為對應的資料庫值
@@ -375,7 +375,7 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
   const handleFilterChange = useCallback(
     (category, selectedLabels) => {
       // 特別處理商品狀態類別
-      if (category === 'productStatus') {
+      if (category === "productStatus") {
         // 將顯示值(現貨、預購、補貨中)轉換回 slug 以傳給 Redux
         const slugLabels = selectedLabels.map((label) => {
           // 找出這個標題對應的 slug
@@ -390,7 +390,7 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
 
         const newFilters = {
           ...activeFilters,
-          [category]: slugLabels.length ? slugLabels : ['全部'],
+          [category]: slugLabels.length ? slugLabels : ["全部"],
         };
 
         // 移除空值的類別
@@ -407,7 +407,7 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
         // 其他類別保持原有邏輯
         const newFilters = {
           ...activeFilters,
-          [category]: selectedLabels.length ? selectedLabels : ['全部'],
+          [category]: selectedLabels.length ? selectedLabels : ["全部"],
         };
 
         // 移除空值的類別
@@ -518,7 +518,7 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
         }
       } else {
         // 構建包含多個細項的類別路徑，用逗號分隔
-        const subCategoriesPath = updatedSubCategories.join(',');
+        const subCategoriesPath = updatedSubCategories.join(",");
         const categoryPath = `${currentGender}/${mainCategory.slug}/${subCategoriesPath}`;
 
         // 構建完整的導航路徑
@@ -609,7 +609,7 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
   const handleViewItems = useCallback(() => {
     if (lastSelectedCategoryPath) {
       // 從路徑中提取分類信息
-      const pathParts = lastSelectedCategoryPath.split('/').filter(Boolean);
+      const pathParts = lastSelectedCategoryPath.split("/").filter(Boolean);
 
       if (pathParts.length >= 3) {
         const gender = pathParts[1]; // 'women' 或 'men'
@@ -658,7 +658,7 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
     // 計算篩選條件 - 僅考慮當前類別相關的條件
     Object.keys(activeFilters).forEach((key) => {
       const labels = activeFilters[key];
-      if (Array.isArray(labels) && !labels.includes('全部')) {
+      if (Array.isArray(labels) && !labels.includes("全部")) {
         filtersCount += labels.length;
       }
     });
@@ -688,83 +688,78 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
   // 從 URL 參數中獲取過濾條件
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const categoryParam = params.get('category');
-    const priceRangeParam = params.get('priceRange');
-    const sortParam = params.get('sort');
+    const categoryParam = params.get("category");
+    const priceRangeParam = params.get("priceRange");
+    const sortParam = params.get("sort");
 
     if (categoryParam) {
       setSelectedCategory(categoryParam);
-      // dispatch(setCategory(categoryParam));
     }
     if (priceRangeParam) {
       setSelectedPriceRange(priceRangeParam);
-      // dispatch(setPriceRange(priceRangeParam));
     }
     if (sortParam) {
       setSelectedSort(sortParam);
-      // dispatch(setSort(sortParam));
     }
   }, [location.search, dispatch]);
-
-  // 獲取商品分類
-  {
-    /* useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_PATH}/products/categories`
-        );
-        if (response.data.success) {
-          setCategories(response.data.categories);
-        }
-      } catch (error) {
-        console.error("獲取分類失敗:", error);
-      }
-    };
-
-    fetchCategories();
-  }, []); */
-  }
-
-  const fetchProductsData = async () => {
-    // setIsLoading(true);
-
-    try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_PATH}/products`,
-        {
-          params: {
-            category:
-              selectedCategory !== '全部商品' ? selectedCategory : undefined,
-            priceRange:
-              selectedPriceRange !== '全部價格'
-                ? selectedPriceRange
-                : undefined,
-            sort: selectedSort !== '預設排序' ? selectedSort : undefined,
-          },
-        }
-      );
-      dispatch(setFilterProducts(response.data));
-    } catch (error) {
-      console.error('獲取商品列表失敗:', error);
-      toastAlert({
-        icon: 'error',
-        title: '獲取商品列表失敗，請稍後再試',
-      });
-    }
-  };
 
   // 當過濾條件改變時重新獲取商品列表
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const categoryParam = params.get('category');
-    const priceRangeParam = params.get('priceRange');
-    const sortParam = params.get('sort');
+    const categoryParam = params.get("category");
+    const priceRangeParam = params.get("priceRange");
+    const sortParam = params.get("sort");
     if (!categoryParam && !priceRangeParam && !sortParam) {
       return;
     }
+    const fetchProductsData = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_PATH}/products`,
+          {
+            params: {
+              category:
+                selectedCategory !== "全部商品" ? selectedCategory : undefined,
+              priceRange:
+                selectedPriceRange !== "全部價格"
+                  ? selectedPriceRange
+                  : undefined,
+              sort: selectedSort !== "預設排序" ? selectedSort : undefined,
+            },
+          }
+        );
+        dispatch(setFilterProducts(response.data));
+      } catch (error) {
+        let errorMessage = "獲取商品列表失敗，請稍後再試";
+
+        // 檢查 response 中是否有中文錯誤訊息
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.message
+        ) {
+          errorMessage = error.response.data.message;
+        } else if (error.message) {
+          // 如果沒有中文錯誤訊息，則使用錯誤原因
+          errorMessage = `${errorMessage}：${error.message}`;
+        }
+
+        toastAlert({
+          icon: "error",
+          title: errorMessage,
+        });
+      }
+    };
+
     fetchProductsData();
-  }, [selectedCategory, selectedPriceRange, selectedSort]);
+  }, [
+    selectedCategory,
+    selectedPriceRange,
+    selectedSort,
+    dispatch,
+    toastAlert,
+    location.search,
+  ]);
 
   return (
     <nav className="navCategory bg-white ms-4 me-4">
@@ -799,7 +794,7 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
             <ul className="list-unstyled">
               {gender.categories.map((category) => {
                 // 判斷是否為狀態分類
-                const isStatusCategory = category.slug === 'product-status';
+                const isStatusCategory = category.slug === "product-status";
                 // 判斷是否展開
                 const isExpanded = expandedCategories[category.slug];
 
@@ -815,7 +810,7 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
                     <div
                       className="text-decoration-none d-flex justify-content-between align-items-center w-100 py-2"
                       onClick={() => toggleCategoryExpand(category.slug)}
-                      style={{ cursor: 'pointer' }}
+                      style={{ cursor: "pointer" }}
                     >
                       {/* 主類別標題不顯示選中樣式，保持原來的顏色 */}
                       <span className="fw-bold text-dark">
@@ -823,9 +818,9 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
                       </span>
                       <span className="dropdown-icon">
                         {isExpanded ? (
-                          <FiChevronUp style={{ fontSize: '24px' }} />
+                          <FiChevronUp style={{ fontSize: "24px" }} />
                         ) : (
-                          <FiChevronDown style={{ fontSize: '24px' }} />
+                          <FiChevronDown style={{ fontSize: "24px" }} />
                         )}
                       </span>
                     </div>
@@ -847,8 +842,8 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
                                   className={`btn ${
                                     isCurrentCategoryPath &&
                                     selectedSubCategories.length === 0
-                                      ? 'btn-primary'
-                                      : 'btn-outline-secondary'
+                                      ? "btn-primary"
+                                      : "btn-outline-secondary"
                                   } btn-sm px-2 py-1`}
                                   onClick={() =>
                                     handleCategoryClick(
@@ -877,8 +872,8 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
                                     key={subCategory.slug}
                                     className={`btn btn-sm px-2 py-1 ${
                                       isSubCategorySelected
-                                        ? 'btn-primary'
-                                        : 'btn-outline-secondary'
+                                        ? "btn-primary"
+                                        : "btn-outline-secondary"
                                     }`}
                                     onClick={() =>
                                       handleSubCategoryClick(
@@ -900,12 +895,12 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
                                 <button
                                   className={`btn ${
                                     productStatusFilter.length === 0
-                                      ? 'btn-primary'
-                                      : 'btn-outline-secondary'
+                                      ? "btn-primary"
+                                      : "btn-outline-secondary"
                                   } btn-sm px-2 py-1`}
                                   onClick={() => {
                                     setProductStatusFilter([]);
-                                    handleFilterChange('productStatus', []);
+                                    handleFilterChange("productStatus", []);
                                   }}
                                 >
                                   全部
@@ -927,8 +922,8 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
                                     key={subCategory.slug}
                                     className={`btn ${
                                       isSelected
-                                        ? 'btn-primary'
-                                        : 'btn-outline-secondary'
+                                        ? "btn-primary"
+                                        : "btn-outline-secondary"
                                     } btn-sm px-2 py-1`}
                                     onClick={() => {
                                       // 使用資料庫中的實際值而不是 slug
@@ -944,7 +939,7 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
 
                                       setProductStatusFilter(newFilter);
                                       handleFilterChange(
-                                        'productStatus',
+                                        "productStatus",
                                         newFilter
                                       );
                                     }}
@@ -982,7 +977,7 @@ const ProductAside = memo(({ isOffcanvas = false, toggleOffcanvas }) => {
   );
 });
 
-ProductAside.displayName = 'ProductAside';
+ProductAside.displayName = "ProductAside";
 ProductAside.propTypes = {
   isOffcanvas: PropTypes.bool,
   toggleOffcanvas: PropTypes.func.isRequired,
@@ -992,4 +987,4 @@ ProductAside.propTypes = {
 export default ProductAside;
 
 // 重新導出其他工具函數和組件
-export { getUniqueValues };
+// export { getUniqueValues };

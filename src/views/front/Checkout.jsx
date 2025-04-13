@@ -86,19 +86,16 @@ export default function Checkout() {
         setIsLoading(false);
         navigate('/checkout-success');
       }, 1000);
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      console.log(error);
       setIsLoading(false);
     }
   };
 
   const getLastOrder = async () => {
-    try {
-      const res = await axios.get(`${API_PATH}/orders`);
-      setLastOrder(res.data[res.data.length - 1]);
-    } catch (error) {
-      console.log(error);
-    }
+    const res = await axios.get(`${API_PATH}/orders`);
+    if (!res.data.length) return;
+    setLastOrder(res.data[res.data.length - 1]);
   };
 
   const paymentMethod = watch('payment');
@@ -147,8 +144,6 @@ export default function Checkout() {
     const companyTitle = lastOrder.invoiceInfo.companyTitle;
     const companyId = lastOrder.invoiceInfo.companyId;
     const carrier = lastOrder.invoiceInfo.carrier;
-
-    console.log(lastOrder);
 
     reset({
       deliveryName: buyerName,
@@ -833,7 +828,9 @@ export default function Checkout() {
                     <div className="bg-white p-4">
                       <div className="d-flex justify-content-between">
                         <span>商品原價金額</span>
-                        <span className="fw-bold">NT {carts.total.toLocaleString('zh-TW')}</span>
+                        <span className="fw-bold">
+                          NT {carts.total.toLocaleString('zh-TW')}
+                        </span>
                       </div>
                       <div className="d-flex justify-content-between mt-2">
                         <span>結帳金額</span>

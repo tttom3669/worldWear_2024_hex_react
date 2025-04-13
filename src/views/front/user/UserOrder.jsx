@@ -3,15 +3,17 @@ import FormTitle from '../../../components/front/FormTitle';
 import UserAside from '../../../components/front/UserAside';
 import ScreenLoading from '../../../components/front/ScreenLoading';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import useSwal from '../../../hooks/useSwal';
 
 export default function UserOrder() {
   const getImgUrl = useImgUrl();
+  const { toastAlert } = useSwal();
   const { VITE_API_PATH: API_PATH } = import.meta.env;
   const [orderData, setOrderData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const getOrder = async () => {
+  const getOrder = useCallback(async () => {
     try {
       setIsLoading(true);
       const userId =
@@ -29,17 +31,21 @@ export default function UserOrder() {
           Authorization: `Bearer ${token}`,
         },
       });
-      
+
       setOrderData(res.data);
     } catch (error) {
-      console.log(error);
+      toastAlert({
+        icon: 'error',
+        title: error?.response?.data?.message || '未取得訂單資料',
+      });
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [API_PATH, toastAlert]);
+
   useEffect(() => {
     getOrder();
-  }, []);
+  }, [getOrder]);
   return (
     <>
       <title>查詢訂單 - WorldWear</title>

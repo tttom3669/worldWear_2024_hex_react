@@ -6,7 +6,6 @@ import useSwal from "../../hooks/useSwal";
 import { asyncGetCarts } from "../../slice/cartsSlice";
 import { currency } from "../../components/tools/format";
 
-
 // Import Swiper React components
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination } from "swiper/modules";
@@ -52,13 +51,12 @@ export default function Product() {
         productId: productId,
       }));
     } catch (error) {
-      // console.log(error);
       toastAlert({
         icon: "error",
         title: error,
       });
     }
-  }, [productId]);
+  }, [productId, toastAlert]);
 
   const handleColorSelect = (selectedColor) => {
     setCart((prevCart) => ({
@@ -137,7 +135,6 @@ export default function Product() {
       dispatch(asyncGetCarts());
       setIsPostCartLoding(false);
     } catch (error) {
-      // console.log(error);
       toastAlert({
         icon: "error",
         title: error,
@@ -174,11 +171,6 @@ export default function Product() {
       toastAlert({ icon: "success", title: "已將商品加入收藏" });
       setIsPostFavoritesLoding(false);
     } catch (error) {
-      console.error("收藏錯誤詳情:", {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-      });
       toastAlert({
         icon: "error",
         title: error.response?.data?.message || "操作失敗，請稍後再試",
@@ -251,50 +243,52 @@ export default function Product() {
 
           {/* 右側區塊：商品資訊與購物功能 */}
           <div className="col-md-4">
-            <h1 className="mb-3 mt-3 mt-md-0 fs-h5 fs-md-h1">{product.title}</h1>
+            <h1 className="mb-3 mt-3 mt-md-0 fs-h5 fs-md-h1">
+              {product.title}
+            </h1>
             <p className="mb-3 fs-h6">
               ${currency(product.price)}{" "}
               <s className="origin-price">${currency(product.origin_price)}</s>
             </p>
             {/* 手機版輪播商品圖片 */}
             <div className="d-md-none mb-6">
-            <Swiper
-              modules={[Pagination]}
-              slidesPerView={1}
-              pagination={{ clickable: true }}
-              className="product-image-swiper"
-            >
-              {product.imageUrl && (
-                <SwiperSlide>
-                  <img
-                    src={product.imageUrl}
-                    className="object-fit-cover mx-auto"
-                    style={{
-                      width: "350px",
-                      height: "350px",
-                    }}
-                    alt="商品主圖"
-                  />
-                </SwiperSlide>
-              )}
-              {product.imagesUrl &&
-                product.imagesUrl.map((url, index) =>
-                  url ? (
-                    <SwiperSlide key={index}>
-                      <img
-                        src={url}
-                        className="object-fit-cover mx-auto"
-                        style={{
-                          width: "350px",
-                          height: "350px",
-                        }}
-                        alt={`商品圖片 ${index}`}
-                      />
-                    </SwiperSlide>
-                  ) : null
+              <Swiper
+                modules={[Pagination]}
+                slidesPerView={1}
+                pagination={{ clickable: true }}
+                className="product-image-swiper"
+              >
+                {product.imageUrl && (
+                  <SwiperSlide>
+                    <img
+                      src={product.imageUrl}
+                      className="object-fit-cover mx-auto"
+                      style={{
+                        width: "350px",
+                        height: "350px",
+                      }}
+                      alt="商品主圖"
+                    />
+                  </SwiperSlide>
                 )}
-            </Swiper>
-          </div>
+                {product.imagesUrl &&
+                  product.imagesUrl.map((url, index) =>
+                    url ? (
+                      <SwiperSlide key={index}>
+                        <img
+                          src={url}
+                          className="object-fit-cover mx-auto"
+                          style={{
+                            width: "350px",
+                            height: "350px",
+                          }}
+                          alt={`商品圖片 ${index}`}
+                        />
+                      </SwiperSlide>
+                    ) : null
+                  )}
+              </Swiper>
+            </div>
 
             <div className="mb-1">
               <span className="fs-base">顏色：</span>
@@ -524,78 +518,75 @@ export default function Product() {
         <div className="container-sm">
           <h2 className="fs-h5 fs-md-h2 fw-bold mb-6 text-center">推薦穿搭</h2>
           <div className="swiper-container swiper__popularProducts-container">
-                <div className="overflow-hidden pb-12">
-                  <Swiper
-                    className="swiper__popularProducts"
-                    modules={[Pagination]}
-                    slidesPerView={1.375}
-                    spaceBetween={24}
-                    breakpoints={{
-                      576: {
-                        slidesPerGroup: 2,
-                        slidesPerView: 2,
-                      },
-                      768: {
-                        slidesPerGroup: 3,
-                        slidesPerView: 3,
-                      },
-                    }}
-                    pagination={{ clickable: true }}
-                    onSwiper={(swiper) => {
-                      swiperRefs.current['popularProducts'] = swiper;
-                    }}
-                    onSlideChange={(swiper) => {
-                      updateSwiperNavState('popularProducts', swiper);
-                    }}
-                  >
-                    {popularProducts.map((product) => (
-                      <SwiperSlide
-                        className="position-relative"
-                        key={product.id}
-                      >
-                        <img
-                          className="w-100 img-fluid object-fit-cover mb-3"
-                          src={product.imageUrl}
-                          alt={product.title}
-                        />
-                        <Link
-                          to={`/product/${product.id}`}
-                          className="stretched-link link-black"
-                        >
-                          <h3 className="d-flex flex-column gap-0 gap-md-1 tracking-sm fs-sm fs-md-base lh-base fw-normal">
-                            <span>{product.title}</span>
-                            <span>{product.categoryItems}</span>
-                          </h3>
-                        </Link>
-                      </SwiperSlide>
-                    ))}
-                  </Swiper>
-                  <div
-                    className={`swiper-button-prev ${
-                      swiperNavState.popularProducts?.isBeginning
-                        ? 'text-nature-95 pe-none'
-                        : ''
-                    }`}
-                    onClick={() => handlePrevSlide('popularProducts')}
-                  >
-                    <svg className="pe-none" width="18" height="32">
-                      <use href={getImgUrl('/icons/prev.svg#prev')}></use>
-                    </svg>
-                  </div>
-                  <div
-                    className={`swiper-button-next ${
-                      swiperNavState.popularProducts?.isEnd
-                        ? 'text-nature-95 pe-none '
-                        : ''
-                    }`}
-                    onClick={() => handleNextSlide('popularProducts')}
-                  >
-                    <svg className="pe-none" width="18" height="32">
-                      <use href={getImgUrl('/icons/next.svg#next')}></use>
-                    </svg>
-                  </div>
-                </div>
+            <div className="overflow-hidden pb-12">
+              <Swiper
+                className="swiper__popularProducts"
+                modules={[Pagination]}
+                slidesPerView={1.375}
+                spaceBetween={24}
+                breakpoints={{
+                  576: {
+                    slidesPerGroup: 2,
+                    slidesPerView: 2,
+                  },
+                  768: {
+                    slidesPerGroup: 3,
+                    slidesPerView: 3,
+                  },
+                }}
+                pagination={{ clickable: true }}
+                onSwiper={(swiper) => {
+                  swiperRefs.current["popularProducts"] = swiper;
+                }}
+                onSlideChange={(swiper) => {
+                  updateSwiperNavState("popularProducts", swiper);
+                }}
+              >
+                {popularProducts.map((product) => (
+                  <SwiperSlide className="position-relative" key={product.id}>
+                    <img
+                      className="w-100 img-fluid object-fit-cover mb-3"
+                      src={product.imageUrl}
+                      alt={product.title}
+                    />
+                    <Link
+                      to={`/product/${product.id}`}
+                      className="stretched-link link-black"
+                    >
+                      <h3 className="d-flex flex-column gap-0 gap-md-1 tracking-sm fs-sm fs-md-base lh-base fw-normal">
+                        <span>{product.title}</span>
+                        <span>{product.categoryItems}</span>
+                      </h3>
+                    </Link>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+              <div
+                className={`swiper-button-prev ${
+                  swiperNavState.popularProducts?.isBeginning
+                    ? "text-nature-95 pe-none"
+                    : ""
+                }`}
+                onClick={() => handlePrevSlide("popularProducts")}
+              >
+                <svg className="pe-none" width="18" height="32">
+                  <use href={getImgUrl("/icons/prev.svg#prev")}></use>
+                </svg>
               </div>
+              <div
+                className={`swiper-button-next ${
+                  swiperNavState.popularProducts?.isEnd
+                    ? "text-nature-95 pe-none "
+                    : ""
+                }`}
+                onClick={() => handleNextSlide("popularProducts")}
+              >
+                <svg className="pe-none" width="18" height="32">
+                  <use href={getImgUrl("/icons/next.svg#next")}></use>
+                </svg>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </>

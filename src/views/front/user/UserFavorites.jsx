@@ -110,7 +110,6 @@ export default function UserFavorites() {
         }
       }
     } catch (error) {
-      console.error("Error updating quantity:", error);
       toastAlert({
         icon: "error",
         title: error.response.data.message || "更新數量失敗，請稍後再試",
@@ -208,8 +207,8 @@ export default function UserFavorites() {
       ).unwrap();
 
       toastAlert({ icon: "success", title: "已更新顏色" });
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      console.error("Error updating color:", error);
       toastAlert({ icon: "error", title: "更新顏色失敗，請稍後再試" });
     }
   };
@@ -243,16 +242,16 @@ export default function UserFavorites() {
             setIsAuthenticated(true);
             setIsLoading(false);
           })
+          // eslint-disable-next-line no-unused-vars
           .catch((error) => {
-            console.log(error);
             setIsLoading(false);
           });
       } else {
         setIsAuthenticated(false);
         setIsLoading(false);
       }
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      console.log(error);
       setIsLoading(false);
     }
   }, [dispatch]);
@@ -285,7 +284,6 @@ export default function UserFavorites() {
                     {/* 列表內容 - 使用 displayItems 包含預設資料 */}
                     <ul className="favorite__tbody list-unstyled m-0">
                       {displayItems.map((favorite) => {
-                        console.log("產品數據:", favorite.product);
                         return (
                           <li
                             key={favorite.id}

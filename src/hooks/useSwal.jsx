@@ -1,26 +1,30 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import Swal from 'sweetalert2';
 
 const useSwal = () => {
-  const Toast = Swal.mixin({
-    toast: true,
-    position: window.innerWidth <= 576 ? 'top' : 'top-end',
-    showConfirmButton: false,
-    timer: 2000,
-    timerProgressBar: true,
-    didOpen: (toast) => {
-      toast.onmouseenter = Swal.stopTimer;
-      toast.onmouseleave = Swal.resumeTimer;
-    },
-  });
-  const swalWithBootstrapButtons = Swal.mixin({
-    customClass: {
-      container: 'cusswal-modal',
-      confirmButton: 'btn btn-primary',
-      cancelButton: 'btn btn-secondary',
-    },
-    buttonsStyling: false,
-  });
+  const Toast = useMemo(() => {
+    return Swal.mixin({
+      toast: true,
+      position: window.innerWidth <= 576 ? 'top' : 'top-end',
+      showConfirmButton: false,
+      timer: 2000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.onmouseenter = Swal.stopTimer;
+        toast.onmouseleave = Swal.resumeTimer;
+      },
+    });
+  }, []);
+  const swalWithBootstrapButtons = useMemo(() => {
+    return Swal.mixin({
+      customClass: {
+        container: 'cusswal-modal',
+        confirmButton: 'btn btn-primary',
+        cancelButton: 'btn btn-secondary',
+      },
+      buttonsStyling: false,
+    });
+  }, []);
   const toastAlert = useCallback(
     ({ icon, title }) => {
       Toast.fire({

@@ -197,11 +197,6 @@ $accordion-active-bg: #ffddb9; // 保留但不使用
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
-  .favorite-button .heartIcon {
-    margin: 0; /* 移除可能的外邊距 */
-    vertical-align: middle; /* 確保垂直居中 */
-  }
-
   .favorite-button:hover {
     background-color: $hover-bg-color;
   }
