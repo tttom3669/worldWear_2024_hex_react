@@ -38,6 +38,8 @@ export default function UserOrder() {
         icon: 'error',
         title: error?.response?.data?.message || '未取得訂單資料',
       });
+      console.log("觸發");
+      
     } finally {
       setIsLoading(false);
     }
