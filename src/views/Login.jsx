@@ -1,37 +1,37 @@
-import { memo, useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { checkEmailExists, clearError } from "../slice/authSlice";
-import { useForm } from "react-hook-form";
-import FrontHeader from "../components/front/FrontHeader";
-import FrontFooter from "../components/front/FrontFooter";
-import useSwal from "../hooks/useSwal";
-import cookieUtils from "../components/tools/cookieUtils";
-import PropTypes from "prop-types";
+import { memo, useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { checkEmailExists, clearError } from '../slice/authSlice';
+import { useForm } from 'react-hook-form';
+import FrontHeader from '../components/front/FrontHeader';
+import FrontFooter from '../components/front/FrontFooter';
+import useSwal from '../hooks/useSwal';
+import cookieUtils from '../components/tools/cookieUtils';
+import PropTypes from 'prop-types';
 
 // 常量定義
 const TABS = {
-  LOGIN: "login",
-  REGISTER: "register",
+  LOGIN: 'login',
+  REGISTER: 'register',
 };
 
 const initialLoginData = {
-  email: "",
-  password: "",
+  email: '',
+  password: '',
   // email: "worldwear@gmail.com",
   // password: "worldwear",
   rememberMe: false,
 };
 
 const initialRegisterData = {
-  username: "",
-  email: "",
-  password: "",
-  confirmPassword: "",
+  username: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
 };
 
 const initialForgotPasswordData = {
-  email: "",
+  email: '',
 };
 
 export default function Login() {
@@ -44,7 +44,7 @@ export default function Login() {
   useEffect(() => {
     const state = location.state;
     if (state && state.activeTab) {
-      setActiveTab(state.activeTab === "login" ? TABS.LOGIN : TABS.REGISTER);
+      setActiveTab(state.activeTab === 'login' ? TABS.LOGIN : TABS.REGISTER);
       navigate(location.pathname, { replace: true, state: null });
     }
   }, [location, navigate]);
@@ -66,36 +66,74 @@ export default function Login() {
   const emailCheckTimeoutRef = useRef(null);
 
   // 表單設置
-  const loginForm = useForm({
+  // const loginForm = useForm({
+  //   defaultValues: initialLoginData,
+  // });
+
+  // 登入表單設置
+  const {
+    register: registerLogin,
+    handleSubmit: handleSubmitLogin,
+    formState: { errors: errorsLogin },
+    setValue: setLoginValue,
+    reset: resetLoginForm,
+  } = useForm({
     defaultValues: initialLoginData,
+    mode: 'onChange',
   });
 
-  const registerForm = useForm({
+  // 註冊表單設置
+  // const registerForm = useForm({
+  //   defaultValues: initialRegisterData,
+  //   mode: 'onChange',
+  // });
+
+  const {
+    register: registerSignup,
+    handleSubmit: handleSubmitRegister,
+    formState: { errors: errorsRegister },
+    watch: watchRegister,
+    getFieldState: getRegisterFieldState,
+    getValues: getRegisterValues,
+    setError: setRegisterError,
+    reset: resetRegisterForm,
+  } = useForm({
     defaultValues: initialRegisterData,
-    mode: "onChange",
+    mode: 'onChange',
   });
 
-  const forgotPasswordForm = useForm({
+  // const forgotPasswordForm = useForm({
+  //   defaultValues: initialForgotPasswordData,
+  // });
+
+  // 忘記密碼表單設置
+  const {
+    register: registerForgotPassword,
+    handleSubmit: handleSubmitForgotPassword,
+    formState: { errors: errorsForgotPassword },
+    reset: resetForgotPasswordForm,
+  } = useForm({
     defaultValues: initialForgotPasswordData,
+    mode: 'onChange',
   });
 
   // 檢查用戶是否已登入
   useEffect(() => {
     if (cookieUtils.isUserLoggedIn()) {
-      navigate("/");
+      navigate('/');
     }
   }, [navigate]);
 
   // 監聽註冊表單中的郵件欄位
   useEffect(() => {
-    const subscription = registerForm.watch((values, { name }) => {
-      if (name === "email") {
+    const subscription = watchRegister((values, { name }) => {
+      if (name === 'email') {
         if (emailCheckTimeoutRef.current) {
           clearTimeout(emailCheckTimeoutRef.current);
         }
 
         const email = values.email;
-        if (email && registerForm.getFieldState("email").valid) {
+        if (email && getRegisterFieldState('email').valid) {
           emailCheckTimeoutRef.current = setTimeout(() => {
             dispatch(checkEmailExists(email));
           }, 300);
@@ -109,17 +147,17 @@ export default function Login() {
         clearTimeout(emailCheckTimeoutRef.current);
       }
     };
-  }, [registerForm, dispatch, checkedEmail]);
+  }, [dispatch, checkedEmail, watchRegister, getRegisterFieldState]);
 
   // 郵件檢查效果
   useEffect(() => {
-    if (emailExists && checkedEmail === registerForm.getValues().email) {
-      registerForm.setError("email", {
-        type: "manual",
-        message: "此郵件已被註冊，請使用其他郵件或直接登入",
+    if (emailExists && checkedEmail === getRegisterValues().email) {
+      setRegisterError('email', {
+        type: 'manual',
+        message: '此郵件已被註冊，請使用其他郵件或直接登入',
       });
     }
-  }, [emailExists, checkedEmail, registerForm]);
+  }, [emailExists, checkedEmail, getRegisterValues, setRegisterError]);
 
   // 登入處理
   const handleLogin = useCallback(
@@ -137,14 +175,14 @@ export default function Login() {
         );
 
         if (loginResult.success) {
-          toastAlert({ icon: "success", title: "登入成功" });
-          navigate("/");
+          toastAlert({ icon: 'success', title: '登入成功' });
+          navigate('/');
         }
       } catch (error) {
         setSubmitError(error.message);
         toastAlert({
-          icon: "error",
-          title: "登入失敗",
+          icon: 'error',
+          title: '登入失敗',
           text: error.message,
         });
 
@@ -161,10 +199,10 @@ export default function Login() {
     async (data) => {
       try {
         // 再檢查一次郵件是否已存在
-        if (emailExists && registerForm.getValues().email === checkedEmail) {
-          registerForm.setError("email", {
-            type: "manual",
-            message: "此郵件已被註冊，請使用其他郵件或直接登入",
+        if (emailExists && getRegisterValues().email === checkedEmail) {
+          setRegisterError('email', {
+            type: 'manual',
+            message: '此郵件已被註冊，請使用其他郵件或直接登入',
           });
           return;
         }
@@ -182,17 +220,17 @@ export default function Login() {
 
         if (registerResult.success) {
           toastAlert({
-            icon: "success",
-            title: "註冊成功",
-            text: "請用您的帳號密碼登入",
+            icon: 'success',
+            title: '註冊成功',
+            text: '請用您的帳號密碼登入',
           });
 
           // 自動填入登入表單的電子郵件
-          loginForm.setValue("email", data.email);
-          loginForm.setValue("password", "");
+          setLoginValue('email', data.email);
+          setLoginValue('password', '');
 
           // 清空註冊表單
-          registerForm.reset(initialRegisterData);
+          resetRegisterForm(initialRegisterData);
 
           isRegisterAttemptRef.current = false;
           setActiveTab(TABS.LOGIN);
@@ -200,8 +238,8 @@ export default function Login() {
       } catch (error) {
         setSubmitError(error.message);
         toastAlert({
-          icon: "error",
-          title: "註冊失敗",
+          icon: 'error',
+          title: '註冊失敗',
           text: error.message,
         });
 
@@ -210,7 +248,15 @@ export default function Login() {
         setIsLoading(false);
       }
     },
-    [toastAlert, registerForm, emailExists, checkedEmail, loginForm]
+    [
+      toastAlert,
+      emailExists,
+      checkedEmail,
+      getRegisterValues,
+      setRegisterError,
+      setLoginValue,
+      resetRegisterForm,
+    ]
   );
 
   // 忘記密碼處理
@@ -223,29 +269,29 @@ export default function Login() {
       // TODO: 實現忘記密碼的具體邏輯
       // 可能需要在 cookieUtils 中添加相應的方法
       toastAlert({
-        icon: "success",
-        title: "重設密碼郵件已發送",
-        text: "請檢查您的電子郵件信箱，並按照指示重設密碼",
+        icon: 'success',
+        title: '重設密碼郵件已發送',
+        text: '請檢查您的電子郵件信箱，並按照指示重設密碼',
       });
 
       // 重置表單並返回登入視圖
-      forgotPasswordForm.reset(initialForgotPasswordData);
+      resetForgotPasswordForm(initialForgotPasswordData);
       setShowForgotPassword(false);
     } catch (error) {
       const errorMsg =
-        typeof error === "string" ? error : "重設密碼請求失敗，請稍後再試";
+        typeof error === 'string' ? error : '重設密碼請求失敗，請稍後再試';
 
       setSubmitError(errorMsg);
       toastAlert({
-        icon: "error",
-        title: "重設密碼請求失敗",
+        icon: 'error',
+        title: '重設密碼請求失敗',
         text: errorMsg,
       });
     } finally {
       setIsLoading(false);
       isResetPasswordAttemptRef.current = false;
     }
-  }, [toastAlert, forgotPasswordForm]);
+  }, [toastAlert, resetForgotPasswordForm]);
 
   // 頁籤切換處理
   const handleTabChange = useCallback(
@@ -263,23 +309,29 @@ export default function Login() {
         setShowForgotPassword(false);
 
         // 重置表單
-        loginForm.reset(initialLoginData);
-        registerForm.reset(initialRegisterData);
-        forgotPasswordForm.reset(initialForgotPasswordData);
+        resetLoginForm(initialLoginData);
+        resetRegisterForm(initialRegisterData);
+        resetForgotPasswordForm(initialForgotPasswordData);
 
         // 清除全局錯誤
         dispatch(clearError());
       }
     },
-    [activeTab, dispatch, loginForm, registerForm, forgotPasswordForm]
+    [
+      activeTab,
+      dispatch,
+      resetLoginForm,
+      resetRegisterForm,
+      resetForgotPasswordForm,
+    ]
   );
 
   // 切換忘記密碼視圖
   const toggleForgotPassword = useCallback(() => {
     setShowForgotPassword((prev) => !prev);
     setSubmitError(null);
-    forgotPasswordForm.reset(initialForgotPasswordData);
-  }, [forgotPasswordForm]);
+    resetForgotPasswordForm(initialForgotPasswordData);
+  }, [resetForgotPasswordForm]);
 
   // 清除錯誤的副作用
   useEffect(() => {
@@ -291,7 +343,7 @@ export default function Login() {
   return (
     <>
       <div className="site">
-        <FrontHeader defaultType={"light"} />
+        <FrontHeader defaultType={'light'} />
         <main className="bg-nature-99">
           <div className="container py-5 mt-10 mb-10">
             <div className="row justify-content-center">
@@ -303,11 +355,11 @@ export default function Login() {
                         <li key={key} className="nav-item w-50">
                           <button
                             className={`nav-link w-100 ${
-                              activeTab === tab ? "active" : "inactive"
+                              activeTab === tab ? 'active' : 'inactive'
                             }`}
                             onClick={() => handleTabChange(tab)}
                           >
-                            {tab === TABS.LOGIN ? "會員登入" : "加入會員"}
+                            {tab === TABS.LOGIN ? '會員登入' : '加入會員'}
                           </button>
                         </li>
                       ))}
@@ -319,7 +371,11 @@ export default function Login() {
                       {/* 登入表單 */}
                       {activeTab === TABS.LOGIN && !showForgotPassword && (
                         <LoginForm
-                          form={loginForm}
+                          form={{
+                            register: registerLogin,
+                            handleSubmit: handleSubmitLogin,
+                            errors: errorsLogin,
+                          }}
                           submitError={submitError}
                           isLoading={isLoading}
                           onSubmit={handleLogin}
@@ -330,7 +386,11 @@ export default function Login() {
                       {/* 忘記密碼表單 */}
                       {activeTab === TABS.LOGIN && showForgotPassword && (
                         <ForgotPasswordForm
-                          form={forgotPasswordForm}
+                          form={{
+                            register: registerForgotPassword,
+                            handleSubmit: handleSubmitForgotPassword,
+                            errors: errorsForgotPassword,
+                          }}
                           submitError={submitError}
                           isLoading={isLoading}
                           onSubmit={handleForgotPassword}
@@ -341,10 +401,15 @@ export default function Login() {
                       {/* 註冊表單 */}
                       {activeTab === TABS.REGISTER && (
                         <RegisterForm
-                          form={registerForm}
+                          form={{
+                            register: registerSignup,
+                            handleSubmit: handleSubmitRegister,
+                            errors: errorsRegister,
+                            watch: watchRegister,
+                          }}
                           submitError={submitError}
                           isLoading={isLoading}
-                          isEmailChecking={emailCheckStatus === "loading"}
+                          isEmailChecking={emailCheckStatus === 'loading'}
                           onSubmit={handleRegister}
                         />
                       )}
@@ -364,11 +429,7 @@ export default function Login() {
 // 登入表單子組件保持不變
 const LoginForm = memo(
   ({ form, submitError, isLoading, onSubmit, onForgotPassword }) => {
-    const {
-      register,
-      handleSubmit,
-      formState: { errors },
-    } = form;
+    const { register, handleSubmit, errors } = form;
 
     return (
       <div className="tab-pane fade show active">
@@ -383,14 +444,14 @@ const LoginForm = memo(
             <input
               id="email"
               className={`form-control bg-white ${
-                errors.email ? "is-invalid" : ""
+                errors.email ? 'is-invalid' : ''
               }`}
               placeholder="請輸入您的電子郵件"
-              {...register("email", {
-                required: "請輸入電子郵件",
+              {...register('email', {
+                required: '請輸入電子郵件',
                 pattern: {
                   value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: "請輸入有效的電子郵件格式",
+                  message: '請輸入有效的電子郵件格式',
                 },
               })}
             />
@@ -406,11 +467,11 @@ const LoginForm = memo(
               id="password"
               type="password"
               className={`form-control bg-white ${
-                errors.password ? "is-invalid" : ""
+                errors.password ? 'is-invalid' : ''
               }`}
               placeholder="請輸入您的密碼"
-              {...register("password", {
-                required: "請輸入密碼",
+              {...register('password', {
+                required: '請輸入密碼',
               })}
             />
             {errors.password && (
@@ -423,7 +484,7 @@ const LoginForm = memo(
                 className="form-check-input"
                 type="checkbox"
                 id="rememberMe"
-                {...register("rememberMe")}
+                {...register('rememberMe')}
               />
               <label className="form-check-label" htmlFor="rememberMe">
                 記住我
@@ -445,7 +506,7 @@ const LoginForm = memo(
               className="btn btn-primary"
               disabled={isLoading}
             >
-              {isLoading ? "登入中..." : "登入"}
+              {isLoading ? '登入中...' : '登入'}
             </button>
           </div>
         </form>
@@ -454,7 +515,7 @@ const LoginForm = memo(
   }
 );
 
-LoginForm.displayName = "LoginForm";
+LoginForm.displayName = 'LoginForm';
 LoginForm.propTypes = {
   form: PropTypes.object.isRequired,
   submitError: PropTypes.string,
@@ -466,11 +527,7 @@ LoginForm.propTypes = {
 // 忘記密碼表單子組件
 const ForgotPasswordForm = memo(
   ({ form, submitError, isLoading, onSubmit, onBack }) => {
-    const {
-      register,
-      handleSubmit,
-      formState: { errors },
-    } = form;
+    const { register, handleSubmit, errors } = form;
 
     return (
       <div className="tab-pane fade show active">
@@ -500,14 +557,14 @@ const ForgotPasswordForm = memo(
             <input
               id="forgotEmail"
               className={`form-control bg-white ${
-                errors.email ? "is-invalid" : ""
+                errors.email ? 'is-invalid' : ''
               }`}
               placeholder="請輸入您註冊時使用的電子郵件"
-              {...register("email", {
-                required: "請輸入電子郵件",
+              {...register('email', {
+                required: '請輸入電子郵件',
                 pattern: {
                   value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: "請輸入有效的電子郵件格式",
+                  message: '請輸入有效的電子郵件格式',
                 },
               })}
             />
@@ -521,7 +578,7 @@ const ForgotPasswordForm = memo(
               className="btn btn-primary"
               disabled={isLoading}
             >
-              {isLoading ? "發送中..." : "發送重設密碼連結"}
+              {isLoading ? '發送中...' : '發送重設密碼連結'}
             </button>
           </div>
         </form>
@@ -530,7 +587,7 @@ const ForgotPasswordForm = memo(
   }
 );
 
-ForgotPasswordForm.displayName = "ForgotPasswordForm";
+ForgotPasswordForm.displayName = 'ForgotPasswordForm';
 ForgotPasswordForm.propTypes = {
   form: PropTypes.object.isRequired,
   submitError: PropTypes.string,
@@ -542,13 +599,8 @@ ForgotPasswordForm.propTypes = {
 // 註冊表單子組件 - 更新以使用 React Hook Form
 const RegisterForm = memo(
   ({ form, submitError, isLoading, isEmailChecking, onSubmit }) => {
-    const {
-      register,
-      handleSubmit,
-      formState: { errors },
-      watch,
-    } = form;
-    const password = watch("password");
+    const { register, handleSubmit, errors, watch } = form;
+    const password = watch('password');
 
     return (
       <div className="tab-pane fade show active">
@@ -563,12 +615,12 @@ const RegisterForm = memo(
             <input
               type="text"
               className={`form-control bg-white ${
-                errors.username ? "is-invalid" : ""
+                errors.username ? 'is-invalid' : ''
               }`}
               id="username"
               placeholder="請輸入您的姓名"
-              {...register("username", {
-                required: "請輸入姓名",
+              {...register('username', {
+                required: '請輸入姓名',
               })}
             />
             {errors.username && (
@@ -583,15 +635,15 @@ const RegisterForm = memo(
               <input
                 type="email"
                 className={`form-control bg-white ${
-                  errors.email ? "is-invalid" : ""
+                  errors.email ? 'is-invalid' : ''
                 }`}
                 id="registerEmail"
                 placeholder="請輸入您的電子郵件"
-                {...register("email", {
-                  required: "請輸入電子郵件",
+                {...register('email', {
+                  required: '請輸入電子郵件',
                   pattern: {
                     value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: "請輸入有效的電子郵件格式",
+                    message: '請輸入有效的電子郵件格式',
                   },
                 })}
               />
@@ -620,15 +672,15 @@ const RegisterForm = memo(
             <input
               type="password"
               className={`form-control bg-white ${
-                errors.password ? "is-invalid" : ""
+                errors.password ? 'is-invalid' : ''
               }`}
               id="registerPassword"
               placeholder="請設定您的密碼"
-              {...register("password", {
-                required: "請輸入密碼",
+              {...register('password', {
+                required: '請輸入密碼',
                 minLength: {
                   value: 8,
-                  message: "密碼長度至少需要8個字元",
+                  message: '密碼長度至少需要8個字元',
                 },
               })}
             />
@@ -643,13 +695,13 @@ const RegisterForm = memo(
             <input
               type="password"
               className={`form-control bg-white ${
-                errors.confirmPassword ? "is-invalid" : ""
+                errors.confirmPassword ? 'is-invalid' : ''
               }`}
               id="confirmPassword"
               placeholder="請再次輸入密碼"
-              {...register("confirmPassword", {
-                required: "請確認密碼",
-                validate: (value) => value === password || "密碼不一致",
+              {...register('confirmPassword', {
+                required: '請確認密碼',
+                validate: (value) => value === password || '密碼不一致',
               })}
             />
             {errors.confirmPassword && (
@@ -677,10 +729,10 @@ const RegisterForm = memo(
               disabled={
                 isLoading ||
                 isEmailChecking ||
-                errors.email?.message?.includes("已被註冊")
+                errors.email?.message?.includes('已被註冊')
               }
             >
-              {isLoading ? "註冊中..." : "註冊"}
+              {isLoading ? '註冊中...' : '註冊'}
             </button>
           </div>
         </form>
@@ -689,7 +741,7 @@ const RegisterForm = memo(
   }
 );
 
-RegisterForm.displayName = "RegisterForm";
+RegisterForm.displayName = 'RegisterForm';
 RegisterForm.propTypes = {
   form: PropTypes.object.isRequired,
   submitError: PropTypes.string,
