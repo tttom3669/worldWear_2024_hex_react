@@ -176,22 +176,25 @@ export default function AdminCoupons() {
               <table className="table table-hover">
                 <thead>
                   <tr>
-                    <th className="text-center" style={{ width: '14%' }}>
+                    <th className="text-center" style={{ width: '16%' }}>
                       折價券編號
                     </th>
                     <th className="text-center" style={{ width: '14%' }}>
                       折價券名稱
                     </th>
-                    <th className="text-center" style={{ width: '14%' }}>
+                    <th className="text-center" style={{ width: '11%' }}>
                       折扣代碼
                     </th>
-                    <th className="text-center" style={{ width: '14%' }}>
+                    <th className="text-center" style={{ width: '11%' }}>
                       折扣百分比 (%)
                     </th>
-                    <th className="text-center" style={{ width: '14%' }}>
+                    <th className="text-center" style={{ width: '11%' }}>
+                      起始日
+                    </th>
+                    <th className="text-center" style={{ width: '11%' }}>
                       到期日
                     </th>
-                    <th className="text-center" style={{ width: '14%' }}>
+                    <th className="text-center" style={{ width: '10%' }}>
                       是否啟用
                     </th>
                     <th className="text-center" style={{ width: '12%' }}>
@@ -208,9 +211,12 @@ export default function AdminCoupons() {
                     .map((coupon) => (
                       <tr key={coupon.id}>
                         <td className="text-center">{coupon.id}</td>
-                        <td className="text-start">{coupon.title}</td>
+                        <td className="text-center">{coupon.title}</td>
                         <td className="text-center">{coupon.code}</td>
                         <td className="text-center">{coupon.percent}</td>
+                        <td className="text-center">
+                          {convertTimestampToDate(coupon.start_date)}
+                        </td>
                         <td className="text-center">
                           {convertTimestampToDate(coupon.due_date)}
                         </td>
@@ -319,6 +325,30 @@ export default function AdminCoupons() {
                           setEditingCoupon({
                             ...editingCoupon,
                             percent: parseInt(e.target.value, 10),
+                          })
+                        }
+                        required
+                      />
+                    </div>
+                    
+                    <div className="mb-3">
+                      <label className="form-label">起始日</label>
+                      <input
+                        type="date"
+                        className="form-control"
+                        value={
+                          editingCoupon?.start_date
+                            ? new Date(editingCoupon.start_date * 1000)
+                                .toISOString()
+                                .split('T')[0]
+                            : ''
+                        }
+                        onChange={(e) =>
+                          setEditingCoupon({
+                            ...editingCoupon,
+                            start_date: Math.floor(
+                              new Date(e.target.value).getTime() / 1000
+                            ),
                           })
                         }
                         required
