@@ -138,6 +138,10 @@ const routes = [
     element: <Login />,
   },
   {
+    path: '/signup',
+    element: <Login />,
+  },
+  {
     path: '*',
     element: <NotFound />,
   },

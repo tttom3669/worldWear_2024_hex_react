@@ -80,9 +80,6 @@ function FrontHeader({ defaultType }) {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-
-    console.log(pathname);
-    
   }, [pathname]); // 依賴 pathname，當路徑改變時觸發
 
   function mainMenuHandler(e) {
@@ -284,7 +281,7 @@ function FrontHeader({ defaultType }) {
                     <li>
                       <Link
                         className="l-menu__link"
-                        to="/login"
+                        to="/signup"
                         state={{ activeTab: 'register' }}
                       >
                         註冊

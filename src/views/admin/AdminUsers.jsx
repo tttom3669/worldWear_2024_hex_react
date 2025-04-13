@@ -58,7 +58,10 @@ export default function AdminUsers() {
         setTempUserData(res.data.find((user) => user.id === tempUserData.id));
       }
     } catch (error) {
-      console.log(error);
+      toastAlert({
+        icon: 'error',
+        title: error?.message || '取得使用者資料失敗',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -80,7 +83,10 @@ export default function AdminUsers() {
         setTempUserData(res.data.find((user) => user.id === tempUserData.id));
       }
     } catch (error) {
-      console.log(error);
+      toastAlert({
+        icon: 'error',
+        title: error?.message || '取得使用者資料失敗',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -122,10 +128,9 @@ export default function AdminUsers() {
       });
       getUser();
     } catch (error) {
-      console.log(error);
       toastAlert({
         icon: 'error',
-        title: '更新失敗',
+        title: error?.message || '更新失敗',
       });
     }
   };

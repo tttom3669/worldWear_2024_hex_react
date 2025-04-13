@@ -36,8 +36,10 @@ export default function Cart() {
       setCouponData(res.data[0]);
     } catch (error) {
       setCouponData({});
-      toastAlert({ icon: 'error', title: '輸入錯誤優惠券代碼' });
-      console.log(error);
+      toastAlert({
+        icon: 'error',
+        title: error || '輸入錯誤優惠券代碼',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +83,10 @@ export default function Cart() {
       toastAlert({ icon: 'success', title: alertTitle });
       getCarts();
     } catch (error) {
-      console.log(error);
+      toastAlert({
+        icon: 'error',
+        title: error.response.data.message || '更新購物車失敗，請稍後再試',
+      });
     } finally {
       setUpdateCartData({
         ...updateCartData,

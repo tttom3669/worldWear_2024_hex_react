@@ -137,8 +137,6 @@ export default function Login() {
         );
 
         if (loginResult.success) {
-          console.log('登入成功，用戶資訊:', loginResult.user);
-
           toastAlert({ icon: 'success', title: '登入成功' });
           navigate('/');
         }

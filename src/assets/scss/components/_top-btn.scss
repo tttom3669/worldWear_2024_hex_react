@@ -30,11 +30,11 @@
     font-size: 24px;
     width: 92px;
   }
-  @include media-breakpoint-up(lg) {
-    bottom: 12.81vw;
-  }
   @include media-breakpoint-up(xl) {
-    right: 10.2vw;
+    bottom: 120px;
+  }
+  @media screen and (min-width: 1660px) {
+    bottom: 12.81vw;
   }
   &__icon {
     display: flex;

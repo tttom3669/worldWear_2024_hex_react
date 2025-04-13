@@ -45,11 +45,14 @@ export default function AdminOrders() {
       setOrderData(res.data);
       setFilterOrderData(res.data);
     } catch (error) {
-      console.log(error);
+      toastAlert({
+        icon: 'error',
+        title: error.response.data.message || '訂單資料載入失敗',
+      });
     } finally {
       setIsLoading(false);
     }
-  }, [token]);
+  }, [token, toastAlert]);
 
   const handlePageChange = useCallback(
     async (page = 1) => {
@@ -64,17 +67,16 @@ export default function AdminOrders() {
           }
         );
         setFilterOrderData(res.data);
-
-        // if (tempUserData.id) {
-        //   setTempUserData(res.data.find((user) => user.id === tempUserData.id));
-        // }
       } catch (error) {
-        console.log(error);
+        toastAlert({
+          icon: 'error',
+          title: error.response.data.message || '訂單資料載入失敗',
+        });
       } finally {
         setIsLoading(false);
       }
     },
-    [token]
+    [token, toastAlert]
   );
   const openModal = (user) => {
     adminOrderModal.current.show();
@@ -104,10 +106,9 @@ export default function AdminOrders() {
       });
       getOrder();
     } catch (error) {
-      console.log(error);
       toastAlert({
         icon: 'error',
-        title: '更新失敗',
+        title: error.response.data.message || '更新失敗',
       });
     }
   };
@@ -129,13 +130,10 @@ export default function AdminOrders() {
 
     const hasMatchingOrder = (order) => {
       const orderDateFormatted = order.orderDate?.split(' ')[0]; // 取 "YYYY/MM/DD"
-      console.log(orderDateFormatted);
-      console.log(orderDate.replace(/-/g, '/'));
       return orderDateFormatted === orderDate.replace(/-/g, '/'); // 格式轉換後比對
     };
 
     const filteredUser = [...orderData].filter((order) => {
-      console.log(hasMatchingOrder(order));
       return (
         (!orderId || new RegExp(orderId, 'i').test(order.id)) &&
         (!orderDate || hasMatchingOrder(order)) &&
