@@ -170,7 +170,11 @@ export default function Cart() {
                                 alt={cart.product.title}
                               />
                               <div className="cart__product-content mb-3 px-lg-3 py-lg-4.5 mb-lg-0">
-                                <p className="mb-lg-4">{cart.product.title}</p>
+                                <Link className='link-black' to={`/product/${cart.product.id}`}>
+                                  <p className="mb-lg-4">
+                                    {cart.product.title}
+                                  </p>
+                                </Link>
                                 <p>
                                   規格：{cart.color}/{cart.size}
                                 </p>

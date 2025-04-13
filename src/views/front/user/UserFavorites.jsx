@@ -1,9 +1,9 @@
-import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import useImgUrl from "../../../hooks/useImgUrl";
-import UserAside from "../../../components/front/UserAside";
-import useSwal from "../../../hooks/useSwal";
+import { useEffect, useState, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import useImgUrl from '../../../hooks/useImgUrl';
+import UserAside from '../../../components/front/UserAside';
+import useSwal from '../../../hooks/useSwal';
 import {
   getFavorites,
   removeFromFavorites,
@@ -11,10 +11,10 @@ import {
   addFavoriteToCart,
   updateFavoriteItemColor,
   updateFavoriteItemSize,
-} from "../../../slice/favoritesSlice";
-import cookieUtils from "../../../components/tools/cookieUtils";
-import ScreenLoading from "../../../components/front/ScreenLoading";
-import { currency } from "../../../components/tools/format";
+} from '../../../slice/favoritesSlice';
+import cookieUtils from '../../../components/tools/cookieUtils';
+import ScreenLoading from '../../../components/front/ScreenLoading';
+import { currency } from '../../../components/tools/format';
 
 export default function UserFavorites() {
   const getImgUrl = useImgUrl();
@@ -109,10 +109,14 @@ export default function UserFavorites() {
           ).unwrap();
         }
       }
+      toastAlert({
+        icon: 'success',
+        title: '已更新數量',
+      });
     } catch (error) {
       toastAlert({
-        icon: "error",
-        title: error.response.data.message || "更新數量失敗，請稍後再試",
+        icon: 'error',
+        title: error?.response?.data?.message || '更新數量失敗，請稍後再試',
       });
     }
   };
@@ -120,9 +124,9 @@ export default function UserFavorites() {
   const handleDeleteItem = async (favoriteId) => {
     try {
       const result = await modalAlert({
-        title: "移除收藏",
-        text: "確定要移除此收藏項目嗎？",
-        icon: "warning",
+        title: '移除收藏',
+        text: '確定要移除此收藏項目嗎？',
+        icon: 'warning',
         showCancel: true,
       });
 
@@ -148,11 +152,11 @@ export default function UserFavorites() {
         await dispatch(removeFromFavorites(item.id)).unwrap();
       }
 
-      toastAlert({ icon: "success", title: "已從收藏列表中移除" });
+      toastAlert({ icon: 'success', title: '已從收藏列表中移除' });
     } catch (error) {
       toastAlert({
-        icon: "error",
-        title: error.response.data.message || "移除失敗，請稍後再試",
+        icon: 'error',
+        title: error?.response?.data?.message || '移除失敗，請稍後再試',
       });
     }
   };
@@ -161,8 +165,8 @@ export default function UserFavorites() {
   const handleAddToCart = async (favorite) => {
     try {
       if (!cookieUtils.isUserLoggedIn()) {
-        toastAlert({ icon: "warning", title: "請先登入" });
-        navigate("/login");
+        toastAlert({ icon: 'warning', title: '請先登入' });
+        navigate('/login');
         return;
       }
 
@@ -189,11 +193,11 @@ export default function UserFavorites() {
       // 使用 Redux action 加入購物車
       await dispatch(addFavoriteToCart(cartItem)).unwrap();
 
-      toastAlert({ icon: "success", title: "已加入購物車" });
+      toastAlert({ icon: 'success', title: '已加入購物車' });
     } catch (error) {
       toastAlert({
-        icon: "error",
-        title: error.response.data.message || "加入購物車失敗，請稍後再試",
+        icon: 'error',
+        title: error?.response?.data?.message || '加入購物車失敗，請稍後再試',
       });
     }
   };
@@ -206,10 +210,10 @@ export default function UserFavorites() {
         updateFavoriteItemColor({ id: favoriteId, color: newColor })
       ).unwrap();
 
-      toastAlert({ icon: "success", title: "已更新顏色" });
+      toastAlert({ icon: 'success', title: '已更新顏色' });
       // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      toastAlert({ icon: "error", title: "更新顏色失敗，請稍後再試" });
+      toastAlert({ icon: 'error', title: '更新顏色失敗，請稍後再試' });
     }
   };
 
@@ -221,11 +225,11 @@ export default function UserFavorites() {
         updateFavoriteItemSize({ id: favoriteId, size: newSize })
       ).unwrap();
 
-      toastAlert({ icon: "success", title: "已更新尺寸" });
+      toastAlert({ icon: 'success', title: '已更新尺寸' });
     } catch (error) {
       toastAlert({
-        icon: "error",
-        title: error.response.data.message || "更新尺寸失敗，請稍後再試",
+        icon: 'error',
+        title: error?.response?.data?.message || '更新尺寸失敗，請稍後再試',
       });
     }
   };
@@ -295,9 +299,9 @@ export default function UserFavorites() {
                                 <div
                                   className="me-3"
                                   style={{
-                                    width: "108px",
-                                    height: "108px",
-                                    overflow: "hidden",
+                                    width: '108px',
+                                    height: '108px',
+                                    overflow: 'hidden',
                                   }}
                                 >
                                   <img
@@ -305,16 +309,16 @@ export default function UserFavorites() {
                                     src={
                                       favorite.product?.imageUrl ||
                                       favorite.product?.image ||
-                                      "https://placehold.co/108x108?text=No+Image"
+                                      'https://placehold.co/108x108?text=No+Image'
                                     }
-                                    alt={favorite.product?.title || "產品圖片"}
+                                    alt={favorite.product?.title || '產品圖片'}
                                   />
                                 </div>
-                                <div className="product-title">
+                                <Link to={`/product/${favorite.product.id}`} className="product-title link-black">
                                   {favorite.product?.title ||
                                     favorite.product?.name ||
-                                    "未知產品"}
-                                </div>
+                                    '未知產品'}
+                                </Link>
                               </div>
                             </div>
 
@@ -323,19 +327,19 @@ export default function UserFavorites() {
                               <div className="product-spec gap-6 w-50 w-lg-auto gap-lg-0 me-lg-2">
                                 <select
                                   className="form-select form-select-sm mb-3 mb-lg-2"
-                                  value={favorite.color || ""}
+                                  value={favorite.color || ''}
                                   onChange={(e) =>
                                     handleUpdateColor(
                                       favorite.id,
                                       e.target.value
                                     )
                                   }
-                                  style={{ backgroundColor: "white" }}
-                                  disabled={favorite.id.startsWith("default_")}
+                                  style={{ backgroundColor: 'white' }}
+                                  disabled={favorite.id.startsWith('default_')}
                                 >
                                   <option
                                     value=""
-                                    style={{ backgroundColor: "white" }}
+                                    style={{ backgroundColor: 'white' }}
                                   >
                                     選擇顏色
                                   </option>
@@ -344,7 +348,7 @@ export default function UserFavorites() {
                                       <option
                                         key={`${favorite.productId}-${spec.color}-${index}`}
                                         value={spec.color}
-                                        style={{ backgroundColor: "white" }}
+                                        style={{ backgroundColor: 'white' }}
                                       >
                                         {spec.color}
                                       </option>
@@ -356,7 +360,7 @@ export default function UserFavorites() {
                                         <option
                                           key={`${favorite.productId}-${color}-${index}`}
                                           value={color}
-                                          style={{ backgroundColor: "white" }}
+                                          style={{ backgroundColor: 'white' }}
                                         >
                                           {color}
                                         </option>
@@ -365,54 +369,54 @@ export default function UserFavorites() {
                                 </select>
                                 <select
                                   className="form-select form-select-sm"
-                                  value={favorite.size || ""}
+                                  value={favorite.size || ''}
                                   onChange={(e) =>
                                     handleUpdateSize(
                                       favorite.id,
                                       e.target.value
                                     )
                                   }
-                                  style={{ backgroundColor: "white" }}
+                                  style={{ backgroundColor: 'white' }}
                                 >
                                   <option
                                     value=""
-                                    style={{ backgroundColor: "white" }}
+                                    style={{ backgroundColor: 'white' }}
                                   >
                                     選擇尺寸
                                   </option>
                                   <option
                                     value="XS"
-                                    style={{ backgroundColor: "white" }}
+                                    style={{ backgroundColor: 'white' }}
                                   >
                                     XS
                                   </option>
                                   <option
                                     value="S"
-                                    style={{ backgroundColor: "white" }}
+                                    style={{ backgroundColor: 'white' }}
                                   >
                                     S
                                   </option>
                                   <option
                                     value="M"
-                                    style={{ backgroundColor: "white" }}
+                                    style={{ backgroundColor: 'white' }}
                                   >
                                     M
                                   </option>
                                   <option
                                     value="L"
-                                    style={{ backgroundColor: "white" }}
+                                    style={{ backgroundColor: 'white' }}
                                   >
                                     L
                                   </option>
                                   <option
                                     value="XL"
-                                    style={{ backgroundColor: "white" }}
+                                    style={{ backgroundColor: 'white' }}
                                   >
                                     XL
                                   </option>
                                   <option
                                     value="XXL"
-                                    style={{ backgroundColor: "white" }}
+                                    style={{ backgroundColor: 'white' }}
                                   >
                                     XXL
                                   </option>
@@ -445,14 +449,14 @@ export default function UserFavorites() {
                                       >
                                         <use
                                           href={getImgUrl(
-                                            "/icons/minus.svg#minus"
+                                            '/icons/minus.svg#minus'
                                           )}
                                         />
                                       </svg>
                                     </button>
                                     <span
                                       className="btn border border-dark"
-                                      style={{ width: "42px", cursor: "auto" }}
+                                      style={{ width: '42px', cursor: 'auto' }}
                                     >
                                       {favorite.qty || 1}
                                     </span>
@@ -475,7 +479,7 @@ export default function UserFavorites() {
                                       >
                                         <use
                                           href={getImgUrl(
-                                            "/icons/plus.svg#plus"
+                                            '/icons/plus.svg#plus'
                                           )}
                                         />
                                       </svg>
@@ -491,7 +495,7 @@ export default function UserFavorites() {
                                 NT$
                                 {currency(
                                   favorite.product?.price?.toLocaleString()
-                                ) || "未知"}
+                                ) || '未知'}
                               </div>
                             </div>
 
@@ -499,7 +503,7 @@ export default function UserFavorites() {
                             <div>
                               <div
                                 className="d-flex flex-column"
-                                style={{ gap: "10px" }}
+                                style={{ gap: '10px' }}
                               >
                                 <button
                                   type="button"
@@ -528,7 +532,7 @@ export default function UserFavorites() {
                       您的收藏列表目前沒有商品
                     </div>
                     <button
-                      onClick={() => navigate("/")}
+                      onClick={() => navigate('/')}
                       className="btn btn-primary mt-3"
                     >
                       繼續逛逛
