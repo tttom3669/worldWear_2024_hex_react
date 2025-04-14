@@ -13,6 +13,7 @@ const AddressForm = ({ register, errors, defaultRegion, defaultCounty }) => {
     const county = e.target.value;
     setSelectedCounty(county);
   };
+
   const handleRegionChange = (region) => {
     const filterRegion = regions.find((item) => item.name === region);
     setSelectedRegion(filterRegion); // 重置區域
@@ -58,7 +59,7 @@ const AddressForm = ({ register, errors, defaultRegion, defaultCounty }) => {
     <>
       <div className="d-flex flex-column align-items-start gap-md-6 flex-md-row ">
         <label htmlFor="address" className="form-label fw-bold">
-          宅配地址
+          宅配地址*
         </label>
         <div className="userInfo__col d-flex flex-column gap-2">
           <div className="userInfo__col d-flex gap-3">
@@ -101,7 +102,7 @@ const AddressForm = ({ register, errors, defaultRegion, defaultCounty }) => {
           <div className="userInfo__col">
             <input
               type="text"
-              className={`form-control ${errors.address && 'is-invalid'}`}
+              className={`form-control ${errors?.address && 'is-invalid'}`}
               id="address"
               placeholder="請輸入地址"
               {...register('address', {

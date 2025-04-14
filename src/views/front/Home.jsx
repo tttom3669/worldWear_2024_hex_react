@@ -17,14 +17,17 @@ import useImgUrl from '../../hooks/useImgUrl';
 import FrontHeader from '../../components/front/FrontHeader';
 import { productCategories as productCategoriesData } from '../../slice/productsSlice';
 import { Link } from 'react-router-dom';
+import SpinnerLoading from '../../components/front/SpinnerLoading';
 const { VITE_API_PATH: API_PATH } = import.meta.env;
 
 export default function Home() {
   const productCategories = useSelector(productCategoriesData);
   const getImgUrl = useImgUrl();
   const [popularProducts, setPopularProducts] = useState([]);
+  const [coupon, setCoupon] = useState({});
   const tabRef = useRef(null);
   const swiperRefs = useRef({});
+  const [swiperNavState, setSwiperNavState] = useState({});
 
   useEffect(() => {
     new Tab(tabRef.current);
@@ -61,12 +64,40 @@ export default function Home() {
   const handlePrevSlide = (swiperSlug) => {
     swiperRefs.current[swiperSlug].slidePrev();
   };
+  // 更新 Swiper 狀態的函數
+  const updateSwiperNavState = (slug, swiper) => {
+    setSwiperNavState((prevState) => ({
+      ...prevState,
+      [slug]: {
+        isBeginning: swiper.isBeginning,
+        isEnd: swiper.isEnd,
+      },
+    }));
+  };
 
   const getPopularProducts = async () => {
     const res = await axios.get(`${API_PATH}/products`);
     const filterProducts = res.data.filter((product) => product.is_hot);
     setPopularProducts(filterProducts);
   };
+
+  const getCoupon = async () => {
+    const res = await axios.get(`${API_PATH}/coupons`);
+    setCoupon(res.data[0]);
+  };
+
+  const formatDate = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp * 1000);
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}/${month}/${day}`;
+  };
+
+  useEffect(() => {
+    getCoupon();
+  }, []);
 
   return (
     <>
@@ -78,31 +109,37 @@ export default function Home() {
             className="w-100 h-50 w-md-50 h-md-100 bg-center bg-no-repeat bg-cover text-white d-flex justify-content-center align-items-end pb-10 pb-lg-20"
             style={{
               backgroundImage: `url(${getImgUrl(
-                '/images/home/index-banner-l.png'
+                '/images/home/index-banner-l.webp'
               )})`,
             }}
           >
-            <div className="d-flex flex-column text-center position-relative z-1">
+            <Link
+              to="products/women"
+              className="d-flex flex-column text-center position-relative z-1 site-index__banner-link"
+            >
               <p className="fw-bold tracking-md fs-base fs-md-h6">Shop</p>
               <h2 className="fs-dh2 fs-md-dh1 tracking-md fst-italic font-dm-serif">
                 WOMAN
               </h2>
-            </div>
+            </Link>
           </div>
           <div
             className="w-100 h-50 w-md-50 h-md-100 bg-center bg-no-repeat bg-cover text-white d-flex justify-content-center align-items-end pb-10 pb-lg-20"
             style={{
               backgroundImage: `url(${getImgUrl(
-                '/images/home/index-banner-r.png'
+                '/images/home/index-banner-r.webp'
               )})`,
             }}
           >
-            <div className="d-flex flex-column text-center position-relative z-1">
+            <Link
+              to="products/men"
+              className="d-flex flex-column text-center position-relative z-1 site-index__banner-link"
+            >
               <p className="fw-bold tracking-md fs-base fs-md-h6">Shop</p>
               <h2 className="fs-dh2 fs-md-dh1 tracking-md fst-italic font-dm-serif">
                 MAN
               </h2>
-            </div>
+            </Link>
           </div>
         </div>
 
@@ -113,15 +150,16 @@ export default function Home() {
           >
             <div className="d-flex gap-3 flex-column">
               <h2 className="text-secondary-60  fs-h6 fw-bold text-md-secondary-40 fs-md-h4">
-                {/* 全館三件免運 */}
-                新會員優惠 10% off
+                {coupon.title}
               </h2>
               <h3 className="fs-h1 fst-italic font-dm-serif fw-normal  fs-md-dh2">
-                {/* Free Shipping */}
-                worldWear
+                {coupon.code}
               </h3>
-              <p>2025/01/01-2025/12/31</p>
-              {/* <p className="fs-sm">(不含部份商品)</p> */}
+              <p>
+                {formatDate(coupon.start_date) +
+                  '-' +
+                  formatDate(coupon.due_date)}
+              </p>
             </div>
           </div>
         </section>
@@ -195,99 +233,112 @@ export default function Home() {
           </div>
           <div className="container-sm">
             <div className="tab-content" id="nav-tabContent">
-              {productCategories.map((gender) => (
-                <div
-                  className={`tab-pane fade show ${
-                    gender.slug === 'women' ? 'active' : ''
-                  }`}
-                  id={`nav-${gender.slug}`}
-                  role="tabpanel"
-                  aria-labelledby={`nav-${gender.slug}-tab`}
-                  tabIndex="0"
-                  key={gender.slug}
-                >
-                  <div className="swiper-container swiper__productCategories-container">
-                    <Swiper
-                      className="swiper__productCategories text-white"
-                      modules={[Pagination]}
-                      slidesPerView={1.375}
-                      spaceBetween={24}
-                      breakpoints={{
-                        576: {
-                          slidesPerGroup: 2,
-                          slidesPerView: 2,
-                        },
-                        768: {
-                          slidesPerGroup: 3,
-                          slidesPerView: 3,
-                        },
-                        992: {
-                          slidesPerGroup: 4,
-                          slidesPerView: 4,
-                        },
-                      }}
-                      pagination={{ clickable: true }}
-                      onSwiper={(swiper) => {
-                        swiperRefs.current[gender.slug] = swiper;
-                      }}
-                    >
-                      {gender.categories.map((category) =>
-                        category.slug !== 'product-status' ? (
-                          <SwiperSlide key={category.slug}>
-                            <div
-                              className="swiper__productCategories-item swiper__productCategories-item--dark "
-                              style={{
-                                backgroundImage: `url(${getImgUrl(
-                                  category.imageUrl
-                                )})`,
-                              }}
-                            >
-                              <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
-                                <Link
-                                  to={`/products/${category.slug}`}
-                                  className="text-reset stretched-link"
+              {productCategories.length > 0 ? (
+                productCategories.map((gender) => (
+                  <div
+                    className={`tab-pane fade show ${
+                      gender.slug === 'women' ? 'active' : ''
+                    }`}
+                    id={`nav-${gender.slug}`}
+                    role="tabpanel"
+                    aria-labelledby={`nav-${gender.slug}-tab`}
+                    tabIndex="0"
+                    key={gender.slug}
+                  >
+                    <div className="swiper-container swiper__productCategories-container">
+                      <div className="overflow-hidden pb-12">
+                        <Swiper
+                          className="swiper__productCategories text-white"
+                          modules={[Pagination]}
+                          slidesPerView={1.375}
+                          spaceBetween={24}
+                          breakpoints={{
+                            576: {
+                              slidesPerGroup: 2,
+                              slidesPerView: 2,
+                            },
+                            768: {
+                              slidesPerGroup: 3,
+                              slidesPerView: 3,
+                            },
+                            992: {
+                              slidesPerGroup: 4,
+                              slidesPerView: 4,
+                            },
+                          }}
+                          pagination={{ clickable: true }}
+                          onSwiper={(swiper) => {
+                            swiperRefs.current[gender.slug] = swiper;
+                          }}
+                          onSlideChange={(swiper) => {
+                            updateSwiperNavState(gender.slug, swiper);
+                          }}
+                        >
+                          {gender.categories.map((category) =>
+                            category.slug !== 'product-status' ? (
+                              <SwiperSlide key={category.slug}>
+                                <div
+                                  className="swiper__productCategories-item swiper__productCategories-item--dark "
+                                  style={{
+                                    backgroundImage: `url(${getImgUrl(
+                                      category.imageUrl
+                                    )})`,
+                                  }}
                                 >
-                                  <h2 className="fs-sm fs-md-h6 fw-bold">
-                                    {category.title}
-                                  </h2>
-                                </Link>
-                                <h3
-                                  className={`${
-                                    category.slug !== 'accessories'
-                                      ? 'fs-dh2 fs-md-dh1'
-                                      : 'fs-h2 fs-md-h1'
-                                  } fst-italic fw-normal font-dm-serif`}
-                                >
-                                  {category.slug[0].toUpperCase() +
-                                    category.slug.slice(1)}
-                                </h3>
-                              </div>
-                            </div>
-                          </SwiperSlide>
-                        ) : (
-                          ''
-                        )
-                      )}
-                    </Swiper>
-                    <div
-                      className="swiper-button-prev"
-                      onClick={() => handlePrevSlide(gender.slug)}
-                    >
-                      <svg className="pe-none" width="18" height="32">
-                        <use href={getImgUrl('/icons/prev.svg#prev')}></use>
-                      </svg>
-                    </div>
-                    <div
-                      className="swiper-button-next"
-                      onClick={() => handleNextSlide(gender.slug)}
-                    >
-                      <svg className="pe-none" width="18" height="32">
-                        <use href={getImgUrl('/icons/next.svg#next')}></use>
-                      </svg>
+                                  <div className="pb-7 text-center d-flex flex-column justify-content-end h-100">
+                                    <Link
+                                      to={`/products/${category.slug}`}
+                                      className="text-reset stretched-link"
+                                    >
+                                      <h2 className="fs-sm fs-md-h6 fw-bold">
+                                        {category.title}
+                                      </h2>
+                                    </Link>
+                                    <h3
+                                      className={`fs-h1 fs-xl-dh2 fs-xxl-dh1 fst-italic fw-normal font-dm-serif`}
+                                    >
+                                      {category.slug[0].toUpperCase() +
+                                        category.slug.slice(1)}
+                                    </h3>
+                                  </div>
+                                </div>
+                              </SwiperSlide>
+                            ) : (
+                              ''
+                            )
+                          )}
+                        </Swiper>
+                      </div>
+                      <div
+                        className={`swiper-button-prev ${
+                          swiperNavState[gender.slug]?.isBeginning
+                            ? 'text-nature-95 pe-none'
+                            : ''
+                        }`}
+                        onClick={() => handlePrevSlide(gender.slug)}
+                      >
+                        <svg className="pe-none" width="18" height="32">
+                          <use href={getImgUrl('/icons/prev.svg#prev')}></use>
+                        </svg>
+                      </div>
+                      <div
+                        className={`swiper-button-next ${
+                          swiperNavState[gender.slug]?.isEnd
+                            ? 'text-nature-95 pe-none'
+                            : ''
+                        }`}
+                        onClick={() => handleNextSlide(gender.slug)}
+                      >
+                        <svg className="pe-none" width="18" height="32">
+                          <use href={getImgUrl('/icons/next.svg#next')}></use>
+                        </svg>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <SpinnerLoading />
+              )}
             </div>
           </div>
         </section>
@@ -299,64 +350,83 @@ export default function Home() {
         >
           <div className="container-sm">
             <h2 className="fs-h5 fs-md-h2 fw-bold mb-6">熱門商品</h2>
-            <div className="swiper-container swiper__popularProducts-container">
-              <Swiper
-                className="swiper__popularProducts"
-                modules={[Pagination]}
-                slidesPerView={1.375}
-                spaceBetween={24}
-                breakpoints={{
-                  576: {
-                    slidesPerGroup: 2,
-                    slidesPerView: 2,
-                  },
-                  768: {
-                    slidesPerGroup: 3,
-                    slidesPerView: 3,
-                  },
-                }}
-                pagination={{ clickable: true }}
-                onSwiper={(swiper) => {
-                  swiperRefs.current['popularProducts'] = swiper;
-                }}
-              >
-                {' '}
-                {popularProducts.map((product) => (
-                  <SwiperSlide className="position-relative" key={product.id}>
-                    <img
-                      className="w-100 img-fluid object-fit-cover mb-3"
-                      src={product.imageUrl}
-                      alt={product.title}
-                    />
-                    <Link
-                      to={`/product/${product.id}`}
-                      className="stretched-link link-black"
-                    >
-                      <h3 className="d-flex flex-column gap-0 gap-md-1 tracking-sm fs-sm fs-md-base lh-base fw-normal">
-                        <span>{product.title}</span>
-                        <span>{product.categoryItems}</span>
-                      </h3>
-                    </Link>
-                  </SwiperSlide>
-                ))}
-              </Swiper>
-              <div
-                className="swiper-button-prev"
-                onClick={() => handlePrevSlide('popularProducts')}
-              >
-                <svg className="pe-none" width="18" height="32">
-                  <use href={getImgUrl('/icons/prev.svg#prev')}></use>
-                </svg>
+            {popularProducts.length > 0 ? (
+              <div className="swiper-container swiper__popularProducts-container">
+                <div className="overflow-hidden pb-12">
+                  <Swiper
+                    className="swiper__popularProducts"
+                    modules={[Pagination]}
+                    slidesPerView={1.375}
+                    spaceBetween={24}
+                    breakpoints={{
+                      576: {
+                        slidesPerGroup: 2,
+                        slidesPerView: 2,
+                      },
+                      768: {
+                        slidesPerGroup: 3,
+                        slidesPerView: 3,
+                      },
+                    }}
+                    pagination={{ clickable: true }}
+                    onSwiper={(swiper) => {
+                      swiperRefs.current['popularProducts'] = swiper;
+                    }}
+                    onSlideChange={(swiper) => {
+                      updateSwiperNavState('popularProducts', swiper);
+                    }}
+                  >
+                    {popularProducts.map((product) => (
+                      <SwiperSlide
+                        className="position-relative"
+                        key={product.id}
+                      >
+                        <img
+                          className="w-100 img-fluid object-fit-cover mb-3"
+                          src={product.imageUrl}
+                          alt={product.title}
+                        />
+                        <Link
+                          to={`/product/${product.id}`}
+                          className="stretched-link link-black"
+                        >
+                          <h3 className="d-flex flex-column gap-0 gap-md-1 tracking-sm fs-sm fs-md-base lh-base fw-normal">
+                            <span>{product.title}</span>
+                            <span>{product.categoryItems}</span>
+                          </h3>
+                        </Link>
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
+                  <div
+                    className={`swiper-button-prev ${
+                      swiperNavState.popularProducts?.isBeginning
+                        ? 'text-nature-95 pe-none'
+                        : ''
+                    }`}
+                    onClick={() => handlePrevSlide('popularProducts')}
+                  >
+                    <svg className="pe-none" width="18" height="32">
+                      <use href={getImgUrl('/icons/prev.svg#prev')}></use>
+                    </svg>
+                  </div>
+                  <div
+                    className={`swiper-button-next ${
+                      swiperNavState.popularProducts?.isEnd
+                        ? 'text-nature-95 pe-none '
+                        : ''
+                    }`}
+                    onClick={() => handleNextSlide('popularProducts')}
+                  >
+                    <svg className="pe-none" width="18" height="32">
+                      <use href={getImgUrl('/icons/next.svg#next')}></use>
+                    </svg>
+                  </div>
+                </div>
               </div>
-              <div
-                className="swiper-button-next"
-                onClick={() => handleNextSlide('popularProducts')}
-              >
-                <svg className="pe-none" width="18" height="32">
-                  <use href={getImgUrl('/icons/next.svg#next')}></use>
-                </svg>
-              </div>
-            </div>
+            ) : (
+              <SpinnerLoading />
+            )}
           </div>
         </section>
 
@@ -383,7 +453,7 @@ export default function Home() {
                 </div>
                 <img
                   className="section__features-img"
-                  src={getImgUrl('/images/home/features-img-1.png')}
+                  src={getImgUrl('/images/home/features-img-1.webp')}
                   alt=""
                 />
               </div>
@@ -403,7 +473,7 @@ export default function Home() {
                 </div>
                 <img
                   className="section__features-img"
-                  src={getImgUrl('/images/home/features-img-2.png')}
+                  src={getImgUrl('/images/home/features-img-2.webp')}
                   alt=""
                 />
               </div>
@@ -423,7 +493,7 @@ export default function Home() {
                 </div>
                 <img
                   className="section__features-img"
-                  src={getImgUrl('/images/home/features-img-3.png')}
+                  src={getImgUrl('/images/home/features-img-3.webp')}
                   alt=""
                 />
               </div>
@@ -445,7 +515,7 @@ export default function Home() {
                     <div className="rounded-circle overflow-hidden w-24px h-24px w-md-40px h-md-40px">
                       <img
                         className="img-fluid object-fit-cover w-100 h-100 d-block"
-                        src={getImgUrl('/images/home/comment-1.png')}
+                        src={getImgUrl('/images/home/comment-1.webp')}
                         alt="comment-1"
                       />
                     </div>
@@ -462,7 +532,7 @@ export default function Home() {
                     <div className="rounded-circle overflow-hidden w-24px h-24px w-md-40px h-md-40px">
                       <img
                         className="img-fluid object-fit-cover w-100 h-100 d-block"
-                        src={getImgUrl('/images/home/comment-2.png')}
+                        src={getImgUrl('/images/home/comment-2.webp')}
                         alt="comment-2"
                       />
                     </div>
@@ -479,7 +549,7 @@ export default function Home() {
                     <div className="rounded-circle overflow-hidden w-24px h-24px w-md-40px h-md-40px">
                       <img
                         className="img-fluid object-fit-cover w-100 h-100 d-block"
-                        src={getImgUrl('/images/home/comment-3.png')}
+                        src={getImgUrl('/images/home/comment-3.webp')}
                         alt="comment-3"
                       />
                     </div>
@@ -496,7 +566,7 @@ export default function Home() {
                     <div className="rounded-circle overflow-hidden w-24px h-24px w-md-40px h-md-40px">
                       <img
                         className="img-fluid object-fit-cover w-100 h-100 d-block"
-                        src={getImgUrl('/images/home/comment-4.png')}
+                        src={getImgUrl('/images/home/comment-4.webp')}
                         alt="comment-4"
                       />
                     </div>

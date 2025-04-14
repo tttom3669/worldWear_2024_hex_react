@@ -1,9 +1,9 @@
-import { useEffect, useRef } from 'react';
-import { useSelector } from 'react-redux';
-import { Modal } from 'bootstrap';
-import axios from 'axios';
-import useSwal from '../../hooks/useSwal';
-import PropTypes from 'prop-types';
+import { useEffect, useRef } from "react";
+import { useSelector } from "react-redux";
+import { Modal } from "bootstrap";
+import axios from "axios";
+import useSwal from "../../hooks/useSwal";
+import PropTypes from "prop-types";
 
 const { VITE_API_PATH: API_PATH } = import.meta.env;
 
@@ -47,14 +47,28 @@ const DeleteProductModal = ({
         },
       });
       toastAlert({
-        icon: 'success',
-        title: '刪除產品成功',
+        icon: "success",
+        title: "刪除產品成功",
       });
     } catch (error) {
-      console.error(error);
+      // 檢查是否有中文錯誤訊息
+      let errorMessage = "刪除產品失敗";
+
+      // 檢查 response 中是否有中文錯誤訊息
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        // 如果沒有中文錯誤訊息，則使用錯誤原因
+        errorMessage = `${errorMessage}：${error.message}`;
+      }
+
       toastAlert({
         icon: "error",
-        title: "刪除產品失敗",
+        title: errorMessage,
       });
     }
   };
@@ -65,7 +79,7 @@ const DeleteProductModal = ({
       getProducts();
       handleCloseDelProductModal();
     } catch (error) {
-      console.error(error);
+      throw new Error(`刪除商品操作失敗: ${error.message}`);
     }
   };
 
@@ -77,7 +91,7 @@ const DeleteProductModal = ({
         id="delProductModal"
         tabIndex="-1"
         aria-hidden="true"
-        style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+        style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
       >
         <div className="modal-dialog">
           <div className="modal-content">

@@ -4,8 +4,7 @@ import cookieUtils from '../../components/tools/cookieUtils';
 import { convertTimestampToDate } from '../../components/tools/dateUtils';
 import Pagination from '../../components/layouts/Pagination';
 
-
-export default function AdminCoupons()  {
+export default function AdminCoupons() {
   const { toastAlert } = useSwal();
   const [coupons, setCoupons] = useState([]);
   const [searchText, setSearchText] = useState('');
@@ -28,10 +27,9 @@ export default function AdminCoupons()  {
       const couponsData = Array.isArray(response.data) ? response.data : [];
       setCoupons(couponsData);
     } catch (error) {
-      console.error('取得折價券列表失敗:', error);
       toastAlert({
         icon: 'error',
-        title: '取得折價券列表失敗',
+        title: error.message || '取得折價券列表失敗',
       });
       setCoupons([]);
     } finally {
@@ -47,16 +45,16 @@ export default function AdminCoupons()  {
   // 搜尋功能
   const filteredCoupons = (coupons || []).filter((coupon) => {
     if (!coupon) return false;
-  
+
     const matchesText = searchText
       ? coupon.id?.toLowerCase()?.includes(searchText.toLowerCase()) ||
         coupon.title?.toLowerCase()?.includes(searchText.toLowerCase())
       : true;
-  
+
     const matchesStatus = searchStatus
       ? coupon.is_enabled === (searchStatus === '已啟用')
       : true;
-  
+
     return matchesText && matchesStatus;
   });
 
@@ -92,10 +90,9 @@ export default function AdminCoupons()  {
       const productsData = Array.isArray(response.data) ? response.data : [];
       setCoupons(productsData);
     } catch (error) {
-      console.error('操作失敗:', error);
       toastAlert({
         icon: 'error',
-        title: '操作失敗',
+        title: error.message || '操作失敗',
       });
     }
   };
@@ -114,10 +111,9 @@ export default function AdminCoupons()  {
       const couponsData = Array.isArray(response.data) ? response.data : [];
       setCoupons(couponsData);
     } catch (error) {
-      console.error('刪除失敗:', error);
       toastAlert({
         icon: 'error',
-        title: '刪除失敗',
+        title: error.message || '刪除失敗',
       });
     }
   };
@@ -180,22 +176,25 @@ export default function AdminCoupons()  {
               <table className="table table-hover">
                 <thead>
                   <tr>
-                    <th className="text-center" style={{ width: '14%' }}>
+                    <th className="text-center" style={{ width: '16%' }}>
                       折價券編號
                     </th>
                     <th className="text-center" style={{ width: '14%' }}>
                       折價券名稱
                     </th>
-                    <th className="text-center" style={{ width: '14%' }}>
+                    <th className="text-center" style={{ width: '11%' }}>
                       折扣代碼
                     </th>
-                    <th className="text-center" style={{ width: '14%' }}>
+                    <th className="text-center" style={{ width: '11%' }}>
                       折扣百分比 (%)
                     </th>
-                    <th className="text-center" style={{ width: '14%' }}>
+                    <th className="text-center" style={{ width: '11%' }}>
+                      起始日
+                    </th>
+                    <th className="text-center" style={{ width: '11%' }}>
                       到期日
                     </th>
-                    <th className="text-center" style={{ width: '14%' }}>
+                    <th className="text-center" style={{ width: '10%' }}>
                       是否啟用
                     </th>
                     <th className="text-center" style={{ width: '12%' }}>
@@ -212,11 +211,18 @@ export default function AdminCoupons()  {
                     .map((coupon) => (
                       <tr key={coupon.id}>
                         <td className="text-center">{coupon.id}</td>
-                        <td className="text-start">{coupon.title}</td>
+                        <td className="text-center">{coupon.title}</td>
                         <td className="text-center">{coupon.code}</td>
                         <td className="text-center">{coupon.percent}</td>
-                        <td className="text-center">{convertTimestampToDate(coupon.due_date)}</td>
-                        <td className="text-center">{coupon.is_enabled ? '已啟用' : '未啟用'}</td>
+                        <td className="text-center">
+                          {convertTimestampToDate(coupon.start_date)}
+                        </td>
+                        <td className="text-center">
+                          {convertTimestampToDate(coupon.due_date)}
+                        </td>
+                        <td className="text-center">
+                          {coupon.is_enabled ? '已啟用' : '未啟用'}
+                        </td>
                         <td className="text-center">
                           <button
                             className="btn btn-sm btn-primary me-2"
@@ -274,105 +280,142 @@ export default function AdminCoupons()  {
                   ></button>
                 </div>
                 <div className="modal-body">
-                <form onSubmit={handleProductSubmit}>
-  <div className="mb-3">
-    <label className="form-label">折價券名稱</label>
-    <input
-      type="text"
-      className="form-control"
-      value={editingCoupon?.title || ''}
-      onChange={(e) =>
-        setEditingCoupon({ ...editingCoupon, title: e.target.value })
-      }
-      required
-    />
-  </div>
+                  <form onSubmit={handleProductSubmit}>
+                    <div className="mb-3">
+                      <label className="form-label">折價券名稱</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={editingCoupon?.title || ''}
+                        onChange={(e) =>
+                          setEditingCoupon({
+                            ...editingCoupon,
+                            title: e.target.value,
+                          })
+                        }
+                        required
+                      />
+                    </div>
 
-  <div className="mb-3">
-    <label className="form-label">折扣代碼</label>
-    <input
-      type="text"
-      className="form-control"
-      value={editingCoupon?.code || ''}
-      onChange={(e) =>
-        setEditingCoupon({ ...editingCoupon, code: e.target.value })
-      }
-      required
-    />
-  </div>
+                    <div className="mb-3">
+                      <label className="form-label">折扣代碼</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={editingCoupon?.code || ''}
+                        onChange={(e) =>
+                          setEditingCoupon({
+                            ...editingCoupon,
+                            code: e.target.value,
+                          })
+                        }
+                        required
+                      />
+                    </div>
 
-  <div className="mb-3">
-    <label className="form-label">折扣百分比 (%)</label>
-    <input
-      type="number"
-      className="form-control"
-      min="1"
-      max="100"
-      value={editingCoupon?.percent || ''}
-      onChange={(e) =>
-        setEditingCoupon({
-          ...editingCoupon,
-          percent: parseInt(e.target.value, 10),
-        })
-      }
-      required
-    />
-  </div>
+                    <div className="mb-3">
+                      <label className="form-label">折扣百分比 (%)</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        min="1"
+                        max="100"
+                        value={editingCoupon?.percent || ''}
+                        onChange={(e) =>
+                          setEditingCoupon({
+                            ...editingCoupon,
+                            percent: parseInt(e.target.value, 10),
+                          })
+                        }
+                        required
+                      />
+                    </div>
+                    
+                    <div className="mb-3">
+                      <label className="form-label">起始日</label>
+                      <input
+                        type="date"
+                        className="form-control"
+                        value={
+                          editingCoupon?.start_date
+                            ? new Date(editingCoupon.start_date * 1000)
+                                .toISOString()
+                                .split('T')[0]
+                            : ''
+                        }
+                        onChange={(e) =>
+                          setEditingCoupon({
+                            ...editingCoupon,
+                            start_date: Math.floor(
+                              new Date(e.target.value).getTime() / 1000
+                            ),
+                          })
+                        }
+                        required
+                      />
+                    </div>
 
-  <div className="mb-3">
-    <label className="form-label">到期日</label>
-    <input
-      type="date"
-      className="form-control"
-      value={
-        editingCoupon?.due_date
-          ? new Date(editingCoupon.due_date * 1000).toISOString().split('T')[0]
-          : ''
-      }
-      onChange={(e) =>
-        setEditingCoupon({
-          ...editingCoupon,
-          due_date: Math.floor(new Date(e.target.value).getTime() / 1000),
-        })
-      }
-      required
-    />
-  </div>
+                    <div className="mb-3">
+                      <label className="form-label">到期日</label>
+                      <input
+                        type="date"
+                        className="form-control"
+                        value={
+                          editingCoupon?.due_date
+                            ? new Date(editingCoupon.due_date * 1000)
+                                .toISOString()
+                                .split('T')[0]
+                            : ''
+                        }
+                        onChange={(e) =>
+                          setEditingCoupon({
+                            ...editingCoupon,
+                            due_date: Math.floor(
+                              new Date(e.target.value).getTime() / 1000
+                            ),
+                          })
+                        }
+                        required
+                      />
+                    </div>
 
-  <div className="form-check form-switch mb-3">
-    <input
-      className="form-check-input"
-      type="checkbox"
-      id="isEnabledSwitch"
-      checked={editingCoupon?.is_enabled || false}
-      onChange={(e) =>
-        setEditingCoupon({
-          ...editingCoupon,
-          is_enabled: e.target.checked,
-        })
-      }
-    />
-    <label className="form-check-label" htmlFor="isEnabledSwitch">
-      是否啟用
-    </label>
-  </div>
+                    <div className="form-check form-switch mb-3">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        id="isEnabledSwitch"
+                        checked={editingCoupon?.is_enabled || false}
+                        onChange={(e) =>
+                          setEditingCoupon({
+                            ...editingCoupon,
+                            is_enabled: e.target.checked,
+                          })
+                        }
+                      />
+                      <label
+                        className="form-check-label"
+                        htmlFor="isEnabledSwitch"
+                      >
+                        是否啟用
+                      </label>
+                    </div>
 
-  <div className="text-end">
-    <button
-      type="button"
-      className="btn btn-secondary me-2"
-      onClick={() => {
-        setShowModal(false);
-        setEditingCoupon(null);
-      }}
-    >
-      取消
-    </button>
-    <button type="submit" className="btn btn-primary">
-      確定
-    </button>
-  </div>
-</form>
+                    <div className="text-end">
+                      <button
+                        type="button"
+                        className="btn btn-secondary me-2"
+                        onClick={() => {
+                          setShowModal(false);
+                          setEditingCoupon(null);
+                        }}
+                      >
+                        取消
+                      </button>
+                      <button type="submit" className="btn btn-primary">
+                        確定
+                      </button>
+                    </div>
+                  </form>
                 </div>
               </div>
             </div>
@@ -381,4 +424,4 @@ export default function AdminCoupons()  {
       </div>
     </>
   );
-};
+}

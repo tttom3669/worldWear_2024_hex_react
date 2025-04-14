@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Row } from 'react-bootstrap';
-import { useSearchParams } from 'react-router-dom';
-import useImgUrl from '../../hooks/useImgUrl';
-import PropTypes from 'prop-types';
-
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { Row } from "react-bootstrap";
+import { useSearchParams } from "react-router-dom";
+import useImgUrl from "../../hooks/useImgUrl";
+import PropTypes from "prop-types";
 
 const Pagination = ({
   data,
@@ -25,9 +24,17 @@ const Pagination = ({
     setLocalCurrentPage(currentPage);
   }, [currentPage]);
 
+  const updateURLPage = useCallback(
+    (page) => {
+      searchParams.set("page", page);
+      setSearchParams(searchParams);
+    },
+    [searchParams, setSearchParams]
+  );
+
   // 當 URL 參數變化時更新頁碼
   useEffect(() => {
-    const pageParam = searchParams.get('page');
+    const pageParam = searchParams.get("page");
     if (pageParam) {
       const pageNumber = parseInt(pageParam, 10);
       if (
@@ -46,13 +53,14 @@ const Pagination = ({
       // 如果沒有頁碼參數但 localCurrentPage 不是第一頁，更新 URL
       updateURLPage(localCurrentPage);
     }
-  }, [searchParams, pages, currentPage, localCurrentPage]);
-
-  // 更新 URL 中的頁碼
-  const updateURLPage = (page) => {
-    searchParams.set('page', page);
-    setSearchParams(searchParams);
-  };
+  }, [
+    searchParams,
+    pages,
+    currentPage,
+    localCurrentPage,
+    setCurrentPage,
+    updateURLPage,
+  ]);
 
   const goToNextPage = () => {
     if (localCurrentPage < pages) {
@@ -121,7 +129,7 @@ const Pagination = ({
             aria-label="前一頁"
           >
             <svg width="10" height="19">
-              <use href={getImgUrl('/icons/prev.svg#prev')}></use>
+              <use href={getImgUrl("/icons/prev.svg#prev")}></use>
             </svg>
           </button>
 
@@ -131,10 +139,10 @@ const Pagination = ({
               onClick={() => changePage(item)}
               className={`btn mx-1 ${
                 localCurrentPage === item
-                  ? 'btn-primary'
-                  : 'btn-outline-primary'
+                  ? "btn-primary"
+                  : "btn-outline-primary"
               }`}
-              aria-current={localCurrentPage === item ? 'page' : undefined}
+              aria-current={localCurrentPage === item ? "page" : undefined}
               aria-label={`第 ${item} 頁`}
             >
               {item}
@@ -148,7 +156,7 @@ const Pagination = ({
             aria-label="下一頁"
           >
             <svg width="10" height="19">
-              <use href={getImgUrl('/icons/next.svg#next')}></use>
+              <use href={getImgUrl("/icons/next.svg#next")}></use>
             </svg>
           </button>
         </div>

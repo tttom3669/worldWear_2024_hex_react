@@ -3,7 +3,7 @@ import FormTitle from '../../../components/front/FormTitle';
 import UserAside from '../../../components/front/UserAside';
 import ScreenLoading from '../../../components/front/ScreenLoading';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export default function UserOrder() {
   const getImgUrl = useImgUrl();
@@ -11,7 +11,7 @@ export default function UserOrder() {
   const [orderData, setOrderData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const getOrder = async () => {
+  const getOrder = useCallback(async () => {
     try {
       setIsLoading(true);
       const userId =
@@ -29,16 +29,19 @@ export default function UserOrder() {
           Authorization: `Bearer ${token}`,
         },
       });
+
       setOrderData(res.data);
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      console.log(error);
+      setIsLoading(false);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [API_PATH]);
+
   useEffect(() => {
     getOrder();
-  }, []);
+  }, [getOrder]);
   return (
     <>
       <title>查詢訂單 - WorldWear</title>
@@ -216,10 +219,43 @@ export default function UserOrder() {
                                         {order.invoiceInfo.invoiceType}
                                       </span>
                                     </div>
-                                    <div className="d-flex gap-1">
-                                      <span>發票載具 : </span>
-                                      <span>{order.invoiceInfo.carrier}</span>
-                                    </div>
+                                    {order.invoiceInfo.invoiceType ===
+                                      '電子發票' && (
+                                      <div className="d-flex gap-1">
+                                        <span className="text-nowrap">
+                                          發票載具 :
+                                        </span>
+                                        <span>{order.invoiceInfo.carrier}</span>
+                                      </div>
+                                    )}
+                                    {order.invoiceInfo.invoiceType ===
+                                      '電子發票' &&
+                                      order.invoiceInfo.carrier ===
+                                        '手機條碼載具' && (
+                                        <div className="d-flex gap-1">
+                                          <span>手機條碼 :</span>
+                                          <span>
+                                            {order.invoiceInfo.athleteBarcode}
+                                          </span>
+                                        </div>
+                                      )}
+                                    {order.invoiceInfo.invoiceType ===
+                                      '統編發票' && (
+                                      <>
+                                        <div className="d-flex gap-1">
+                                          <span> 公司抬頭 :</span>
+                                          <span>
+                                            {order.invoiceInfo.companyTitle}
+                                          </span>
+                                        </div>
+                                        <div className="d-flex gap-1">
+                                          <span> 公司統編 :</span>
+                                          <span>
+                                            {order.invoiceInfo.companyId}
+                                          </span>
+                                        </div>
+                                      </>
+                                    )}
                                   </li>
                                 </ul>
                               </div>

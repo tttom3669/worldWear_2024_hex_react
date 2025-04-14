@@ -12,14 +12,19 @@ $brand-orange-dark: #c88119;
 // 移除舊的變數，只保留需要的狀態變數
 $status-default-bg: rgba(255, 185, 98, 0.8);
 $status-preorder-bg: rgba(241, 78, 58, 0.7); // 預購標籤（紅色系）
-$status-instock-bg: rgba(255, 185, 98, 0.8);  // 現貨標籤（黃色系）
-$status-restock-bg: rgba(87, 86, 86, 0.6);  //rgba(147, 144, 143, 0.7);  // 補貨中標籤（灰色系）
+$status-instock-bg: rgba(255, 185, 98, 0.8); // 現貨標籤（黃色系）
+$status-restock-bg: rgba(
+  87,
+  86,
+  86,
+  0.6
+); //rgba(147, 144, 143, 0.7);  // 補貨中標籤（灰色系）
 
 $text-color: #000;
 $light-gray: #adaaaa;
 $black: #000000;
 $white: #ffffff;
-$accordion-active-bg: #FFDDB9; // 保留但不使用
+$accordion-active-bg: #ffddb9; // 保留但不使用
 
 //============= 產品列表相關樣式 =============//
 // 產品卡片基本樣式
@@ -81,20 +86,20 @@ $accordion-active-bg: #FFDDB9; // 保留但不使用
   // padding: 2px 6px; // 在水平方向提供足夠的內邊距
 }
 
-// 狀態標籤樣式 
+// 狀態標籤樣式
 .status {
   &-default {
     background-color: $status-default-bg;
   }
-  
+
   &-preorder {
     background-color: $status-preorder-bg;
   }
-  
+
   &-instock {
     background-color: $status-instock-bg;
   }
-  
+
   &-restock {
     background-color: $status-restock-bg;
   }
@@ -138,7 +143,8 @@ $accordion-active-bg: #FFDDB9; // 保留但不使用
 
 //============= 收藏按鈕樣式 =============//
 // Common styles for both favorite buttons
-.favorite, .favorite-button {
+.favorite,
+.favorite-button {
   width: $favorite-size;
   height: $favorite-size;
   position: relative;
@@ -179,7 +185,7 @@ $accordion-active-bg: #FFDDB9; // 保留但不使用
   .favorite {
     display: none;
   }
-  
+
   .mobile-favorite-container {
     display: block;
   }
@@ -198,7 +204,6 @@ $accordion-active-bg: #FFDDB9; // 保留但不使用
   .favorite-button.isLike {
     background-color: $like-bg-color;
   }
-  
 }
 
 // Heart icon styles
@@ -303,13 +308,13 @@ $accordion-active-bg: #FFDDB9; // 保留但不使用
 //   --bs-btn-active-color: $white;
 //   --bs-btn-active-bg: $black;
 //   --bs-btn-active-border-color: $black;
-  
+
 //   &.selected {
 //     background-color: $black;
 //     color: $white;
 //     border-color: $black;
 //     font-weight: 500;
-    
+
 //     &:hover, &:focus, &:active {
 //       background-color: $black;
 //       color: $white;
@@ -333,7 +338,7 @@ $accordion-active-bg: #FFDDB9; // 保留但不使用
     &:focus {
       box-shadow: none;
     }
-    
+
     // 展開時添加頂端線，但移除背景色
     &:not(.collapsed) {
       border-top: 1px solid #e0e0e0; // 展開時顯示淺灰色頂端線
@@ -346,7 +351,7 @@ $accordion-active-bg: #FFDDB9; // 保留但不使用
   &-subItem {
     padding: 0.5rem 0 0 0; // 移除底部內邊距
     background-color: white;
-    
+
     .btn-outline-primary {
       font-size: 16px; // 手風琴選單選項文字大小
       margin-bottom: 0.5rem; // 為按鈕添加底部間距
@@ -357,11 +362,11 @@ $accordion-active-bg: #FFDDB9; // 保留但不使用
 /* 無資料類別的樣式 */
 .category-unavailable {
   opacity: 0.7;
-  
+
   .category-button {
     color: #6c757d;
   }
-  
+
   .badge {
     font-size: 0.7em;
     padding: 0.25em 0.5em;
@@ -372,7 +377,7 @@ $accordion-active-bg: #FFDDB9; // 保留但不使用
 .filter-badge {
   display: inline-flex;
   align-items: center;
-  
+
   .badge {
     font-size: 0.75rem;
     padding: 0.35em 0.65em;
@@ -414,7 +419,7 @@ $accordion-active-bg: #FFDDB9; // 保留但不使用
   z-index: 1050;
   display: none;
   background-color: white;
-  
+
   &.show {
     display: block;
   }
@@ -431,45 +436,45 @@ $accordion-active-bg: #FFDDB9; // 保留但不使用
     background-color: white;
     transform: translateX(100%);
     transition: transform 0.3s ease-in-out;
-    
+
     &.show {
       transform: translateX(0);
     }
   }
-  
+
   &-header {
     border-bottom: 1px solid $border-color;
     padding-left: 16px;
     padding-right: 16px;
     min-height: 60px;
-    
+
     .offcanvas-title {
       display: flex;
       align-items: center;
       margin-top: 1rem;
-      
+
       .badge {
         margin-left: 0.5rem;
       }
     }
   }
-  
+
   &-body {
     padding-top: 1rem;
     padding-bottom: 0; /* 減少內容底部的內邊距 */
     padding-left: 16px;
     padding-right: 16px;
   }
-  
+
   &Close {
     border: none;
     color: $text-color;
-    
+
     &:hover {
       background-color: #f1f0f0;
     }
   }
-  
+
   &-backdrop {
     position: absolute;
     top: 0;
@@ -482,13 +487,13 @@ $accordion-active-bg: #FFDDB9; // 保留但不使用
     display: block;
     pointer-events: none;
     transition: opacity 0.15s linear;
-    
+
     &.show {
       opacity: 1;
       pointer-events: auto;
     }
   }
-  
+
   &-cancel-btn {
     width: 65px;
     height: 40px;
@@ -498,7 +503,7 @@ $accordion-active-bg: #FFDDB9; // 保留但不使用
     border: 1px solid #e0e0e0;
     border-radius: 4px;
     background-color: #fff;
-    
+
     &:hover {
       background-color: #f8f8f8;
     }
@@ -508,7 +513,7 @@ $accordion-active-bg: #FFDDB9; // 保留但不使用
 /* Navbar類別樣式 */
 .navCategory {
   background-color: white;
-  
+
   .navbar-brand {
     h6 {
       font-weight: 500;
@@ -520,7 +525,7 @@ $accordion-active-bg: #FFDDB9; // 保留但不使用
     border: none;
     background-color: white;
     margin-bottom: 0; // 移除底部間距
-    
+
     // 第一個項目不需要頂部邊距和頂端線
     &:first-of-type .category-button:not(.collapsed) {
       margin-top: 0;
@@ -537,16 +542,16 @@ $accordion-active-bg: #FFDDB9; // 保留但不使用
       background-color: transparent; // 移除選取時背景色
     }
   }
-  
+
   // 移除展開內容的底部間距
   .accordion-collapse {
     background-color: white;
-    
+
     &.show {
       margin-bottom: 0; // 移除原有的底部間距
     }
   }
-  
+
   .accordion-body {
     background-color: white;
   }
@@ -614,7 +619,7 @@ $accordion-active-bg: #FFDDB9; // 保留但不使用
 /* 清除篩選按鈕 */
 .btn-link {
   text-decoration: none;
-  
+
   &:hover {
     text-decoration: underline;
   }

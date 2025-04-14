@@ -41,8 +41,8 @@ export const getFavorites = createAsyncThunk(
               ...item,
               product: productResponse.data,
             };
+            // eslint-disable-next-line no-unused-vars
           } catch (error) {
-            console.error(`獲取產品 ${item.productId} 失敗:`, error);
             return {
               ...item,
               product: null,
@@ -56,8 +56,6 @@ export const getFavorites = createAsyncThunk(
         products: favoritesWithProducts,
       };
     } catch (error) {
-      console.error('獲取收藏列表失敗:', error);
-
       return rejectWithValue({
         message: '獲取收藏列表失敗，請檢查網絡連接',
         details: error.message,
@@ -65,53 +63,6 @@ export const getFavorites = createAsyncThunk(
     }
   }
 );
-
-// 檢查特定產品是否已收藏
-// export const checkProductFavoriteStatus = createAsyncThunk(
-//   "favorites/checkProductFavoriteStatus",
-//   async (productId, { rejectWithValue }) => {
-//     try {
-//       // 如果用戶未登入，直接返回未收藏狀態
-//       if (!cookieUtils.isUserLoggedIn()) {
-//         return {
-//           productId,
-//           isInFavorites: false,
-//           favoriteItem: null,
-//         };
-//       }
-
-//       const userId = cookieUtils.getUserIdFromCookie();
-
-//       if (!userId) {
-//         return {
-//           productId,
-//           isInFavorites: false,
-//           favoriteItem: null,
-//         };
-//       }
-
-//       // 檢查是否已收藏該產品
-//       const response = await axios.get(
-//         `${API_PATH}/favorites?userId=${userId}&productId=${productId}`
-//       );
-
-//       const isInFavorites = response.data.length > 0;
-//       const favoriteItem = isInFavorites ? response.data[0] : null;
-
-//       return {
-//         productId,
-//         isInFavorites,
-//         favoriteItem: favoriteItem || null,
-//       };
-//     } catch (error) {
-//       console.error("檢查收藏狀態失敗:", error);
-//       return rejectWithValue({
-//         message: "檢查收藏狀態失敗",
-//         details: error.message,
-//       });
-//     }
-//   }
-// );
 
 // 新增收藏項目
 export const addToFavorites = createAsyncThunk(
@@ -140,8 +91,6 @@ export const addToFavorites = createAsyncThunk(
         },
       });
 
-      console.log('新增收藏結果:', response.data);
-
       // 嘗試獲取完整的產品資訊
       const productResponse = await axios.get(
         `${API_PATH}/products/${favoriteItem.productId}`
@@ -152,7 +101,6 @@ export const addToFavorites = createAsyncThunk(
         product: productResponse.data,
       };
     } catch (error) {
-      console.error('添加收藏失敗:', error);
       return rejectWithValue({
         message: '添加收藏失敗，請稍後再試',
         details: error.message,
@@ -168,7 +116,7 @@ export const removeFromFavorites = createAsyncThunk(
     try {
       const token = cookieUtils.getJWTToken();
       // 發送 API 請求刪除收藏
-      await axios.delete(`${API_PATH}/favorites/${id}`,{
+      await axios.delete(`${API_PATH}/favorites/${id}`, {
         headers: {
           Authorization: token,
         },
@@ -176,7 +124,6 @@ export const removeFromFavorites = createAsyncThunk(
 
       return { id };
     } catch (error) {
-      console.error('移除收藏失敗:', error);
       return rejectWithValue({
         message: '移除收藏失敗，請稍後再試',
         details: error.message,
@@ -191,12 +138,21 @@ export const updateFavoriteItemQuantity = createAsyncThunk(
   async ({ id, qty }, { rejectWithValue }) => {
     try {
       // 確保數量至少為1
+      const token = cookieUtils.getJWTToken();
       const validQty = Math.max(1, qty);
 
       // 發送 API 請求更新數量
-      const response = await axios.patch(`${API_PATH}/favorites/${id}`, {
-        qty: validQty,
-      });
+      const response = await axios.patch(
+        `${API_PATH}/favorites/${id}`,
+        {
+          qty: validQty,
+        },
+        {
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
 
       return {
         id,
@@ -204,7 +160,6 @@ export const updateFavoriteItemQuantity = createAsyncThunk(
         ...response.data,
       };
     } catch (error) {
-      console.error('更新收藏項目數量失敗:', error);
       return rejectWithValue({
         message: '更新收藏項目數量失敗，請稍後再試',
         details: error.message,
@@ -242,7 +197,6 @@ export const addFavoriteToCart = createAsyncThunk(
         cartItem: response.data,
       };
     } catch (error) {
-      console.error('加入購物車失敗:', error);
       return rejectWithValue({
         message: '加入購物車失敗，請稍後再試',
         details: error.message,
@@ -256,9 +210,14 @@ export const updateFavoriteItemColor = createAsyncThunk(
   'favorites/updateFavoriteItemColor',
   async ({ id, color }, { rejectWithValue }) => {
     try {
+      const token = cookieUtils.getJWTToken();
       // 發送 API 請求更新顏色
       const response = await axios.patch(`${API_PATH}/favorites/${id}`, {
         color: color,
+      },{
+        headers: {
+          Authorization: token,
+        },
       });
 
       return {
@@ -267,7 +226,6 @@ export const updateFavoriteItemColor = createAsyncThunk(
         ...response.data,
       };
     } catch (error) {
-      console.error('更新收藏項目顏色失敗:', error);
       return rejectWithValue({
         message: '更新收藏項目顏色失敗，請稍後再試',
         details: error.message,
@@ -281,9 +239,14 @@ export const updateFavoriteItemSize = createAsyncThunk(
   'favorites/updateFavoriteItemSize',
   async ({ id, size }, { rejectWithValue }) => {
     try {
+      const token = cookieUtils.getJWTToken();
       // 發送 API 請求更新尺寸
       const response = await axios.patch(`${API_PATH}/favorites/${id}`, {
         size: size,
+      },{
+        headers: {
+          Authorization: token,
+        },
       });
 
       return {
@@ -292,7 +255,6 @@ export const updateFavoriteItemSize = createAsyncThunk(
         ...response.data,
       };
     } catch (error) {
-      console.error('更新收藏項目尺寸失敗:', error);
       return rejectWithValue({
         message: '更新收藏項目尺寸失敗，請稍後再試',
         details: error.message,

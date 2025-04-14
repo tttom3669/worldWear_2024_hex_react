@@ -1,16 +1,17 @@
-import { useState, useEffect, useCallback} from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   addToFavorites,
   removeFromFavorites,
   getFavorites,
-} from '../../slice/favoritesSlice';
-import useSwal from '../../hooks/useSwal';
-import cookieUtils from '../../components/tools/cookieUtils';
-import { store } from '../../store';
-import PropTypes from 'prop-types';
+} from "../../slice/favoritesSlice";
+import useSwal from "../../hooks/useSwal";
+import cookieUtils from "../../components/tools/cookieUtils";
+import { store } from "../../store";
+import PropTypes from "prop-types";
+import { currency } from "../tools/format";
 
 const ProductCard = ({ data }) => {
   const dispatch = useDispatch();
@@ -22,14 +23,17 @@ const ProductCard = ({ data }) => {
 
   const { toastAlert } = useSwal();
 
-  const checkProductFavoriteStatus = useCallback((id) => {
-    const foundProduct = favoriteData.products?.find(
-      (item) => item.productId === id
-    );
-    // 如果找到產品，則返回 true，否則返回 false
-    return !!foundProduct;
-  }, [favoriteData]);
-  
+  const checkProductFavoriteStatus = useCallback(
+    (id) => {
+      const foundProduct = favoriteData.products?.find(
+        (item) => item.productId === id
+      );
+      // 如果找到產品，則返回 true，否則返回 false
+      return !!foundProduct;
+    },
+    [favoriteData]
+  );
+
   useEffect(() => {
     // 使用 cookieUtils 檢查登入狀態
     if (cookieUtils.isUserLoggedIn() && data.id) {
@@ -38,7 +42,6 @@ const ProductCard = ({ data }) => {
     }
   }, [checkProductFavoriteStatus, data.id]);
 
-
   const handleToggleFavorite = async (e) => {
     e.preventDefault();
     e.stopPropagation(); // 停止事件冒泡，防止觸發父元素的連結
@@ -46,15 +49,15 @@ const ProductCard = ({ data }) => {
     // 使用 cookieUtils 檢查登入狀態，與 favoritesSlice.js 保持一致
     if (!cookieUtils.isUserLoggedIn()) {
       toastAlert({
-        icon: 'error',
-        title: '請先登入才能將商品加入收藏',
+        icon: "error",
+        title: "請先登入才能將商品加入收藏",
       });
 
       // 將當前頁面路徑儲存在本地存儲中，以便登入後返回
-      localStorage.setItem('redirectAfterLogin', window.location.pathname);
+      localStorage.setItem("redirectAfterLogin", window.location.pathname);
 
       setTimeout(() => {
-        navigate('/login');
+        navigate("/login");
       }, 3000);
 
       return;
@@ -78,21 +81,21 @@ const ProductCard = ({ data }) => {
         }
 
         toastAlert({
-          icon: 'success',
-          title: '已從收藏中移除',
+          icon: "success",
+          title: "已從收藏中移除",
         });
+        // eslint-disable-next-line no-unused-vars
       } catch (error) {
-        console.error('移除收藏失敗:', error);
         toastAlert({
-          icon: 'error',
-          title: '移除收藏失敗，請稍後再試',
+          icon: "error",
+          title: "移除收藏失敗，請稍後再試",
         });
       }
     } else {
       // 如果未收藏，則添加到收藏
       // 從商品數據中獲取顏色和尺寸
-      const selectedColor = data.color?.[0] || ''; // 使用第一個可用顏色
-      const selectedSize = data.size?.[0] || ''; // 使用第一個可用尺寸
+      const selectedColor = data.color?.[0] || ""; // 使用第一個可用顏色
+      const selectedSize = data.size?.[0] || ""; // 使用第一個可用尺寸
 
       dispatch(
         addToFavorites({
@@ -105,16 +108,15 @@ const ProductCard = ({ data }) => {
         .unwrap()
         .then(() => {
           toastAlert({
-            icon: 'success',
-            title: '已加入收藏',
+            icon: "success",
+            title: "已加入收藏",
           });
           dispatch(getFavorites());
         })
         .catch((error) => {
-          // console.error('加入收藏失敗:', error);
           toastAlert({
-            icon: 'error',
-            title: error.response.data.message || '加入收藏失敗，請稍後再試',
+            icon: "error",
+            title: error.response.data.message || "加入收藏失敗，請稍後再試",
           });
         });
     }
@@ -130,14 +132,14 @@ const ProductCard = ({ data }) => {
   const getStatusClass = () => {
     // 根據 status 值設定對應的標籤樣式
     switch (data.status) {
-      case '預購':
-        return 'status-preorder';
-      case '現貨':
-        return 'status-instock';
-      case '補貨中':
-        return 'status-restock';
+      case "預購":
+        return "status-preorder";
+      case "現貨":
+        return "status-instock";
+      case "補貨中":
+        return "status-restock";
       default:
-        return 'status-default';
+        return "status-default";
     }
   };
 
@@ -150,12 +152,12 @@ const ProductCard = ({ data }) => {
   const getStatusText = () => {
     // 固定的狀態標籤內容
     switch (data.status) {
-      case '預購':
-      case '現貨':
-      case '補貨中':
+      case "預購":
+      case "現貨":
+      case "補貨中":
         return data.status;
       default:
-        return '';
+        return "";
     }
   };
 
@@ -170,12 +172,12 @@ const ProductCard = ({ data }) => {
     >
       <Link
         to={`/product/${data.id}`}
-        className={`productList-card card h-100 ${isHovered ? 'hovered' : ''}`}
+        className={`productList-card card h-100 ${isHovered ? "hovered" : ""}`}
       >
         <div className="img-wrapper-container position-relative">
           <motion.div
             className={`img-wrapper position-relative ${
-              data.status === '補貨中' ? 'mask' : ''
+              data.status === "補貨中" ? "mask" : ""
             }`}
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.3 }}
@@ -185,10 +187,10 @@ const ProductCard = ({ data }) => {
               alt={data.title}
               className="card-img-top"
               animate={{ x: isClicked ? 40 : 0 }}
-              transition={{ type: 'spring', stiffness: 150 }}
+              transition={{ type: "spring", stiffness: 150 }}
               onClick={handleImageClick} // 保留點擊動畫但不阻止導航
             />
-            {data.status === '補貨中' && (
+            {data.status === "補貨中" && (
               <div className="card-img-overlay d-flex align-items-center justify-content-center mt-12">
                 <h2 className="card-title fst-italic font-dm-serif text-white">
                   Sold Out
@@ -214,14 +216,16 @@ const ProductCard = ({ data }) => {
           <div className="mobile-favorite-container">
             <button
               type="button"
-              className={`btn btn favorite-button ${isFavorite ? 'isLike' : ''}`}
-              onClick={handleToggleFavorite} // 這裡已包含 preventDefault 和 stopPropagation
+              className={`btn btn favorite-button -flex justify-content-center align-items-center ${
+                isFavorite ? "isLike" : ""
+              }`}
+              onClick={handleToggleFavorite}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="17"
-                height="17"
-                fill="currentColor"
+                width="16"
+                height="16"
+                fill="#93908F"
                 className="bi bi-heart heartIcon"
                 viewBox="0 0 16 16"
               >
@@ -238,14 +242,14 @@ const ProductCard = ({ data }) => {
             <h5 className="card-title fs-sm fs-lg-base">{data.title}</h5>
             <button
               type="button"
-              className={`btn favorite ${isFavorite ? 'isLike' : ''}`}
+              className={`btn favorite ${isFavorite ? "isLike" : ""}`}
               onClick={handleToggleFavorite}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="17"
                 height="17"
-                fill="currentColor"
+                fill="#93908F"
                 className="bi bi-heart heartIcon"
                 viewBox="0 0 16 16"
               >
@@ -259,11 +263,11 @@ const ProductCard = ({ data }) => {
           <div className="d-flex justify-content-start align-items-center">
             <div>
               <small className="fs-sm fs-lg-base listPrice">
-                <s>${data.origin_price}</s>
+                <s>${currency(data.origin_price)}</s>
               </small>
             </div>
             <p className="fs-sm fs-lg-base fw-bold discountPrice ms-1">
-              ${data.price}
+              ${currency(data.price)}
             </p>
           </div>
         </div>

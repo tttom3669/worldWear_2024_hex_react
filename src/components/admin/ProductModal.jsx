@@ -81,7 +81,7 @@ const ProductModal = ({
 
   const handleModalInputChange = (e) => {
     const { value, name, checked, type } = e.target;
-  
+
     const contentFields = [
       "material_contents",
       "notes",
@@ -90,31 +90,31 @@ const ProductModal = ({
       "design_style",
       "design_introduction",
     ];
-  
+
     // 添加 clean 字段列表
     const cleanFields = ["method1", "method2", "method3", "method4"];
-  
+
     const isContentField = contentFields.includes(name);
     const isCleanField = cleanFields.includes(name);
-  
+
     // 設置輸入值
     const inputValue = type === "checkbox" ? checked : value;
-  
+
     // 使用回呼函式保證可取得最新狀態
     setModalData((prevProduct) => {
       // 創建新的對象，避免直接修改原對象
       const newProduct = { ...prevProduct };
-  
+
       if (isContentField) {
         // 確保 content 對象存在
         newProduct.content = newProduct.content || {};
-        
+
         // 創建 content 的副本來避免直接修改
         newProduct.content = {
           ...newProduct.content,
           [name]: inputValue,
         };
-        
+
         // 特殊處理 design_introduction 字段，同時更新兩種大小寫版本
         if (name === "design_introduction") {
           newProduct.content.design_Introduction = inputValue;
@@ -132,7 +132,7 @@ const ProductModal = ({
       } else {
         // 直接更新最外層屬性
         newProduct[name] = inputValue;
-        
+
         // 特殊處理 description 欄位，並將其同步到 content.design_introduction
         if (name === "description") {
           newProduct.content = newProduct.content || {};
@@ -140,7 +140,7 @@ const ProductModal = ({
           newProduct.content.design_Introduction = inputValue;
         }
       }
-  
+
       return newProduct;
     });
   };
@@ -178,119 +178,110 @@ const ProductModal = ({
     });
   };
 
- //新增商品資料方法
-const createProduct = async () => {
-  try {
-    // 從 num 物件中提取顏色和尺寸
-    const colors = Object.keys(modalData.num || {});
-    const sizes = new Set();
+  //新增商品資料方法
+  const createProduct = async () => {
+    try {
+      // 從 num 物件中提取顏色和尺寸
+      const colors = Object.keys(modalData.num || {});
+      const sizes = new Set();
 
-    // 收集所有尺寸
-    colors.forEach(color => {
-      if (modalData.num && modalData.num[color]) {
-        Object.keys(modalData.num[color]).forEach(size => {
-          sizes.add(size);
-        });
-      }
-    });
+      // 收集所有尺寸
+      colors.forEach((color) => {
+        if (modalData.num && modalData.num[color]) {
+          Object.keys(modalData.num[color]).forEach((size) => {
+            sizes.add(size);
+          });
+        }
+      });
 
-    // 更新要傳送的資料，添加顏色和尺寸陣列
-    const updatedModalData = {
-      ...modalData,
-      color: colors,
-      size: Array.from(sizes),
-      origin_price: Number(modalData.origin_price),
-      price: Number(modalData.price),
-      is_enabled: modalData.is_enabled ? 1 : 0,
-    };
+      // 更新要傳送的資料，添加顏色和尺寸陣列
+      const updatedModalData = {
+        ...modalData,
+        color: colors,
+        size: Array.from(sizes),
+        origin_price: Number(modalData.origin_price),
+        price: Number(modalData.price),
+        is_enabled: modalData.is_enabled ? 1 : 0,
+      };
 
-    await axios.post(
-      `${API_PATH}/admin/products`,
-      updatedModalData,
-      {
+      await axios.post(`${API_PATH}/admin/products`, updatedModalData, {
         headers: {
           authorization: token,
         },
-      }
-    );
+      });
 
-    toastAlert({
-      icon: "success",
-      title: "新增產品成功",
-    });
-    handleCloseProductModal();
-  } catch (error) {
-    console.error(error);
-    toastAlert({
-      icon: "error",
-      title: "新增產品失敗",
-    });
-  }
-};
+      toastAlert({
+        icon: "success",
+        title: "新增產品成功",
+      });
+      handleCloseProductModal();
+    } catch (error) {
+      toastAlert({
+        icon: "error",
+        title: error.response.data.message || "新增產品失敗",
+      });
+    }
+  };
 
-//編輯現有商品資料方法
-const updateProduct = async () => {
-  try {
-    await getProducts(); // 刷新數據
-    
-    // 從 num 物件中提取顏色和尺寸
-    const colors = Object.keys(modalData.num || {});
-    const sizes = new Set();
+  //編輯現有商品資料方法
+  const updateProduct = async () => {
+    try {
+      await getProducts(); // 刷新數據
 
-    // 收集所有尺寸
-    colors.forEach(color => {
-      if (modalData.num && modalData.num[color]) {
-        Object.keys(modalData.num[color]).forEach(size => {
-          sizes.add(size);
-        });
-      }
-    });
+      // 從 num 物件中提取顏色和尺寸
+      const colors = Object.keys(modalData.num || {});
+      const sizes = new Set();
 
-    // 更新要傳送的資料，添加顏色和尺寸陣列
-    const updatedModalData = {
-      ...modalData,
-      color: colors,
-      size: Array.from(sizes),
-      origin_price: Number(modalData.origin_price),
-      price: Number(modalData.price),
-      is_enabled: modalData.is_enabled ? 1 : 0,
-    };
-    
-    await axios.patch(
-      `${API_PATH}/admin/products/${modalData.id}`,
-      updatedModalData,
-      {
-        headers: {
-          authorization: token,
-        },
-      }
-    );
-    toastAlert({
-      icon: "success",
-      title: "修改產品成功",
-    });
-    await getProducts();
-    handleCloseProductModal();
-  } catch (error) {
-    console.error(error);
-    toastAlert({
-      icon: "error",
-      title: "編輯產品失敗",
-    });
-  }
-};
+      // 收集所有尺寸
+      colors.forEach((color) => {
+        if (modalData.num && modalData.num[color]) {
+          Object.keys(modalData.num[color]).forEach((size) => {
+            sizes.add(size);
+          });
+        }
+      });
 
-// 控制商品資料 - 編輯或新增
-const handleUpdateProduct = async () => {
-  const apiCall = modalMode === "create" ? createProduct : updateProduct;
-  try {
+      // 更新要傳送的資料，添加顏色和尺寸陣列
+      const updatedModalData = {
+        ...modalData,
+        color: colors,
+        size: Array.from(sizes),
+        origin_price: Number(modalData.origin_price),
+        price: Number(modalData.price),
+        is_enabled: modalData.is_enabled ? 1 : 0,
+      };
+
+      await axios.patch(
+        `${API_PATH}/admin/products/${modalData.id}`,
+        updatedModalData,
+        {
+          headers: {
+            authorization: token,
+          },
+        }
+      );
+      toastAlert({
+        icon: "success",
+        title: "修改產品成功",
+      });
+      await getProducts();
+      handleCloseProductModal();
+      // eslint-disable-next-line no-unused-vars
+    } catch (error) {
+      toastAlert({
+        icon: "error",
+        title: "編輯產品失敗",
+      });
+    }
+  };
+
+  // 控制商品資料 - 編輯或新增
+  const handleUpdateProduct = async () => {
+    const apiCall = modalMode === "create" ? createProduct : updateProduct;
     await apiCall();
     await getProducts();
     handleCloseProductModal();
-  } catch (error) {
-    console.error(error);
-  }
-};
+  };
 
   // 新增控制自訂輸入框顯示的狀態
   const [showCustomStatusInput, setShowCustomStatusInput] = useState(false);
@@ -901,7 +892,11 @@ const handleUpdateProduct = async () => {
                       產品描述
                     </label>
                     <textarea
-                      value={modalData.description || modalData.content?.design_introduction || ""}
+                      value={
+                        modalData.description ||
+                        modalData.content?.design_introduction ||
+                        ""
+                      }
                       onChange={handleModalInputChange}
                       name="description"
                       id="description"

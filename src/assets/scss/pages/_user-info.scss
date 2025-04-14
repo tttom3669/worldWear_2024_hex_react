@@ -8,22 +8,22 @@
       width: 362px;
       max-width: 362px;
     }
-    &:has(.is-invalid) {
-      .form-control::placeholder {
-        opacity: 0;
-      }
-    }
+    // &:has(.is-invalid) {
+    //   .form-control::placeholder {
+    //     opacity: 0;
+    //   }
+    // }
     .invalid-feedback {
-      margin: 0 !important;
-      position: absolute;
-      left: 8px;
-      top: 50%;
-      transform: translateY(-50%);
+      margin: 2px 0 0 0 !important;
+      // position: absolute;
+      // left: 8px;
+      // top: 50%;
+      // transform: translateY(-50%);
       pointer-events: none;
     }
-    .form-control:focus + .invalid-feedback {
-      opacity: 0.3;
-    }
+    // .form-control:focus + .invalid-feedback {
+    //   opacity: 0.3;
+    // }
   }
   .form-label {
     min-width: 120px;

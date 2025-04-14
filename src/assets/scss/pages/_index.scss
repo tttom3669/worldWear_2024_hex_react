@@ -3,7 +3,6 @@ $header-aside-height: 45px;
 $header-height-mobile: 72px;
 $header-aside-height-mobile: 29px;
 
-
 .site-index {
   &__banner {
     position: relative;
@@ -12,6 +11,14 @@ $header-aside-height-mobile: 29px;
     height: calc(100dvh - $header-aside-height-mobile);
     @include media-breakpoint-up(lg) {
       height: calc(100dvh - $header-aside-height);
+    }
+    &-link {
+      color: $white;
+      transition: all 0.3s;
+      &:hover {
+        color: $nature-95;
+        transform: scale(1.05);
+      }
     }
     & > * {
       position: relative;
@@ -113,7 +120,7 @@ $header-aside-height-mobile: 29px;
       left: 0;
       right: 0;
       bottom: 0;
-      background-image: url('/images/home/activity-bg.png');
+      background-image: url('/images/home/activity-bg.webp');
       background-position: center;
       background-size: cover;
       background-repeat: no-repeat;
@@ -217,80 +224,98 @@ $header-aside-height-mobile: 29px;
     }
   }
 }
-
-.swiper__productCategories {
-  &-item {
-    position: relative;
-    aspect-ratio: 257/360;
-    background-size: cover;
-    background-position: center;
-    @include media-breakpoint-up(md) {
-      aspect-ratio: 306/420;
-    }
-    & > * {
+.swiper__productCategories-container {
+  .swiper__productCategories {
+    overflow: visible;
+    &-item {
       position: relative;
-      z-index: 2;
-    }
-    &::after {
-      position: absolute;
-      content: '';
-      display: block;
-      z-index: 0;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      transition: all 0.3s;
-    }
+      aspect-ratio: 257/360;
+      background-size: cover;
+      background-position: center;
 
-    &--dark,
-    &--shadow {
-      &::before {
+      @include media-breakpoint-up(md) {
+        aspect-ratio: 306/420;
+      }
+      & > * {
+        position: relative;
+        z-index: 2;
+      }
+      &::after {
         position: absolute;
         content: '';
         display: block;
-        z-index: 1;
+        z-index: 0;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
+        transition: all 0.3s;
+      }
+
+      &--dark,
+      &--shadow {
+        &::before {
+          position: absolute;
+          content: '';
+          display: block;
+          z-index: 1;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+        }
+      }
+      &--dark {
+        &::before {
+          background: rgba(0, 0, 0, 0.2);
+        }
+      }
+      &--shadow {
+        &::before {
+          background: linear-gradient(
+            180deg,
+            rgba(0, 0, 0, 0) 0%,
+            rgba(0, 0, 0, 0.6) 100%
+          );
+        }
+      }
+      &:hover {
+        &::after {
+          background: rgba(0, 0, 0, 0.4);
+        }
       }
     }
-    &--dark {
-      &::before {
-        background: rgba(0, 0, 0, 0.2);
-      }
+    .swiper-pagination {
+      position: absolute;
+      height: 8px;
+      top: 100%;
     }
-    &--shadow {
-      &::before {
-        background: linear-gradient(
-          180deg,
-          rgba(0, 0, 0, 0) 0%,
-          rgba(0, 0, 0, 0.6) 100%
-        );
-      }
-    }
-    &:hover {
-      &::after {
-        background: rgba(0, 0, 0, 0.4);
-      }
-    }
+  }
+  .swiper-button-prev,
+  .swiper-button-next {
+    top: calc((100% - 48px) / 2);
   }
 }
-
-.swiper__popularProducts {
-  .swiper-slide {
-    img {
-      aspect-ratio: 257/248;
-      @include media-breakpoint-up(md) {
-        aspect-ratio: 416/ 400;
+.swiper__popularProducts-container {
+  .swiper__popularProducts {
+    overflow: visible;
+    .swiper-slide {
+      img {
+        aspect-ratio: 257/248;
+        @include media-breakpoint-up(md) {
+          aspect-ratio: 416/ 400;
+        }
       }
     }
-  }
-  &-container {
-    .swiper-button-prev,
-    .swiper-button-next {
-      top: 32.7%;
+    .swiper-pagination {
+      position: absolute;
+      height: 8px;
+      top: 100%;
     }
+  }
+  .swiper-button-prev,
+  .swiper-button-next {
+    top: calc((100% - 48px) / 2);
+    transform: translateY(-50%);
   }
 }
