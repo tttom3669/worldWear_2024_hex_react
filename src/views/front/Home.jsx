@@ -86,6 +86,15 @@ export default function Home() {
     setCoupon(res.data[0]);
   };
 
+  const formatDate = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp * 1000);
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}/${month}/${day}`;
+  };
+
   useEffect(() => {
     getCoupon();
   }, []);
@@ -146,7 +155,11 @@ export default function Home() {
               <h3 className="fs-h1 fst-italic font-dm-serif fw-normal  fs-md-dh2">
                 {coupon.code}
               </h3>
-              <p>2025/01/01-2025/12/31</p>
+              <p>
+                {formatDate(coupon.start_date) +
+                  '-' +
+                  formatDate(coupon.due_date)}
+              </p>
             </div>
           </div>
         </section>
