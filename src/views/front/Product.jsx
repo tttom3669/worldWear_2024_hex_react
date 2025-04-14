@@ -15,6 +15,7 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 
 import FrontHeader from "../../components/front/FrontHeader";
+import ScreenLoading from '../../components/front/ScreenLoading';
 import useImgUrl from "../../hooks/useImgUrl";
 import cookieUtils from "../../components/tools/cookieUtils";
 
@@ -29,8 +30,9 @@ export default function Product() {
   const user = useSelector((state) => state.authSlice.user);
   const carts = useSelector((state) => state.carts.cartsData);
   const [product, setProduct] = useState({});
-  const [isPostCartLoding, setIsPostCartLoding] = useState(false);
-  const [isPostFavoritesLoding, setIsPostFavoritesLoding] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isPostCartLoading, setIsPostCartLoading] = useState(false);
+  const [isPostFavoritesLoading, setIsPostFavoritesLoading] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [cart, setCart] = useState({
     qty: 1,
@@ -44,6 +46,7 @@ export default function Product() {
 
   const getProduct = useCallback(async () => {
     try {
+      setIsLoading(true);
       const { data } = await axios.get(`${API_PATH}/products/${productId}`);
       setProduct(data);
       setCart((prevCart) => ({
@@ -55,6 +58,8 @@ export default function Product() {
         icon: "error",
         title: error,
       });
+    } finally {
+      setIsLoading(false);
     }
   }, [productId, toastAlert]);
 
@@ -103,18 +108,18 @@ export default function Product() {
 
   const postCarts = async () => {
     try {
-      setIsPostCartLoding(true);
+      setIsPostCartLoading(true);
 
       if (!cookieUtils.isUserLoggedIn()) {
         toastAlert({ icon: "warning", title: "請先登入" });
-        setIsPostCartLoding(false);
+        setIsPostCartLoading(false);
         navigate("/login");
         return;
       }
 
       if (!cart.color || !cart.size) {
         toastAlert({ icon: "error", title: "請先選取商品顏色和尺寸" });
-        setIsPostCartLoding(false);
+        setIsPostCartLoading(false);
         return;
       }
 
@@ -133,7 +138,7 @@ export default function Product() {
 
       toastAlert({ icon: "success", title: "已將商品加入購物車" });
       dispatch(asyncGetCarts());
-      setIsPostCartLoding(false);
+      setIsPostCartLoading(false);
     } catch (error) {
       toastAlert({
         icon: "error",
@@ -144,18 +149,18 @@ export default function Product() {
 
   const postFavorites = async () => {
     try {
-      setIsPostFavoritesLoding(true);
+      setIsPostFavoritesLoading(true);
 
       if (!cookieUtils.isUserLoggedIn()) {
         toastAlert({ icon: "warning", title: "請先登入" });
-        setIsPostFavoritesLoding(false);
+        setIsPostFavoritesLoading(false);
         navigate("/login");
         return;
       }
 
       if (!cart.color || !cart.size) {
         toastAlert({ icon: "error", title: "請先選取商品顏色和尺寸" });
-        setIsPostFavoritesLoding(false);
+        setIsPostFavoritesLoading(false);
         return;
       }
 
@@ -169,13 +174,13 @@ export default function Product() {
 
       await axios.post(`${API_PATH}/favorites`, favoriteData);
       toastAlert({ icon: "success", title: "已將商品加入收藏" });
-      setIsPostFavoritesLoding(false);
+      setIsPostFavoritesLoading(false);
     } catch (error) {
       toastAlert({
         icon: "error",
         title: error.response?.data?.message || "操作失敗，請稍後再試",
       });
-      setIsPostFavoritesLoding(false);
+      setIsPostFavoritesLoading(false);
     }
   };
 
@@ -377,7 +382,7 @@ export default function Product() {
             <button
               onClick={postCarts}
               className="d-flex justify-content-center align-items-center mb-3 p-4 fs-base fw-bold btn btn-warning w-100"
-              disabled={isPostCartLoding}
+              disabled={isPostCartLoading}
             >
               <img
                 className="product-icon me-2"
@@ -392,7 +397,7 @@ export default function Product() {
               onMouseLeave={() => setIsHovered(false)}
               id="favorite-button"
               className="d-flex justify-content-center align-items-center mb-3 p-4 fs-base fw-bold btn btn-outline-primary w-100"
-              disabled={isPostFavoritesLoding}
+              disabled={isPostFavoritesLoading}
             >
               {
                 isHovered
@@ -589,6 +594,7 @@ export default function Product() {
           </div>
         </div>
       </section>
+      <ScreenLoading isLoading={isLoading} />
     </>
   );
 }
