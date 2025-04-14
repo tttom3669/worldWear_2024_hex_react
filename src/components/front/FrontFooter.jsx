@@ -1,5 +1,5 @@
-import { useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
@@ -10,8 +10,9 @@ gsap.registerPlugin(ScrollTrigger);
 export default function FrontFooter() {
   const getImgUrl = useImgUrl();
   const topBtnRef = useRef(null);
+  const location = useLocation();
+  const pathname = location.pathname;
 
-  // debounce 函數
   const debounce = (func, delay) => {
     let timeout;
     return (...args) => {
@@ -21,15 +22,36 @@ export default function FrontFooter() {
       }, delay);
     };
   };
+  const isLowerThanDvh = () => {
+    // 取得目前視窗的高度
+    const viewportHeight = window.innerHeight;
+    // 取得整個文件（頁面）的高度
+    const documentHeight = document.documentElement.scrollHeight;
+    return documentHeight <= viewportHeight;
+  };
+  const checkShowTopButton = () => {
+    if (topBtnRef.current) {
+      // 滾動高度未超過 100vh，強制隱藏按鈕
+      if (isLowerThanDvh()) {
+        topBtnRef.current.classList.add('opacity-0', 'pe-none');
+      }
+    }
+  };
 
   // GSAP 動畫設定
   const setupScrollTrigger = () => {
     const main = document.querySelector('main');
     const footer = document.querySelector('footer');
-    if (!main) {
-      return;
+    if (!main || !footer) {
+      return () => {};
     }
 
+    // 清理所有 ScrollTrigger 實例，不只是與 main 相關的
+    ScrollTrigger.getAll().forEach((trigger) => {
+      trigger.kill();
+    });
+
+    // 確保 footer 高度正確
     const startValue = `bottom bottom-=${footer.offsetHeight - 32}px`;
 
     const tl = gsap.timeline({
@@ -38,13 +60,14 @@ export default function FrontFooter() {
         start: startValue,
         // markers: true,
         invalidateOnRefresh: true, // 確保 refresh 時重新計算所有值
+        id: 'mainScrollTrigger', // 添加 ID 以便於識別和清理
         onEnter: () => {
-          if (topBtnRef.current) {
+          if (topBtnRef.current && !isLowerThanDvh()) {
             topBtnRef.current.classList.remove('opacity-0', 'pe-none');
           }
         },
         onLeaveBack: () => {
-          if (topBtnRef.current) {
+          if (topBtnRef.current && !isLowerThanDvh()) {
             topBtnRef.current.classList.add('opacity-0', 'pe-none');
           }
         },
@@ -54,11 +77,19 @@ export default function FrontFooter() {
     // 返回清理函數
     return () => {
       tl.kill();
+      // 確保特定的 ScrollTrigger 被清理
+      ScrollTrigger.getById('mainScrollTrigger')?.kill();
     };
   };
 
   useGSAP(() => {
-    const cleanup = setupScrollTrigger();
+    // 清理所有現有的 ScrollTrigger
+    ScrollTrigger.getAll().forEach((trigger) => {
+      trigger.kill();
+    });
+
+    // 然後設置新的 ScrollTrigger
+    let cleanup = setupScrollTrigger();
 
     // 給予 Swiper 或其他動態內容一點時間載入和調整高度
     const refreshTimeout = setTimeout(() => {
@@ -67,19 +98,30 @@ export default function FrontFooter() {
 
     // 監聽螢幕尺寸變化，並在變化後重新初始化 ScrollTrigger
     const handleResize = debounce(() => {
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill()); // 清理所有 ScrollTrigger
-      setupScrollTrigger(); // 重新初始化
-      ScrollTrigger.refresh(); // 刷新 ScrollTrigger
+      ScrollTrigger.refresh();
     }, 300);
 
     window.addEventListener('resize', handleResize);
 
     return () => {
       cleanup(); // 清理 GSAP timeline
+
+      // 確保所有 ScrollTrigger 被清理
+      ScrollTrigger.getAll().forEach((trigger) => {
+        trigger.kill();
+      });
+
       clearTimeout(refreshTimeout);
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [pathname]); // 依賴於 pathname，當路徑改變時重新執行
+
+  useEffect(() => {
+    if (topBtnRef.current) {
+      topBtnRef.current.classList.add('opacity-0', 'pe-none');
+      checkShowTopButton(); // 初始檢查
+    }
+  }, [pathname, checkShowTopButton]);
 
   return (
     <footer className="bg-black py-6 py-md-3">
@@ -110,7 +152,7 @@ export default function FrontFooter() {
               />
             </Link>
             <div className="d-flex align-items-start align-items-md-center flex-column gap-2 flex-lg-row gap-lg-0">
-                {/* <ul className="d-flex align-items-center gap-2 text-white">
+              {/* <ul className="d-flex align-items-center gap-2 text-white">
                   <li>
                     <Link className="footer__link" to="/">
                       代購流程

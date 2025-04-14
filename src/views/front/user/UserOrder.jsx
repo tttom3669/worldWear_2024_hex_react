@@ -1,14 +1,12 @@
-import useImgUrl from "../../../hooks/useImgUrl";
-import FormTitle from "../../../components/front/FormTitle";
-import UserAside from "../../../components/front/UserAside";
-import ScreenLoading from "../../../components/front/ScreenLoading";
-import axios from "axios";
-import { useCallback, useEffect, useState } from "react";
-import useSwal from "../../../hooks/useSwal";
+import useImgUrl from '../../../hooks/useImgUrl';
+import FormTitle from '../../../components/front/FormTitle';
+import UserAside from '../../../components/front/UserAside';
+import ScreenLoading from '../../../components/front/ScreenLoading';
+import axios from 'axios';
+import { useCallback, useEffect, useState } from 'react';
 
 export default function UserOrder() {
   const getImgUrl = useImgUrl();
-  const { toastAlert } = useSwal();
   const { VITE_API_PATH: API_PATH } = import.meta.env;
   const [orderData, setOrderData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -18,14 +16,14 @@ export default function UserOrder() {
       setIsLoading(true);
       const userId =
         document.cookie
-          .split("; ")
+          .split('; ')
           .find((row) => row.startsWith(`worldWearUserId`))
-          ?.split("=")[1] || "";
+          ?.split('=')[1] || '';
       const token =
         document.cookie
-          .split("; ")
+          .split('; ')
           .find((row) => row.startsWith(`worldWearToken`))
-          ?.split("=")[1] || "";
+          ?.split('=')[1] || '';
       const res = await axios.get(`${API_PATH}/orders?userId=${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -33,15 +31,13 @@ export default function UserOrder() {
       });
 
       setOrderData(res.data);
+      // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      toastAlert({
-        icon: "error",
-        title: error?.response?.data?.message || "未取得訂單資料",
-      });
+      setIsLoading(false);
     } finally {
       setIsLoading(false);
     }
-  }, [API_PATH, toastAlert]);
+  }, [API_PATH]);
 
   useEffect(() => {
     getOrder();
@@ -76,7 +72,7 @@ export default function UserOrder() {
                                   <span> 訂單總額 :</span>
                                   <span className="text-secondary-50">
                                     NT$
-                                    {order.final_total.toLocaleString("zh-TW")}
+                                    {order.final_total.toLocaleString('zh-TW')}
                                   </span>
                                   （含運費）
                                 </div>
@@ -94,7 +90,7 @@ export default function UserOrder() {
                               <svg className="pe-none" width="12" height="8">
                                 <use
                                   href={getImgUrl(
-                                    "/icons/chevron-down.svg#chevron-down"
+                                    '/icons/chevron-down.svg#chevron-down'
                                   )}
                                 />
                               </svg>
@@ -115,8 +111,8 @@ export default function UserOrder() {
                                       <div className="d-flex gap-3 w-100">
                                         <img
                                           style={{
-                                            aspectRatio: "131/108",
-                                            maxWidth: "108px",
+                                            aspectRatio: '131/108',
+                                            maxWidth: '108px',
                                           }}
                                           className="object-fit-cover"
                                           src={productItem.product.imageUrl}
@@ -135,7 +131,7 @@ export default function UserOrder() {
                                             <p className="mt-auto text-secondary-50 d-none d-lg-block">
                                               NT$
                                               {productItem.product.price.toLocaleString(
-                                                "zh-TW"
+                                                'zh-TW'
                                               )}
                                             </p>
                                             <p className="mt-auto text-secondary-50 d-block d-lg-none">
@@ -143,7 +139,7 @@ export default function UserOrder() {
                                               {(
                                                 productItem.product.price *
                                                 productItem.qty
-                                              ).toLocaleString("zh-TW")}
+                                              ).toLocaleString('zh-TW')}
                                             </p>
                                           </div>
                                         </div>
@@ -157,7 +153,7 @@ export default function UserOrder() {
                               </div>
                               <div className="border-bottom border-2 border-nature-95 pb-3 border-opacity-100 pb-sm-0 border-opacity-sm-0">
                                 <FormTitle
-                                  title={"付款明細"}
+                                  title={'付款明細'}
                                   className={`mb-3 mb-sm-5`}
                                   borderColor={`border-nature-90`}
                                   titleBgColor={`bg-nature-90`}
@@ -173,7 +169,7 @@ export default function UserOrder() {
                                         NT${order.paymentInfo.totalAmount}
                                         (已折抵:活動折抵 NT$
                                         {order.paymentInfo.discount.toLocaleString(
-                                          "zh-TW"
+                                          'zh-TW'
                                         )}
                                         )
                                       </span>
@@ -224,7 +220,7 @@ export default function UserOrder() {
                                       </span>
                                     </div>
                                     {order.invoiceInfo.invoiceType ===
-                                      "電子發票" && (
+                                      '電子發票' && (
                                       <div className="d-flex gap-1">
                                         <span className="text-nowrap">
                                           發票載具 :
@@ -233,9 +229,9 @@ export default function UserOrder() {
                                       </div>
                                     )}
                                     {order.invoiceInfo.invoiceType ===
-                                      "電子發票" &&
+                                      '電子發票' &&
                                       order.invoiceInfo.carrier ===
-                                        "手機條碼載具" && (
+                                        '手機條碼載具' && (
                                         <div className="d-flex gap-1">
                                           <span>手機條碼 :</span>
                                           <span>
@@ -244,7 +240,7 @@ export default function UserOrder() {
                                         </div>
                                       )}
                                     {order.invoiceInfo.invoiceType ===
-                                      "統編發票" && (
+                                      '統編發票' && (
                                       <>
                                         <div className="d-flex gap-1">
                                           <span> 公司抬頭 :</span>
