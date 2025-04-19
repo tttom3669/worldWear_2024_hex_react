@@ -8,9 +8,21 @@ $header-aside-height-mobile: 29px;
     position: relative;
     display: flex;
     flex-wrap: wrap;
-    height: calc(min(100vh, 100dvh) - $header-aside-height-mobile);
-    @include media-breakpoint-up(lg) {
-      height: calc(min(100vh, 100dvh) - $header-aside-height);
+
+    // 判斷是否支援 min() 函數
+    @supports (height: calc(min(100vh, 100dvh))) {
+      height: calc(min(100vh, 100dvh) - $header-aside-height-mobile);
+      @include media-breakpoint-up(lg) {
+        height: calc(min(100vh, 100dvh) - $header-aside-height);
+      }
+    }
+
+    // 不支援 min() 的情況
+    @supports not (height: calc(min(100vh, 100dvh))) {
+      height: calc(100vh - $header-aside-height-mobile);
+      @include media-breakpoint-up(lg) {
+        height: calc(100vh - $header-aside-height);
+      }
     }
     &-link {
       color: $white;

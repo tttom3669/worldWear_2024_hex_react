@@ -28,22 +28,28 @@ details[open]::details-content {
 }
 
 .site {
-  min-height: 100dvh;
-
-  // 預設使用 Grid 佈局
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  grid-template-columns: minmax(0, 1fr);
-}
-
-// 使用媒體查詢為不支援 Grid 的瀏覽器提供 Flexbox 版本
-@supports not (display: grid) {
-  .site {
-    display: flex;
-    flex-direction: column;
+  // 支援 min() 函數
+  @supports (height: calc(min(100vh, 100dvh))) {
+    min-height: calc(min(100vh, 100dvh));
+  }
+  // 不支援 min() 函數的瀏覽器
+  @supports not (height: calc(min(100vh, 100dvh))) {
+    min-height: 100vh;
   }
 
-  .site > *:last-child {
-    margin-top: auto;
+  @supports (display: grid) {
+    // 支援 Grid 的瀏覽器使用 Grid 佈局
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  // 使用媒體查詢為不支援 Grid 的瀏覽器提供 Flexbox 版本
+  @supports not (display: grid) {
+    display: flex;
+    flex-direction: column;
+    & > *:last-child {
+      margin-top: auto;
+    }
   }
 }
