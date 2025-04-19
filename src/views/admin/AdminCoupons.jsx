@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import useSwal from '../../hooks/useSwal';
 import cookieUtils from '../../components/tools/cookieUtils';
 import { convertTimestampToDate } from '../../components/tools/dateUtils';
@@ -19,7 +19,7 @@ export default function AdminCoupons() {
   // 狀態選項
   const statusOptions = ['已啟用', '未啟用'];
   // 取得折價券列表
-  const fetchCoupons = async () => {
+  const fetchCoupons = useCallback(async () => {
     try {
       setIsLoading(true);
       const authAxios = cookieUtils.createAuthAxios();
@@ -35,12 +35,12 @@ export default function AdminCoupons() {
     } finally {
       setIsLoading(false);
     }
-  };
+  },[toastAlert]);
 
   // 取得折價券列表
   useEffect(() => {
     fetchCoupons();
-  }, []);
+  }, [fetchCoupons]);
 
   // 搜尋功能
   const filteredCoupons = (coupons || []).filter((coupon) => {

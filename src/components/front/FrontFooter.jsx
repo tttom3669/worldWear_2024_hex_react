@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -12,8 +12,8 @@ export default function FrontFooter() {
   const topBtnRef = useRef(null);
   const location = useLocation();
   const pathname = location.pathname;
-
-  const debounce = (func, delay) => {
+  
+  const debounce = useCallback((func, delay) => {
     let timeout;
     return (...args) => {
       clearTimeout(timeout);
@@ -21,22 +21,23 @@ export default function FrontFooter() {
         func(...args);
       }, delay);
     };
-  };
-  const isLowerThanDvh = () => {
+  }, []);
+  const isLowerThanDvh = useCallback(() => {
     // 取得目前視窗的高度
     const viewportHeight = window.innerHeight;
     // 取得整個文件（頁面）的高度
     const documentHeight = document.documentElement.scrollHeight;
     return documentHeight <= viewportHeight;
-  };
-  const checkShowTopButton = () => {
+  }, []);
+
+  const checkShowTopButton = useCallback(() => {
     if (topBtnRef.current) {
       // 滾動高度未超過 100vh，強制隱藏按鈕
       if (isLowerThanDvh()) {
         topBtnRef.current.classList.add('opacity-0', 'pe-none');
       }
     }
-  };
+  },[isLowerThanDvh]);
 
   // GSAP 動畫設定
   const setupScrollTrigger = () => {
