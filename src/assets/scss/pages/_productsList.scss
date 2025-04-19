@@ -204,6 +204,17 @@ $accordion-active-bg: #ffddb9; // 保留但不使用
   .favorite-button.isLike {
     background-color: $like-bg-color;
   }
+
+  .heartIcon {
+    stroke: #93908f;
+    stroke-width: 0.5px;
+  }
+
+  .favorite-button.isLike .heartIcon {
+    fill: white;
+    stroke: white;
+    stroke-width: 0.5px;
+  }
 }
 
 // Heart icon styles
